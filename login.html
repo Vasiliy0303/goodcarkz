@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodCar Platform — Вход</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+.bg{position:fixed;inset:0;background:linear-gradient(135deg,#1A1A2E 0%,#2C0A0A 50%,#1A1A2E 100%);z-index:0}
+.bg-pattern{position:fixed;inset:0;z-index:1;opacity:.05;background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);background-size:20px 20px}
+
+.wrap{position:relative;z-index:10;width:100%;max-width:420px;padding:20px}
+
+/* Card */
+.card{background:#fff;border-radius:20px;padding:40px 36px;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center}
+.logo-icon{width:48px;height:48px;background:#C0392B;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 16px rgba(192,57,43,.4)}
+.logo-text{text-align:left}
+.logo-name{font-size:20px;font-weight:800;color:#1A1A2E;line-height:1.1}
+.logo-sub{font-size:10px;font-weight:700;color:#C0392B;letter-spacing:2px;text-transform:uppercase}
+
+/* Title */
+.title{font-size:22px;font-weight:800;color:#1A1A2E;margin-bottom:6px;text-align:center}
+.subtitle{font-size:13px;color:#AAA;text-align:center;margin-bottom:28px}
+
+/* Form */
+.form-group{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+.form-input{width:100%;background:#F8F8F8;border:2px solid #F0F0F0;border-radius:10px;padding:12px 16px;font-size:14px;font-family:inherit;color:#1A1A2E;transition:all .15s;outline:none}
+.form-input:focus{border-color:#C0392B;background:#fff;box-shadow:0 0 0 4px rgba(192,57,43,.08)}
+.form-input::placeholder{color:#CCC}
+
+/* Role selector */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.role-btn{padding:10px 8px;border:2px solid #F0F0F0;border-radius:10px;background:#F8F8F8;cursor:pointer;transition:all .15s;text-align:center;font-family:inherit}
+.role-btn:hover{border-color:#C0392B;background:#FFF5F5}
+.role-btn.active{border-color:#C0392B;background:#FFF0F0}
+.role-icon{font-size:18px;display:block;margin-bottom:4px}
+.role-name{font-size:11px;font-weight:600;color:#555}
+.role-btn.active .role-name{color:#C0392B}
+
+/* Submit */
+.btn-submit{width:100%;background:#C0392B;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px}
+.btn-submit:hover{background:#A93226;transform:translateY(-1px);box-shadow:0 6px 20px rgba(192,57,43,.35)}
+.btn-submit:active{transform:translateY(0)}
+.btn-submit:disabled{background:#DDD;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* Error */
+.error-box{background:#FFF0F0;border:1px solid #F5C6C6;border-radius:8px;padding:10px 14px;font-size:13px;color:#C0392B;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.error-box.show{display:flex}
+
+/* Loading */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:#DDD;font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#EEE}
+
+/* Demo accounts */
+.demo-grid{display:grid;gap:6px}
+.demo-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#FAFAFA;border:1px solid #EEE;border-radius:8px;cursor:pointer;transition:all .12s}
+.demo-item:hover{background:#FFF5F5;border-color:#F5C6C6}
+.demo-left{display:flex;align-items:center;gap:8px}
+.demo-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.demo-name{font-size:12px;font-weight:600;color:#1A1A2E}
+.demo-role{font-size:10px;color:#AAA}
+.demo-arrow{font-size:12px;color:#C0392B}
+
+/* Footer */
+.footer{text-align:center;margin-top:24px;font-size:12px;color:#AAA}
+.footer span{color:#C0392B;font-weight:600}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-pattern"></div>
+
+<div class="wrap">
+  <div class="card">
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">🚗</div>
+      <div class="logo-text">
+        <div class="logo-name">GoodCar</div>
+        <div class="logo-sub">Platform</div>
+      </div>
+    </div>
+
+    <div class="title">Добро пожаловать</div>
+    <div class="subtitle">Войдите в систему управления</div>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box">
+      <span>⚠️</span><span id="error-text">Неверный email или пароль</span>
+    </div>
+
+    <!-- Form -->
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="email" placeholder="your@goodcarkz.kz" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Пароль</label>
+      <input class="form-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn-submit" id="login-btn" onclick="doLogin()">
+      <span id="btn-text">Войти в систему</span>
+    </button>
+
+    <!-- Demo accounts -->
+    <div class="divider">Быстрый вход (демо)</div>
+    <div class="demo-grid">
+      <div class="demo-item" onclick="quickLogin('admin@goodcarkz.kz','admin123','Жанибек','Руководитель','#C0392B')">
+        <div class="demo-left">
+          <div class="demo-av" style="background:#C0392B">ЖБ</div>
+          <div><div class="demo-name">Жанибек</div><div class="demo-role">Руководитель</div></div>
+        </div>
+        <span class="demo-arrow">→</span>
+      </div>
+      <div class="demo-item" onclick="quickLogin('manager1@goodcarkz.kz','manager123','Ерлан','Менеджер','#2980B9')">
+        <div class="demo-left">
+          <div class="demo-av" style="background:#2980B9">ЕС</div>
+          <div><div class="demo-name">Ерлан</div><div class="demo-role">Менеджер</div></div>
+        </div>
+        <span class="demo-arrow">→</span>
+      </div>
+      <div class="demo-item" onclick="quickLogin('inspector@goodcarkz.kz','inspector123','Асыл','Инспектор','#27AE60')">
+        <div class="demo-left">
+          <div class="demo-av" style="background:#27AE60">АИ</div>
+          <div><div class="demo-name">Асыл</div><div class="demo-role">Инспектор</div></div>
+        </div>
+        <span class="demo-arrow">→</span>
+      </div>
+      <div class="demo-item" onclick="quickLogin('finance@goodcarkz.kz','finance123','Динара','Финансист','#8E44AD')">
+        <div class="demo-left">
+          <div class="demo-av" style="background:#8E44AD">ДА</div>
+          <div><div class="demo-name">Динара</div><div class="demo-role">Финансист</div></div>
+        </div>
+        <span class="demo-arrow">→</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">GoodCar Platform © 2024 · <span>goodcarkz.kz</span></div>
+</div>
+
+<script>
+// Демо-пользователи (пока без реального API авторизации)
+const DEMO_USERS = {
+  'admin@goodcarkz.kz':     { password:'admin123',    name:'Жанибек',  role:'Руководитель', avatar:'ЖБ', color:'#C0392B' },
+  'manager1@goodcarkz.kz':  { password:'manager123',  name:'Ерлан',    role:'Менеджер',     avatar:'ЕС', color:'#2980B9' },
+  'manager2@goodcarkz.kz':  { password:'manager123',  name:'Айгерим',  role:'Менеджер',     avatar:'АБ', color:'#E67E22' },
+  'inspector@goodcarkz.kz': { password:'inspector123',name:'Асыл',    role:'Инспектор',    avatar:'АИ', color:'#27AE60' },
+  'finance@goodcarkz.kz':   { password:'finance123',  name:'Динара',   role:'Финансист',    avatar:'ДА', color:'#8E44AD' },
+};
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  document.getElementById('error-text').textContent = msg;
+  box.classList.add('show');
+  setTimeout(() => box.classList.remove('show'), 4000);
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('login-btn');
+  const txt = document.getElementById('btn-text');
+  if (on) {
+    btn.disabled = true;
+    txt.innerHTML = '<div class="spinner"></div> Проверяем…';
+  } else {
+    btn.disabled = false;
+    txt.textContent = 'Войти в систему';
+  }
+}
+
+function saveSession(user) {
+  localStorage.setItem('gc:user', JSON.stringify({
+    ...user,
+    loginAt: new Date().toISOString(),
+  }));
+}
+
+function quickLogin(email, password, name, role, color) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = password;
+  setTimeout(doLogin, 100);
+}
+
+async function doLogin() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    showError('Введите email и пароль');
+    return;
+  }
+
+  setLoading(true);
+
+  // Имитация запроса к серверу
+  await new Promise(r => setTimeout(r, 600));
+
+  // Проверяем демо-пользователей
+  const user = DEMO_USERS[email];
+  if (user && user.password === password) {
+    saveSession({ email, name: user.name, role: user.role, avatar: user.avatar, color: user.color });
+    // Редирект на платформу
+    window.location.href = '/crm.html';
+    return;
+  }
+
+  // TODO: реальный API запрос
+  // try {
+  //   const res = await fetch('/api/auth/login', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ email, password })
+  //   });
+  //   const data = await res.json();
+  //   if (res.ok) {
+  //     saveSession(data.user);
+  //     localStorage.setItem('gc:token', data.token);
+  //     window.location.href = '/crm.html';
+  //     return;
+  //   }
+  //   showError(data.error || 'Неверные данные');
+  // } catch(e) {
+  //   showError('Ошибка соединения');
+  // }
+
+  setLoading(false);
+  showError('Неверный email или пароль');
+}
+
+// Enter для входа
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// Проверяем если уже залогинен
+const existing = localStorage.getItem('gc:user');
+if (existing) {
+  try {
+    const u = JSON.parse(existing);
+    const loginAt = new Date(u.loginAt);
+    const diff = (Date.now() - loginAt) / 1000 / 60 / 60;
+    if (diff < 8) {
+      // Сессия ещё жива (8 часов)
+      window.location.href = '/crm.html';
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
