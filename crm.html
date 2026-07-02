@@ -245,10 +245,10 @@ textarea{resize:vertical;min-height:70px}
       <button class="tb-search">🔍 Поиск по системе...</button>
       <div class="tb-icon">🔔<div class="tb-dot"></div></div>
       <div class="tb-icon">💬<div class="tb-dot"></div></div>
-      <div class="tb-user">
+      <div class="tb-user" onclick="logout()" title="Выйти">
         <div class="tb-avatar">ЖБ</div>
         <div><div class="tb-uname">Жанибек</div><div class="tb-urole">Руководитель</div></div>
-        <span style="color:#CCC;margin-left:4px">▾</span>
+        <span style="color:#CCC;margin-left:4px;font-size:11px">Выйти</span>
       </div>
     </div>
   </div>
@@ -1006,10 +1006,48 @@ function initDate() {
   document.getElementById('tb-date').textContent = `· ${now.getDate()} ${months[now.getMonth()]}, ${days[now.getDay()]}`;
   const h = now.getHours();
   const gr = h<12?'Доброе утро':h<17?'Добрый день':'Добрый вечер';
-  document.getElementById('greeting').textContent = `${gr}, Жанибек! 👋`;
+  const name = window.GC_USER?.name || 'Жанибек';
+  document.getElementById('greeting').textContent = `${gr}, ${name}! 👋`;
+
+  // Обновляем аватар и имя в топбаре
+  const user = window.GC_USER;
+  if (user) {
+    const avatarEl = document.querySelector('.tb-avatar');
+    const nameEl = document.querySelector('.tb-uname');
+    const roleEl = document.querySelector('.tb-urole');
+    if (avatarEl) { avatarEl.textContent = user.avatar || user.name?.[0] || 'U'; avatarEl.style.background = `linear-gradient(135deg,${user.color||'#C0392B'},#1A1A2E)`; }
+    if (nameEl) nameEl.textContent = user.name || 'Пользователь';
+    if (roleEl) roleEl.textContent = user.role || 'Менеджер';
+  }
 }
 
-// ── API ───────────────────────────────────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('gc:user');
+  localStorage.removeItem('gc:token');
+  window.location.href = '/login.html';
+}
+
+// ── Auth check ────────────────────────────────────────────────────────────────
+(function() {
+  const stored = localStorage.getItem('gc:user');
+  if (!stored) {
+    window.location.href = '/login.html';
+    return;
+  }
+  try {
+    const u = JSON.parse(stored);
+    const diff = (Date.now() - new Date(u.loginAt)) / 1000 / 60 / 60;
+    if (diff > 8) {
+      localStorage.removeItem('gc:user');
+      window.location.href = '/login.html';
+      return;
+    }
+    // Применяем данные пользователя
+    window.GC_USER = u;
+  } catch(e) {
+    window.location.href = '/login.html';
+  }
+})();
 const API = '/api';
 let apiStats = null;
 
