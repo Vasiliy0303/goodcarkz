@@ -1,1 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodCar Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F0F2F5;color:#1A1A2E;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#C0392B;border-radius:4px}
+
+/* Layout */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;flex-shrink:0;background:#fff;border-right:1px solid #EEE;display:flex;flex-direction:column;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:#fff;border-bottom:1px solid #EEE;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* Sidebar */
+.logo{padding:20px 20px 16px;border-bottom:1px solid #F0F0F0}
+.logo-icon{width:36px;height:36px;background:#C0392B;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;margin-right:8px;vertical-align:middle}
+.logo-title{font-size:15px;font-weight:800;color:#1A1A2E;vertical-align:middle}
+.logo-sub{font-size:9px;font-weight:700;color:#C0392B;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-left:44px;margin-top:-2px}
+.nav-group{padding:12px 12px 4px;font-size:10px;font-weight:700;color:#BBB;letter-spacing:1.2px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;margin:1px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:#666;transition:all .15s;border:none;background:transparent;width:calc(100% - 16px);text-align:left}
+.nav-item:hover{background:#FFF5F5;color:#C0392B}
+.nav-item.active{background:#FFF0F0;color:#C0392B;font-weight:600}
+.nav-item .icon{width:18px;text-align:center;font-size:15px}
+.nav-badge{margin-left:auto;background:#C0392B;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+
+/* Topbar */
+.tb-greeting{font-size:15px;font-weight:700}
+.tb-date{font-size:12px;color:#999;margin-left:8px}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-search{display:flex;align-items:center;gap:8px;background:#F5F5F5;border-radius:8px;padding:7px 14px;font-size:13px;color:#999;cursor:pointer;border:none;font-family:inherit}
+.tb-icon{width:34px;height:34px;border-radius:8px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;position:relative}
+.tb-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:#C0392B;border-radius:50%;border:2px solid #fff}
+.tb-user{display:flex;align-items:center;gap:8px;cursor:pointer}
+.tb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#8E44AD);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.tb-uname{font-size:13px;font-weight:600}
+.tb-urole{font-size:11px;color:#999}
+
+/* Page */
+.page{display:none}.page.active{display:block}
+.page-header{margin-bottom:20px}
+.page-title{font-size:22px;font-weight:800;color:#1A1A2E}
+.page-sub{font-size:13px;color:#999;margin-top:3px}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #F0F0F0;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.kpi-label{font-size:11px;color:#AAA;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.kpi-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.kpi-val{font-size:20px;font-weight:800;color:#1A1A2E;margin-bottom:4px}
+.kpi-delta{font-size:11px;font-weight:600}
+.kpi-delta.up{color:#27AE60}.kpi-delta.down{color:#C0392B}.kpi-delta.neu{color:#AAA}
+.mini-chart{height:28px;display:flex;align-items:flex-end;gap:2px;margin-top:6px}
+.mini-bar{flex:1;border-radius:2px;opacity:.6}
+
+/* Grid layouts */
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* Card */
+.card{background:#fff;border-radius:12px;padding:18px;border:1px solid #F0F0F0;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:700;color:#1A1A2E}
+.card-link{font-size:12px;color:#C0392B;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:3px}
+
+/* Chart */
+.chart-wrap{height:160px;position:relative;display:flex;align-items:flex-end;gap:0}
+.chart-svg{width:100%;height:100%}
+
+/* Funnel */
+.funnel-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.funnel-bar-wrap{flex:1;height:20px;background:#F5F5F5;border-radius:4px;overflow:hidden}
+.funnel-bar{height:100%;border-radius:4px;transition:width .5s}
+.funnel-label{font-size:12px;color:#444;width:140px;flex-shrink:0}
+.funnel-val{font-size:12px;color:#AAA;width:60px;text-align:right;flex-shrink:0}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:#FAFAFA;color:#AAA;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;border-bottom:1px solid #F0F0F0}
+.tbl td{padding:10px 12px;border-top:1px solid #F8F8F8;color:#444;vertical-align:middle}
+.tbl tr:hover td{background:#FEF9F9}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-g{background:#E8F8F0;color:#1E8449}
+.badge-r{background:#FDE8E8;color:#C0392B}
+.badge-y{background:#FEF9E7;color:#B7770D}
+.badge-b{background:#EBF5FB;color:#2980B9}
+.badge-p{background:#F5EEF8;color:#8E44AD}
+
+/* Avatar */
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#8E44AD);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.av-sm{width:26px;height:26px;font-size:10px}
+
+/* Rank */
+.rank-1{background:linear-gradient(135deg,#F1C40F,#E67E22)}
+.rank-2{background:linear-gradient(135deg,#BDC3C7,#95A5A6)}
+.rank-3{background:linear-gradient(135deg,#CD7F32,#A04000)}
+
+/* Progress bar */
+.prog-wrap{height:6px;background:#F0F0F0;border-radius:3px;overflow:hidden;margin-top:4px}
+.prog{height:100%;border-radius:3px;background:#C0392B}
+
+/* Auction card */
+.auction-item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5}
+.auction-img{width:60px;height:44px;border-radius:6px;object-fit:cover;background:#F0F0F0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.auction-timer{font-size:12px;font-weight:700;color:#C0392B;font-family:monospace}
+
+/* Task item */
+.task-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F5F5F5}
+.task-time{font-size:11px;color:#AAA;width:38px;flex-shrink:0;padding-top:2px}
+.task-dot{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.task-name{font-size:13px;font-weight:600;color:#1A1A2E}
+.task-meta{font-size:11px;color:#AAA;margin-top:2px}
+.task-btn{margin-left:auto;padding:4px 10px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut-legend{display:flex;flex-direction:column;gap:6px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Location */
+.loc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F5F5F5}
+.loc-icon{width:30px;height:30px;background:#FFF0F0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.loc-pct{font-size:13px;font-weight:700;margin-left:auto}
+
+/* BI card */
+.bi-card{background:#FAFAFA;border:1px solid #EEE;border-radius:10px;padding:14px}
+.bi-val{font-size:18px;font-weight:800;color:#1A1A2E;margin:4px 0}
+.bi-label{font-size:11px;color:#AAA;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.bi-delta{font-size:11px;font-weight:600;color:#27AE60;margin-top:2px}
+
+/* Deals page */
+.deal-stage-col{background:#fff;border:1px solid #EEE;border-radius:10px;min-width:195px}
+.deal-stage-head{padding:10px 12px;border-bottom:1px solid #F0F0F0;display:flex;justify-content:space-between;align-items:center}
+.deal-stage-name{font-size:12px;font-weight:700}
+.deal-stage-cnt{background:#F5F5F5;color:#999;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+.deal-cards{padding:8px;display:flex;flex-direction:column;gap:7px;min-height:80px}
+.deal-card{background:#fff;border:1px solid #EBEBEB;border-left:3px solid #E0E0E0;border-radius:7px;padding:11px;cursor:pointer;transition:all .12s}
+.deal-card:hover{box-shadow:0 3px 12px rgba(192,57,43,.12);transform:translateY(-1px)}
+
+/* Leads page */
+.lead-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F5F5F5}
+.ch-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+/* Cars page */
+.car-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.car-card{background:#fff;border:1px solid #EEE;border-radius:12px;overflow:hidden;transition:box-shadow .15s}
+.car-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.10)}
+.car-photo{height:160px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.car-photo img{width:100%;height:100%;object-fit:cover}
+.car-photo-placeholder{font-size:40px;color:#DDD}
+.car-status-badge{position:absolute;top:8px;right:8px}
+.car-upload-btn{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px}
+.car-info{padding:14px}
+.car-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.car-price{font-size:16px;font-weight:800;color:#C0392B;margin-bottom:8px}
+.car-meta{display:flex;gap:10px;font-size:11px;color:#AAA}
+
+/* Upload area */
+.upload-zone{border:2px dashed #E0E0E0;border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:all .15s;background:#FAFAFA}
+.upload-zone:hover,.upload-zone.drag{border-color:#C0392B;background:#FFF5F5}
+.upload-zone input{display:none}
+
+/* Modal */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:26px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-title::before{content:'';width:4px;height:18px;background:#C0392B;border-radius:2px;display:block}
+.form-grid{display:grid;gap:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:11px;font-weight:700;color:#AAA;display:block;margin-bottom:4px;text-transform:uppercase}
+input,select,textarea{width:100%;background:#FAFAFA;border:1px solid #E8E8E8;border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;color:#1A1A2E;transition:border .12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#C0392B;background:#fff}
+textarea{resize:vertical;min-height:70px}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #F0F0F0}
+
+/* Buttons */
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit}
+.btn-primary{background:#C0392B;color:#fff}.btn-primary:hover{background:#A93226}
+.btn-ghost{background:#fff;color:#555;border:1px solid #E0E0E0}.btn-ghost:hover{background:#F8F8F8}
+.btn-danger{background:#FFF0F0;color:#C0392B;border:1px solid #F5C6C6}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-icon{padding:7px;border-radius:7px}
+
+/* Photo grid */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.photo-thumb{aspect-ratio:4/3;border-radius:8px;overflow:hidden;position:relative;background:#F0F0F0}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:2px 5px;font-size:10px;cursor:pointer}
+
+.sb2{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.search-inp{background:#fff;border:1px solid #E8E8E8;border-radius:8px;padding:8px 14px;font-size:13px;width:260px;font-family:inherit}
+.search-inp:focus{outline:none;border-color:#C0392B}
+.search-inp::placeholder{color:#CCC}
+.fmt{font-family:monospace}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🚗</div>
+    <span class="logo-title">GoodCar</span>
+    <span class="logo-sub">Platform</span>
+  </div>
+  <div class="nav-group">Главное</div>
+  <button class="nav-item active" onclick="go('dashboard',this)"><span class="icon">🏠</span>Главная</button>
+  <button class="nav-item" onclick="go('leads',this)"><span class="icon">👥</span>Лиды<span class="nav-badge" id="leads-cnt">0</span></button>
+  <button class="nav-item" onclick="go('deals',this)"><span class="icon">🤝</span>Сделки</button>
+  <button class="nav-item" onclick="go('cars',this)"><span class="icon">🚗</span>Автомобили</button>
+  <div class="nav-group">Сервисы</div>
+  <button class="nav-item" onclick="go('inspection',this)"><span class="icon">🔍</span>Осмотр авто</button>
+  <button class="nav-item" onclick="go('auction',this)"><span class="icon">🏁</span>Аукцион</button>
+  <button class="nav-item" onclick="go('rfinance',this)"><span class="icon">🏦</span>R Finance</button>
+  <div class="nav-group">Управление</div>
+  <button class="nav-item" onclick="go('tasks',this)"><span class="icon">📅</span>Задачи<span class="nav-badge" id="tasks-cnt">0</span></button>
+  <button class="nav-item" onclick="go('comms',this)"><span class="icon">📞</span>Коммуникации</button>
+  <button class="nav-item" onclick="go('staff',this)"><span class="icon">👨‍💼</span>Персонал</button>
+  <button class="nav-item" onclick="go('bi',this)"><span class="icon">📊</span>BI-Аналитика</button>
+  <button class="nav-item" onclick="go('docs',this)"><span class="icon">📄</span>Документы</button>
+  <button class="nav-item" onclick="go('settings',this)"><span class="icon">⚙️</span>Настройки</button>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="tb-greeting" id="greeting">Доброе утро, Жанибек! 👋</div>
+      <div class="tb-date" id="tb-date"></div>
+    </div>
+    <div class="tb-right">
+      <button class="tb-search">🔍 Поиск по системе...</button>
+      <div class="tb-icon">🔔<div class="tb-dot"></div></div>
+      <div class="tb-icon">💬<div class="tb-dot"></div></div>
+      <div class="tb-user">
+        <div class="tb-avatar">ЖБ</div>
+        <div><div class="tb-uname">Жанибек</div><div class="tb-urole">Руководитель</div></div>
+        <span style="color:#CCC;margin-left:4px">▾</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div class="page-title">Панель руководителя</div>
+        <div class="page-sub">Отличный день для новых продаж!</div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label"><div class="kpi-icon" style="background:#FDE8E8">💰</div>Выручка за месяц</div>
+          <div class="kpi-val" style="color:#C0392B">127 500 000 ₸</div>
+          <div class="kpi-delta up">+18.6% к прошлому месяцу</div>
+          <div class="mini-chart" id="mc1"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><div class="kpi-icon" style="background:#FEF9E7">🛒</div>Продажи за месяц</div>
+          <div class="kpi-val">68</div>
+          <div class="kpi-delta up">+12 сделок</div>
+          <div class="mini-chart" id="mc2"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><div class="kpi-icon" style="background:#EBF5FB">👤</div>Новые лиды</div>
+          <div class="kpi-val">152</div>
+          <div class="kpi-delta up">+27 сегодня</div>
+          <div class="mini-chart" id="mc3"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><div class="kpi-icon" style="background:#F5EEF8">⚡</div>В работе</div>
+          <div class="kpi-val">43</div>
+          <div class="kpi-delta down">-5 к прошлой подлинке</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><div class="kpi-icon" style="background:#E8F8F0">✅</div>Закрытые сделки</div>
+          <div class="kpi-val">25</div>
+          <div class="kpi-delta up">+8 к прошлой подлинке</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><div class="kpi-icon" style="background:#FDE8E8">📊</div>Средний чек</div>
+          <div class="kpi-val">3 420 000 ₸</div>
+          <div class="kpi-delta up">+7.3% к прошлому месяцу</div>
+        </div>
+      </div>
+
+      <!-- Row 1: Chart + Funnel + RFinance + Auctions -->
+      <div class="grid-3" style="grid-template-columns:1.4fr 1fr 1fr">
+        <!-- Sales Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📈 Продажи</div>
+            <select style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #EEE;background:#FAFAFA">
+              <option>Месяц</option><option>Неделя</option><option>Квартал</option>
+            </select>
+          </div>
+          <svg viewBox="0 0 300 120" style="width:100%;height:120px">
+            <defs>
+              <linearGradient id="gfact" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#C0392B" stop-opacity=".3"/>
+                <stop offset="100%" stop-color="#C0392B" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="gplan" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3498DB" stop-opacity=".2"/>
+                <stop offset="100%" stop-color="#3498DB" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Plan -->
+            <path d="M0,90 C30,85 60,75 90,70 C120,65 150,60 180,55 C210,50 240,45 300,40" fill="url(#gplan)" stroke="#3498DB" stroke-width="1.5" stroke-dasharray="4,3" fill-opacity=".3"/>
+            <!-- Fact -->
+            <path d="M0,100 C20,95 40,88 70,80 C100,72 120,65 150,55 C180,45 220,35 260,25 C280,20 295,18 300,16" fill="url(#gfact)" stroke="#C0392B" stroke-width="2"/>
+            <!-- Labels -->
+            <text x="2" y="118" font-size="8" fill="#CCC">1 мая</text>
+            <text x="85" y="118" font-size="8" fill="#CCC">11 мая</text>
+            <text x="175" y="118" font-size="8" fill="#CCC">21 мая</text>
+            <text x="265" y="118" font-size="8" fill="#CCC">31 мая</text>
+          </svg>
+          <div style="display:flex;gap:14px;margin-top:4px">
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><span style="width:14px;height:2px;background:#C0392B;display:block;border-radius:1px"></span>Факт</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><span style="width:14px;height:2px;background:#3498DB;display:block;border-radius:1px;border-top:1px dashed #3498DB"></span>План</div>
+          </div>
+        </div>
+
+        <!-- Funnel -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎯 Воронка продаж</div></div>
+          <div id="funnel-chart"></div>
+        </div>
+
+        <!-- R Finance -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏦 Заявки в R Finance</div></div>
+          <div class="donut-wrap">
+            <svg viewBox="0 0 80 80" style="width:80px;height:80px;flex-shrink:0">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#F0F0F0" stroke-width="12"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#27AE60" stroke-width="12" stroke-dasharray="100 88" stroke-dashoffset="25" transform="rotate(-90 40 40)"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#F39C12" stroke-width="12" stroke-dasharray="72 116" stroke-dashoffset="-75" transform="rotate(-90 40 40)"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#3498DB" stroke-width="12" stroke-dasharray="17 171" stroke-dashoffset="-147" transform="rotate(-90 40 40)"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#E74C3C" stroke-width="12" stroke-dasharray="17 171" stroke-dashoffset="-164" transform="rotate(-90 40 40)"/>
+              <text x="40" y="37" text-anchor="middle" font-size="10" font-weight="700" fill="#1A1A2E">Всего</text>
+              <text x="40" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#1A1A2E">34</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#27AE60"></div>Одобрено 18 (53%)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#F39C12"></div>На рассмотрении 10 (39%)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#3498DB"></div>Доп. документы 3 (9%)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#E74C3C"></div>Отказано 3 (9%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="grid-4" style="grid-template-columns:1fr 1fr 1fr 1fr">
+        <!-- Inspection points -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">📍 Точки осмотра</div><a class="card-link">Все точки →</a></div>
+          <div id="locations-list"></div>
+        </div>
+
+        <!-- Cars stock -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🚗 Автомобили в наличии</div><a class="card-link" onclick="go('cars',document.querySelector('.nav-item:nth-child(5))'))">Все авто →</a></div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <svg viewBox="0 0 80 80" style="width:80px;height:80px;flex-shrink:0">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#F0F0F0" stroke-width="10"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#27AE60" stroke-width="10" stroke-dasharray="112 76" stroke-dashoffset="25" transform="rotate(-90 40 40)"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#3498DB" stroke-width="10" stroke-dasharray="27 161" stroke-dashoffset="-87" transform="rotate(-90 40 40)"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#F39C12" stroke-width="10" stroke-dasharray="18 170" stroke-dashoffset="-114" transform="rotate(-90 40 40)"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#9B59B6" stroke-width="10" stroke-dasharray="13 175" stroke-dashoffset="-132" transform="rotate(-90 40 40)"/>
+              <text x="40" y="37" text-anchor="middle" font-size="9" fill="#999">Всего</text>
+              <text x="40" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#1A1A2E">127</text>
+            </svg>
+            <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
+              <div class="legend-item"><div class="legend-dot" style="background:#27AE60"></div>В продаже 75 (59%)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#3498DB"></div>В резерве 18 (14%)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#F39C12"></div>На подготовке 12 (9%)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#9B59B6"></div>На диагностике 9 (7%)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active auctions -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏁 Активные аукционы</div><a class="card-link">Все аукционы →</a></div>
+          <div id="auctions-list"></div>
+        </div>
+
+        <!-- Tasks today -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">📅 Задачи на сегодня</div><span class="badge badge-r" style="font-size:11px">2</span></div>
+          <div id="tasks-today"></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Deals + Top managers + BI -->
+      <div class="grid-3" style="grid-template-columns:1fr 1fr 1fr">
+        <!-- Recent deals -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🤝 Последние сделки</div><a class="card-link">Все сделки →</a></div>
+          <table class="tbl"><thead><tr><th>Авто</th><th>Клиент</th><th>Сумма</th><th>Статус</th></tr></thead>
+          <tbody id="recent-deals"></tbody></table>
+        </div>
+
+        <!-- Top managers -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏆 Топ менеджеров</div>
+            <select style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #EEE;background:#FAFAFA"><option>Месяц</option></select>
+          </div>
+          <div id="top-managers"></div>
+        </div>
+
+        <!-- BI -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 BI-центр руководителя</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="bi-cards"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADS PAGE -->
+    <div id="page-leads" class="page">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="page-title">Лиды</div><div class="page-sub">Все входящие обращения</div></div>
+        <button class="btn btn-primary" onclick="openLeadModal()">+ Новый лид</button>
+      </div>
+      <div class="sb2" style="gap:8px;flex-wrap:wrap">
+        <input class="search-inp" placeholder="Поиск по имени, телефону…" oninput="renderLeads(this.value)">
+        <button class="btn btn-ghost btn-sm" onclick="filterLeads('all')" id="lf-all" style="background:#C0392B;color:#fff">Все</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterLeads('new')" id="lf-new">Новые</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterLeads('assigned')" id="lf-assigned">Назначены</button>
+        <button class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:5px"><span>📱</span>Telegram</button>
+        <button class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:5px"><span>💚</span>WhatsApp</button>
+        <button class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:5px"><span>📸</span>Instagram</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="tbl"><thead><tr><th>Клиент</th><th>Источник</th><th>Интерес</th><th>Менеджер</th><th>Дата</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="leads-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- DEALS PAGE -->
+    <div id="page-deals" class="page">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="page-title">Сделки</div><div class="page-sub">Полный цикл продажи автомобиля</div></div>
+        <button class="btn btn-primary" onclick="openDealModal()">+ Новая сделка</button>
+      </div>
+      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:12px" id="deals-kanban"></div>
+    </div>
+
+    <!-- CARS PAGE -->
+    <div id="page-cars" class="page">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="page-title">Автомобили</div><div class="page-sub">Весь склад</div></div>
+        <button class="btn btn-primary" onclick="openCarModal()">+ Добавить авто</button>
+      </div>
+      <div class="sb2" style="flex-wrap:wrap;gap:8px">
+        <input class="search-inp" placeholder="Марка, модель, VIN…" oninput="renderCars(this.value)">
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('all')" id="cf-all" style="background:#C0392B;color:#fff">Все</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('sale')" id="cf-sale">В продаже</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('reserve')" id="cf-reserve">В резерве</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('prep')" id="cf-prep">На подготовке</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('auction')" id="cf-auction">На аукционе</button>
+      </div>
+      <div class="car-grid" id="cars-grid"></div>
+    </div>
+
+    <!-- OTHER PAGES (placeholders) -->
+    <div id="page-inspection" class="page"><div class="page-title" style="margin-bottom:20px">🔍 Осмотр авто</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">🔧</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Скоро здесь появится система осмотра автомобилей с фото, видео и схемой повреждений</div></div></div></div>
+    <div id="page-auction" class="page"><div class="page-title" style="margin-bottom:20px">🏁 Аукцион</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">🏆</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Здесь будут ставки, таймеры и история аукционов</div></div></div></div>
+    <div id="page-rfinance" class="page"><div class="page-title" style="margin-bottom:20px">🏦 R Finance</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💳</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Интеграция с R Finance: подача заявок, статусы, одобрение</div></div></div></div>
+    <div id="page-tasks" class="page"><div class="page-title" style="margin-bottom:20px">📅 Задачи</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="font-size:16px;font-weight:600">Скоро</div></div></div></div>
+    <div id="page-comms" class="page"><div class="page-title" style="margin-bottom:20px">📞 Коммуникации</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💬</div><div style="font-size:16px;font-weight:600">Telegram, WhatsApp, Instagram — единый входящий</div></div></div></div>
+    <div id="page-staff" class="page"><div class="page-title" style="margin-bottom:20px">👨‍💼 Персонал</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">👥</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
+    <div id="page-bi" class="page"><div class="page-title" style="margin-bottom:20px">📊 BI-Аналитика</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">📈</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
+    <div id="page-docs" class="page"><div class="page-title" style="margin-bottom:20px">📄 Документы</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">📁</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
+    <div id="page-settings" class="page"><div class="page-title" style="margin-bottom:20px">⚙️ Настройки</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">🔧</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-ov" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Заголовок</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const LS = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+const DEAL_STAGES = ['Новый лид','Первый контакт','Подбор авто','Осмотр','Проверка истории','Тест-драйв','Финансирование','Договор','Оплата','Выдача авто','Завершена','Неудача'];
+const STAGE_COLORS = {'Новый лид':'#C0392B','Первый контакт':'#E74C3C','Подбор авто':'#E67E22','Осмотр':'#F39C12','Проверка истории':'#8E44AD','Тест-драйв':'#2980B9','Финансирование':'#1ABC9C','Договор':'#16A085','Оплата':'#27AE60','Выдача авто':'#2ECC71','Завершена':'#27AE60','Неудача':'#95A5A6'};
+const CAR_STATUSES = ['В продаже','В резерве','На диагностике','На подготовке','На аукционе','Продан','Архив'];
+const CHANNELS = {telegram:{icon:'✈',color:'#229ED9',bg:'#E8F4FC',label:'Telegram'},whatsapp:{icon:'●',color:'#25D366',bg:'#E8FAF0',label:'WhatsApp'},instagram:{icon:'◆',color:'#E1306C',bg:'#FDE8F0',label:'Instagram'},tiktok:{icon:'♪',color:'#000',bg:'#F0F0F0',label:'TikTok'},call:{icon:'📞',color:'#8E44AD',bg:'#F5EEF8',label:'Звонок'},site:{icon:'🌐',color:'#2980B9',bg:'#EBF5FB',label:'Сайт'}};
+
+let managers = LS('gc:mgr') || [
+  {id:'m1',name:'Ерлан Султтанов',role:'Менеджер',avatar:'ЕС'},
+  {id:'m2',name:'Айгерим Векова',role:'Менеджер',avatar:'АВ'},
+  {id:'m3',name:'Динара Алмиков',role:'Менеджер',avatar:'ДА'},
+  {id:'m4',name:'Роскан Муктаров',role:'Менеджер',avatar:'РМ'},
+  {id:'m5',name:'Аликан Танмр',role:'Менеджер',avatar:'АТ'},
+];
+let leads = LS('gc:leads') || [
+  {id:'l1',name:'Серик Жаксыбеков',phone:'+7 701 111-22-33',channel:'telegram',interest:'Toyota Camry 2024',managerId:'m1',date:'2024-05-15',status:'new'},
+  {id:'l2',name:'Айгерим Бекова',phone:'+7 702 444-55-66',channel:'whatsapp',interest:'BMW X5 2020',managerId:'m2',date:'2024-05-15',status:'assigned'},
+  {id:'l3',name:'Руслан Абенов',phone:'+7 777 333-11-22',channel:'instagram',interest:'Mercedes GLE',managerId:'m3',date:'2024-05-14',status:'new'},
+  {id:'l4',name:'Даурен Касымов',phone:'+7 701 555-77-88',channel:'call',interest:'Kia K5 2023',managerId:'m1',date:'2024-05-14',status:'assigned'},
+  {id:'l5',name:'Мадина Абилова',phone:'+7 702 666-99-00',channel:'site',interest:'Hyundai Tucson',managerId:'m2',date:'2024-05-13',status:'new'},
+];
+let deals = LS('gc:deals') || [
+  {id:'d1',title:'Toyota Camry 2024',clientId:'l1',stage:'Осмотр',amount:14500000,managerId:'m1',created:'2024-05-01'},
+  {id:'d2',title:'BMW X5 2020',clientId:'l2',stage:'Тест-драйв',amount:28300000,managerId:'m2',created:'2024-05-03'},
+  {id:'d3',title:'Kia K5 2022',clientId:'l4',stage:'Договор',amount:10200000,managerId:'m1',created:'2024-05-05'},
+  {id:'d4',title:'Mercedes GLE 2020',clientId:'l3',stage:'Первый контакт',amount:35000000,managerId:'m4',created:'2024-05-08'},
+  {id:'d5',title:'Hyundai Tucson 2023',clientId:'l5',stage:'Завершена',amount:11800000,managerId:'m2',created:'2024-04-28'},
+];
+let cars = LS('gc:cars') || [
+  {id:'c1',make:'Toyota',model:'Camry',year:2024,price:14500000,status:'В продаже',vin:'JT2BF22K000',mileage:5000,photos:[],color:'Белый'},
+  {id:'c2',make:'BMW',model:'X5',year:2020,price:28300000,status:'В резерве',vin:'WBAKP93050S',mileage:45000,photos:[],color:'Чёрный'},
+  {id:'c3',make:'Mercedes',model:'GLE 350',year:2020,price:35000000,status:'В продаже',vin:'4JGFB4KE5LA',mileage:38000,photos:[],color:'Серебристый'},
+  {id:'c4',make:'Kia',model:'K5',year:2022,price:10200000,status:'На подготовке',vin:'KNAGN4AE6K5',mileage:28000,photos:[],color:'Синий'},
+  {id:'c5',make:'Hyundai',model:'Tucson',year:2023,price:11800000,status:'В продаже',vin:'KM8J33A22NU',mileage:12000,photos:[],color:'Красный'},
+  {id:'c6',make:'Lexus',model:'RX 350',year:2021,price:32000000,status:'На аукционе',vin:'2T2BZMCA3MC',mileage:55000,photos:[],color:'Белый перламутр'},
+];
+
+const uid = () => Math.random().toString(36).slice(2,9);
+const fmt = n => (n||0).toLocaleString('ru-RU') + ' ₸';
+
+// ── Navigation ─────────────────────────────────────────────────────────────────
+function go(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const renders = {dashboard:renderDashboard,leads:renderLeads,deals:renderDeals,cars:renderCars};
+  if(renders[id]) renders[id]();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  // Mini charts
+  ['mc1','mc2','mc3'].forEach(id => {
+    const el = document.getElementById(id);
+    const vals = Array.from({length:12},()=>Math.floor(Math.random()*80+20));
+    const max = Math.max(...vals);
+    el.innerHTML = vals.map(v=>`<div class="mini-bar" style="height:${v/max*100}%;background:#C0392B"></div>`).join('');
+  });
+
+  // Funnel
+  const funnel = [
+    {label:'Новый лид',val:152,pct:100},
+    {label:'Первый контакт',val:112,pct:74},
+    {label:'Подбор авто',val:86,pct:57},
+    {label:'Осмотр',val:64,pct:42},
+    {label:'Тест-драйв',val:38,pct:25},
+    {label:'Договор',val:31,pct:20},
+    {label:'Завершена',val:25,pct:16},
+  ];
+  document.getElementById('funnel-chart').innerHTML = funnel.map(f=>`
+    <div class="funnel-row">
+      <div class="funnel-label" style="font-size:11px">${f.label}</div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${f.pct}%;background:${f.pct>50?'#C0392B':f.pct>25?'#E67E22':'#27AE60'}"></div></div>
+      <div class="funnel-val">${f.val}</div>
+    </div>`).join('');
+
+  // Locations
+  const locs = [
+    {name:'Алматы, Тимиразова 42',pct:85,color:'#27AE60'},
+    {name:'Алматы, Модвинет 71',pct:60,color:'#F39C12'},
+    {name:'Алматы, Рыбылбака 348',pct:35,color:'#E74C3C'},
+    {name:'Астана, Сстанка 38',pct:55,color:'#F39C12'},
+  ];
+  document.getElementById('locations-list').innerHTML = locs.map(l=>`
+    <div class="loc-item">
+      <div class="loc-icon">📍</div>
+      <div><div style="font-size:12px;font-weight:600">${l.name}</div>
+      <div class="prog-wrap" style="width:120px;margin-top:3px"><div class="prog" style="width:${l.pct}%;background:${l.color}"></div></div></div>
+      <div class="loc-pct" style="color:${l.color}">${l.pct}%</div>
+    </div>`).join('');
+
+  // Auctions
+  const aucs = [
+    {name:'BMW X5 2020',bid:'12 800 000',timer:'02:15:47'},
+    {name:'Toyota Land Cruiser 2021',bid:'21 200 000',timer:'05:42:18'},
+    {name:'Mercedes-Benz GLE 2020',bid:'18 000 000',timer:'01:23:29'},
+  ];
+  document.getElementById('auctions-list').innerHTML = aucs.map(a=>`
+    <div class="auction-item">
+      <div class="auction-img">🚗</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
+        <div style="font-size:11px;color:#AAA">Текущая ставка</div>
+        <div style="font-size:12px;font-weight:700;color:#C0392B">${a.bid} ₸</div>
+      </div>
+      <div class="auction-timer">${a.timer}</div>
+    </div>`).join('');
+
+  // Tasks today
+  const todayTasks = [
+    {time:'15:00',icon:'📞',bg:'#FDE8E8',name:'Позвонить клиенту на Sonty Брлок С',btn:'Завикш',btnColor:'#C0392B'},
+    {time:'11:30',icon:'🚗',bg:'#EBF5FB',name:'Встреча и тест-драйв BMW X5 Похаз',btn:'Заленж',btnColor:'#2980B9'},
+    {time:'15:30',icon:'📋',bg:'#F5EEF8',name:'Подготовить документы Айгерим Е.',btn:'Задача',btnColor:'#8E44AD'},
+  ];
+  document.getElementById('tasks-today').innerHTML = todayTasks.map(t=>`
+    <div class="task-item">
+      <div class="task-time">${t.time}</div>
+      <div class="task-dot" style="background:${t.bg}">${t.icon}</div>
+      <div style="flex:1;min-width:0"><div class="task-name" style="font-size:12px">${t.name}</div></div>
+      <button class="task-btn" style="background:${t.btnColor}22;color:${t.btnColor};border:1px solid ${t.btnColor}44">${t.btn}</button>
+    </div>`).join('');
+
+  // Recent deals
+  const rd = [...deals].slice(0,4);
+  document.getElementById('recent-deals').innerHTML = rd.map(d=>{
+    const cl = leads.find(l=>l.id===d.clientId);
+    const st = d.stage==='Завершена'?'badge-g':d.stage==='Неудача'?'badge-r':'badge-b';
+    const sl = d.stage==='Завершена'?'Успешно':d.stage==='Неудача'?'Неудача':d.stage;
+    return `<tr><td><div style="font-weight:600;font-size:12px">${d.title}</div></td>
+      <td style="font-size:11px;color:#888">Клиент: ${cl?.name?.split(' ')[0]||'—'} ${cl?.name?.split(' ')[1]?cl.name.split(' ')[1][0]+'.':''}</td>
+      <td style="font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap">${fmt(d.amount)}</td>
+      <td><span class="badge ${st}">${sl}</span></td></tr>`;
+  }).join('');
+
+  // Top managers
+  const mgrStats = managers.map(m=>({
+    ...m,
+    won: deals.filter(d=>d.managerId===m.id&&d.stage==='Завершена').reduce((s,d)=>s+d.amount,0),
+    cnt: deals.filter(d=>d.managerId===m.id).length,
+  })).sort((a,b)=>b.won-a.won);
+  const maxWon = Math.max(...mgrStats.map(m=>m.won),1);
+  document.getElementById('top-managers').innerHTML = mgrStats.slice(0,5).map((m,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F5F5F5">
+      <div class="av av-sm ${i<3?'rank-'+(i+1):''}">${i<3?['🥇','🥈','🥉'][i]:m.avatar||m.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700">${m.name}</div>
+        <div class="prog-wrap"><div class="prog" style="width:${m.won/maxWon*100}%;background:${i===0?'#F1C40F':'#C0392B'}"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;font-weight:700;color:#C0392B">${fmt(m.won)}</div>
+        <div style="font-size:10px;color:#AAA">${m.cnt} сделок</div>
+      </div>
+    </div>`).join('');
+
+  // BI cards
+  const biData = [
+    {label:'Прогноз выручки',val:'156 000 000 ₸',delta:'+22% к плану'},
+    {label:'Конверсия лидов',val:'18.7%',delta:'+2.4%'},
+    {label:'Среднее время сделки',val:'12.4 дня',delta:'-1.2 дня'},
+    {label:'Авто на складе >60 дней',val:'23 авто',delta:'На сумму 48.7 млн ₸'},
+  ];
+  document.getElementById('bi-cards').innerHTML = biData.map(b=>`
+    <div class="bi-card">
+      <div class="bi-label">${b.label}</div>
+      <div class="bi-val">${b.val}</div>
+      <div class="bi-delta">${b.delta}</div>
+    </div>`).join('');
+
+  document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
+  document.getElementById('tasks-cnt').textContent = 3;
+}
+
+// ── Leads ─────────────────────────────────────────────────────────────────────
+let leadFilter = 'all';
+function filterLeads(f) {
+  leadFilter = f;
+  ['all','new','assigned'].forEach(x => {
+    const el = document.getElementById('lf-'+x);
+    if(el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
+  });
+  renderLeads();
+}
+function renderLeads(search='') {
+  let fl = leads;
+  if(leadFilter==='new') fl = fl.filter(l=>l.status==='new');
+  if(leadFilter==='assigned') fl = fl.filter(l=>l.status==='assigned');
+  if(search) fl = fl.filter(l=>l.name.toLowerCase().includes(search.toLowerCase())||l.phone.includes(search));
+  const ch = CHANNELS;
+  document.getElementById('leads-tbody').innerHTML = fl.map(l=>{
+    const mgr = managers.find(m=>m.id===l.managerId);
+    const c = ch[l.channel]||ch.site;
+    return `<tr>
+      <td><div style="font-weight:600">${l.name}</div><div style="font-size:11px;color:#AAA">${l.phone}</div></td>
+      <td><div class="ch-icon" style="background:${c.bg};color:${c.color};display:inline-flex">${c.icon}</div> <span style="font-size:12px;color:${c.color};font-weight:600">${c.label}</span></td>
+      <td style="font-size:12px;color:#555">${l.interest||'—'}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${mgr?.avatar||mgr?.name?.[0]||'?'}</div><span style="font-size:12px">${mgr?.name?.split(' ')[0]||'—'}</span></div></td>
+      <td style="font-size:12px;color:#AAA">${l.date}</td>
+      <td>${l.status==='new'?'<span class="badge badge-r">Новый</span>':'<span class="badge badge-b">Назначен</span>'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openLeadModal('${l.id}')">✏</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:#CCC">Лидов не найдено</td></tr>';
+}
+
+// ── Deals Kanban ──────────────────────────────────────────────────────────────
+function renderDeals() {
+  const stages = DEAL_STAGES.slice(0,11);
+  document.getElementById('deals-kanban').innerHTML = stages.map(stage=>{
+    const sd = deals.filter(d=>d.stage===stage);
+    const col = STAGE_COLORS[stage]||'#CCC';
+    const cards = sd.map(d=>{
+      const cl = leads.find(l=>l.id===d.clientId);
+      return `<div class="deal-card" style="border-left-color:${col}" onclick="openDealModal('${d.id}')">
+        <div style="font-size:13px;font-weight:700;margin-bottom:3px">${d.title}</div>
+        <div style="font-size:11px;color:#AAA;margin-bottom:6px">${cl?.name||'—'}</div>
+        <div style="font-size:13px;font-weight:800;color:#C0392B">${fmt(d.amount)}</div>
+      </div>`;
+    }).join('');
+    return `<div class="deal-stage-col" style="border-top:3px solid ${col}">
+      <div class="deal-stage-head"><span class="deal-stage-name" style="color:${col}">${stage}</span><span class="deal-stage-cnt">${sd.length}</span></div>
+      <div class="deal-cards">${cards}
+        <button onclick="openDealModal(null,'${stage}')" style="border:1px dashed #E0E0E0;background:transparent;border-radius:6px;padding:6px;color:#CCC;font-size:11px;cursor:pointer;width:100%">+ добавить</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Cars ──────────────────────────────────────────────────────────────────────
+let carFilter = 'all';
+function filterCars(f) {
+  carFilter = f;
+  ['all','sale','reserve','prep','auction'].forEach(x => {
+    const el = document.getElementById('cf-'+x);
+    if(el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
+  });
+  renderCars();
+}
+function renderCars(search='') {
+  let fc = cars;
+  if(carFilter==='sale') fc = fc.filter(c=>c.status==='В продаже');
+  if(carFilter==='reserve') fc = fc.filter(c=>c.status==='В резерве');
+  if(carFilter==='prep') fc = fc.filter(c=>c.status==='На подготовке');
+  if(carFilter==='auction') fc = fc.filter(c=>c.status==='На аукционе');
+  if(search) fc = fc.filter(c=>(c.make+' '+c.model+' '+c.vin).toLowerCase().includes(search.toLowerCase()));
+
+  const stColor = {'В продаже':'badge-g','В резерве':'badge-b','На диагностике':'badge-y','На подготовке':'badge-y','На аукционе':'badge-p','Продан':'badge-x','Архив':'badge-x'};
+  document.getElementById('cars-grid').innerHTML = fc.map(car=>`
+    <div class="car-card">
+      <div class="car-photo" id="photo-wrap-${car.id}">
+        ${car.photos&&car.photos.length>0
+          ?`<img src="${car.photos[0]}" alt="${car.make}">`
+          :`<div class="car-photo-placeholder">🚗</div>`}
+        <span class="car-status-badge"><span class="badge ${stColor[car.status]||'badge-x'}">${car.status}</span></span>
+        <button class="car-upload-btn" onclick="triggerUpload('${car.id}')">📷 Фото</button>
+        <input type="file" id="upload-${car.id}" accept="image/*" multiple style="display:none" onchange="handleUpload('${car.id}',this)">
+      </div>
+      <div class="car-info">
+        <div class="car-name">${car.make} ${car.model} ${car.year}</div>
+        <div class="car-price">${fmt(car.price)}</div>
+        <div class="car-meta">
+          <span>📍 ${car.color||'—'}</span>
+          <span>🔢 ${(car.mileage||0).toLocaleString('ru-RU')} км</span>
+        </div>
+        ${car.photos&&car.photos.length>1?`<div style="font-size:11px;color:#AAA;margin-top:6px">📸 ${car.photos.length} фото</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="openCarModal('${car.id}')">Редактировать</button>
+          <button class="btn btn-ghost btn-sm" onclick="viewCar('${car.id}')">👁</button>
+        </div>
+      </div>
+    </div>`).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#CCC">Автомобилей не найдено</div>';
+}
+
+function triggerUpload(carId) {
+  document.getElementById('upload-'+carId).click();
+}
+
+function handleUpload(carId, input) {
+  const files = Array.from(input.files);
+  if(!files.length) return;
+  const car = cars.find(c=>c.id===carId);
+  if(!car) return;
+  if(!car.photos) car.photos = [];
+
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      car.photos.push(e.target.result);
+      loaded++;
+      if(loaded===files.length) {
+        SS('gc:cars', cars);
+        renderCars();
+        showToast(`✅ Загружено ${files.length} фото для ${car.make} ${car.model}`);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function viewCar(id) {
+  const car = cars.find(c=>c.id===id);
+  if(!car) return;
+  const photos = car.photos||[];
+  showModal('🚗 ' + car.make + ' ' + car.model + ' ' + car.year,
+    `<div class="form-grid">
+      ${photos.length>0
+        ? `<div class="photo-grid">${photos.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-del" onclick="deletePhoto('${id}',${i})">✕</button></div>`).join('')}</div>`
+        : '<div style="text-align:center;padding:20px;color:#CCC;background:#FAFAFA;border-radius:8px">📷 Фото не добавлены</div>'}
+      <div class="upload-zone" onclick="triggerUpload('${id}')">
+        <div style="font-size:24px;margin-bottom:8px">📷</div>
+        <div style="font-size:13px;font-weight:600;color:#555">Нажмите чтобы добавить фото</div>
+        <div style="font-size:11px;color:#AAA;margin-top:4px">JPG, PNG · Можно несколько сразу</div>
+        <input type="file" id="upload-${id}" accept="image/*" multiple style="display:none" onchange="handleUpload('${id}',this)">
+      </div>
+      <div class="form-row">
+        <div><div style="font-size:11px;color:#AAA;font-weight:600">МАРКА / МОДЕЛЬ</div><div style="font-size:14px;font-weight:700;margin-top:3px">${car.make} ${car.model}</div></div>
+        <div><div style="font-size:11px;color:#AAA;font-weight:600">ГОД</div><div style="font-size:14px;font-weight:700;margin-top:3px">${car.year}</div></div>
+      </div>
+      <div class="form-row">
+        <div><div style="font-size:11px;color:#AAA;font-weight:600">ЦЕНА</div><div style="font-size:16px;font-weight:800;color:#C0392B;margin-top:3px">${fmt(car.price)}</div></div>
+        <div><div style="font-size:11px;color:#AAA;font-weight:600">ПРОБЕГ</div><div style="font-size:14px;font-weight:700;margin-top:3px">${(car.mileage||0).toLocaleString('ru-RU')} км</div></div>
+      </div>
+      <div class="form-row">
+        <div><div style="font-size:11px;color:#AAA;font-weight:600">VIN</div><div style="font-size:12px;font-family:monospace;margin-top:3px">${car.vin||'—'}</div></div>
+        <div><div style="font-size:11px;color:#AAA;font-weight:600">СТАТУС</div><div style="margin-top:3px"><span class="badge badge-g">${car.status}</span></div></div>
+      </div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Закрыть</button><button class="btn btn-primary" onclick="openCarModal('${id}')">✏ Редактировать</button>`
+  );
+}
+
+function deletePhoto(carId, idx) {
+  const car = cars.find(c=>c.id===carId);
+  if(!car) return;
+  car.photos.splice(idx,1);
+  SS('gc:cars',cars);
+  viewCar(carId);
+}
+
+// ── Modals ─────────────────────────────────────────────────────────────────────
+function showModal(title, body, foot) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-foot').innerHTML = foot;
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+function gv(id) { return document.getElementById(id)?.value||''; }
+
+function openCarModal(id=null) {
+  const car = id ? cars.find(c=>c.id===id) : null;
+  const stOpts = CAR_STATUSES.map(s=>`<option value="${s}"${s===(car?.status||'В продаже')?' selected':''}>${s}</option>`).join('');
+  showModal(car?'Редактировать авто':'Новый автомобиль',
+    `<div class="form-grid">
+      <div class="form-row">
+        <div><label>Марка *</label><input id="c-make" value="${car?.make||''}"></div>
+        <div><label>Модель *</label><input id="c-model" value="${car?.model||''}"></div>
+      </div>
+      <div class="form-row">
+        <div><label>Год</label><input id="c-year" type="number" value="${car?.year||new Date().getFullYear()}"></div>
+        <div><label>Цвет</label><input id="c-color" value="${car?.color||''}"></div>
+      </div>
+      <div class="form-row">
+        <div><label>Цена (₸)</label><input id="c-price" type="number" value="${car?.price||''}"></div>
+        <div><label>Пробег (км)</label><input id="c-mileage" type="number" value="${car?.mileage||''}"></div>
+      </div>
+      <div><label>VIN</label><input id="c-vin" value="${car?.vin||''}" style="font-family:monospace"></div>
+      <div><label>Статус</label><select id="c-status">${stOpts}</select></div>
+      <div>
+        <label>Фото (загрузить)</label>
+        <div class="upload-zone" onclick="document.getElementById('c-photos').click()">
+          <div style="font-size:20px;margin-bottom:6px">📷</div>
+          <div style="font-size:13px;font-weight:600;color:#555">Нажмите для загрузки фото</div>
+          <div style="font-size:11px;color:#AAA;margin-top:3px">JPG, PNG · Можно несколько</div>
+          <input type="file" id="c-photos" accept="image/*" multiple style="display:none">
+        </div>
+        ${car?.photos?.length?`<div style="font-size:12px;color:#27AE60;margin-top:6px">✅ Уже загружено: ${car.photos.length} фото</div>`:''}
+      </div>
+    </div>`,
+    `${car?`<button class="btn btn-danger btn-sm" onclick="deleteCar('${car.id}')">Удалить</button>`:''}
+    <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+    <button class="btn btn-primary" onclick="saveCar('${id||''}')">Сохранить</button>`
+  );
+}
+
+function saveCar(id) {
+  const make = gv('c-make'); if(!make) return;
+  const fileInput = document.getElementById('c-photos');
+  const existing = id ? (cars.find(c=>c.id===id)?.photos||[]) : [];
+
+  const doSave = (newPhotos) => {
+    const obj = {
+      id: id||uid(), make, model:gv('c-model'), year:Number(gv('c-year')),
+      color:gv('c-color'), price:Number(gv('c-price')), mileage:Number(gv('c-mileage')),
+      vin:gv('c-vin'), status:gv('c-status'), photos:[...existing,...newPhotos]
+    };
+    if(id) cars = cars.map(c=>c.id===id?obj:c); else cars = [obj,...cars];
+    SS('gc:cars',cars); closeModal(); renderCars();
+    showToast(`✅ Автомобиль ${make} ${obj.model} сохранён`);
+  };
+
+  const files = Array.from(fileInput?.files||[]);
+  if(files.length) {
+    const newPhotos = [];
+    files.forEach(f=>{
+      const r = new FileReader();
+      r.onload = e => {
+        newPhotos.push(e.target.result);
+        if(newPhotos.length===files.length) doSave(newPhotos);
+      };
+      r.readAsDataURL(f);
+    });
+  } else { doSave([]); }
+}
+
+function deleteCar(id) {
+  if(!confirm('Удалить автомобиль?')) return;
+  cars = cars.filter(c=>c.id!==id);
+  SS('gc:cars',cars); closeModal(); renderCars();
+}
+
+function openLeadModal(id=null) {
+  const lead = id ? leads.find(l=>l.id===id) : null;
+  const chOpts = Object.entries(CHANNELS).map(([k,v])=>`<option value="${k}"${k===(lead?.channel||'telegram')?' selected':''}>${v.label}</option>`).join('');
+  const mgrOpts = [['','—'],...managers.map(m=>[m.id,m.name])].map(([v,l])=>`<option value="${v}"${v===(lead?.managerId||'')?' selected':''}>${l}</option>`).join('');
+  showModal(lead?'Редактировать лид':'Новый лид',
+    `<div class="form-grid">
+      <div class="form-row">
+        <div><label>Имя *</label><input id="l-name" value="${lead?.name||''}"></div>
+        <div><label>Телефон</label><input id="l-phone" value="${lead?.phone||''}"></div>
+      </div>
+      <div class="form-row">
+        <div><label>Канал</label><select id="l-ch">${chOpts}</select></div>
+        <div><label>Менеджер</label><select id="l-mgr">${mgrOpts}</select></div>
+      </div>
+      <div><label>Интерес (авто)</label><input id="l-int" value="${lead?.interest||''}"></div>
+    </div>`,
+    `${lead?`<button class="btn btn-danger btn-sm" onclick="deleteLead('${lead.id}')">Удалить</button>`:''}
+    <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+    <button class="btn btn-primary" onclick="saveLead('${id||''}')">Сохранить</button>`
+  );
+}
+
+function saveLead(id) {
+  const name = gv('l-name'); if(!name) return;
+  const obj = {id:id||uid(),name,phone:gv('l-phone'),channel:gv('l-ch'),managerId:gv('l-mgr'),interest:gv('l-int'),date:new Date().toISOString().slice(0,10),status:id?leads.find(l=>l.id===id)?.status:'new'};
+  if(id) leads = leads.map(l=>l.id===id?obj:l); else leads=[obj,...leads];
+  SS('gc:leads',leads); closeModal(); renderLeads();
+  document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
+}
+function deleteLead(id){leads=leads.filter(l=>l.id!==id);SS('gc:leads',leads);closeModal();renderLeads();}
+
+function openDealModal(id=null,defStage=null){
+  const deal = id?deals.find(d=>d.id===id):null;
+  const stOpts = DEAL_STAGES.map(s=>`<option value="${s}"${s===(deal?.stage||defStage||DEAL_STAGES[0])?' selected':''}>${s}</option>`).join('');
+  const clOpts = [['','—'],...leads.map(l=>[l.id,l.name])].map(([v,l])=>`<option value="${v}"${v===(deal?.clientId||'')?' selected':''}>${l}</option>`).join('');
+  const mgrOpts = [['','—'],...managers.map(m=>[m.id,m.name])].map(([v,l])=>`<option value="${v}"${v===(deal?.managerId||'')?' selected':''}>${l}</option>`).join('');
+  showModal(deal?'Редактировать сделку':'Новая сделка',
+    `<div class="form-grid">
+      <div><label>Автомобиль *</label><input id="d-title" value="${deal?.title||''}"></div>
+      <div class="form-row"><div><label>Клиент</label><select id="d-client">${clOpts}</select></div><div><label>Этап</label><select id="d-stage">${stOpts}</select></div></div>
+      <div class="form-row"><div><label>Сумма (₸)</label><input id="d-amount" type="number" value="${deal?.amount||''}"></div><div><label>Менеджер</label><select id="d-mgr">${mgrOpts}</select></div></div>
+    </div>`,
+    `${deal?`<button class="btn btn-danger btn-sm" onclick="deleteDeal('${deal.id}')">Удалить</button>`:''}
+    <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+    <button class="btn btn-primary" onclick="saveDeal('${id||''}')">Сохранить</button>`
+  );
+}
+function saveDeal(id){
+  const t=gv('d-title');if(!t)return;
+  const obj={id:id||uid(),title:t,clientId:gv('d-client'),stage:gv('d-stage'),amount:Number(gv('d-amount'))||0,managerId:gv('d-mgr'),created:new Date().toISOString().slice(0,10)};
+  if(id)deals=deals.map(d=>d.id===id?obj:d);else deals=[obj,...deals];
+  SS('gc:deals',deals);closeModal();renderDeals();
+}
+function deleteDeal(id){deals=deals.filter(d=>d.id!==id);SS('gc:deals',deals);closeModal();renderDeals();}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1A1A2E;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)}, 3000);
+}
+
+// ── Date / Greeting ──────────────────────────────────────────────────────────
+function initDate() {
+  const now = new Date();
+  const days = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('tb-date').textContent = `· ${now.getDate()} ${months[now.getMonth()]}, ${days[now.getDay()]}`;
+  const h = now.getHours();
+  const gr = h<12?'Доброе утро':h<17?'Добрый день':'Добрый вечер';
+  document.getElementById('greeting').textContent = `${gr}, Жанибек! 👋`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+initDate();
+renderDashboard();
+</script>
+</body>
+</html>
 
