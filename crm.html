@@ -286,12 +286,12 @@ textarea{resize:vertical;min-height:70px}
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#F5EEF8">⚡</div>В работе</div>
           <div class="kpi-val">43</div>
-          <div class="kpi-delta down">-5 к прошлой подлинке</div>
+          <div class="kpi-delta down">-5 к прошлой неделе</div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#E8F8F0">✅</div>Закрытые сделки</div>
           <div class="kpi-val">25</div>
-          <div class="kpi-delta up">+8 к прошлой подлинке</div>
+          <div class="kpi-delta up">+8 к прошлой неделе</div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#FDE8E8">📊</div>Средний чек</div>
@@ -519,11 +519,11 @@ const CAR_STATUSES = ['В продаже','В резерве','На диагно
 const CHANNELS = {telegram:{icon:'✈',color:'#229ED9',bg:'#E8F4FC',label:'Telegram'},whatsapp:{icon:'●',color:'#25D366',bg:'#E8FAF0',label:'WhatsApp'},instagram:{icon:'◆',color:'#E1306C',bg:'#FDE8F0',label:'Instagram'},tiktok:{icon:'♪',color:'#000',bg:'#F0F0F0',label:'TikTok'},call:{icon:'📞',color:'#8E44AD',bg:'#F5EEF8',label:'Звонок'},site:{icon:'🌐',color:'#2980B9',bg:'#EBF5FB',label:'Сайт'}};
 
 let managers = LS('gc:mgr') || [
-  {id:'m1',name:'Ерлан Султтанов',role:'Менеджер',avatar:'ЕС'},
-  {id:'m2',name:'Айгерим Векова',role:'Менеджер',avatar:'АВ'},
-  {id:'m3',name:'Динара Алмиков',role:'Менеджер',avatar:'ДА'},
-  {id:'m4',name:'Роскан Муктаров',role:'Менеджер',avatar:'РМ'},
-  {id:'m5',name:'Аликан Танмр',role:'Менеджер',avatar:'АТ'},
+  {id:'m1',name:'Ерлан Султанов',role:'Менеджер',avatar:'ЕС'},
+  {id:'m2',name:'Айгерим Бекова',role:'Менеджер',avatar:'АВ'},
+  {id:'m3',name:'Динара Алимова',role:'Менеджер',avatar:'ДА'},
+  {id:'m4',name:'Рослан Мухтаров',role:'Менеджер',avatar:'РМ'},
+  {id:'m5',name:'Аликан Танир',role:'Менеджер',avatar:'АТ'},
 ];
 let leads = LS('gc:leads') || [
   {id:'l1',name:'Серик Жаксыбеков',phone:'+7 701 111-22-33',channel:'telegram',interest:'Toyota Camry 2024',managerId:'m1',date:'2024-05-15',status:'new'},
@@ -591,9 +591,9 @@ function renderDashboard() {
   // Locations
   const locs = [
     {name:'Алматы, Тимиразова 42',pct:85,color:'#27AE60'},
-    {name:'Алматы, Модвинет 71',pct:60,color:'#F39C12'},
-    {name:'Алматы, Рыбылбака 348',pct:35,color:'#E74C3C'},
-    {name:'Астана, Сстанка 38',pct:55,color:'#F39C12'},
+    {name:'Алматы, Момышулы 71',pct:60,color:'#F39C12'},
+    {name:'Алматы, Рыскулова 348',pct:35,color:'#E74C3C'},
+    {name:'Астана, Сатпаева 38',pct:55,color:'#F39C12'},
   ];
   document.getElementById('locations-list').innerHTML = locs.map(l=>`
     <div class="loc-item">
@@ -622,8 +622,8 @@ function renderDashboard() {
 
   // Tasks today
   const todayTasks = [
-    {time:'15:00',icon:'📞',bg:'#FDE8E8',name:'Позвонить клиенту на Sonty Брлок С',btn:'Завикш',btnColor:'#C0392B'},
-    {time:'11:30',icon:'🚗',bg:'#EBF5FB',name:'Встреча и тест-драйв BMW X5 Похаз',btn:'Заленж',btnColor:'#2980B9'},
+    {time:'15:00',icon:'📞',bg:'#FDE8E8',name:'Позвонить клиенту по Toyota Camry',btn:'Звонок',btnColor:'#C0392B'},
+    {time:'11:30',icon:'🚗',bg:'#EBF5FB',name:'Встреча и тест-драйв BMW X5',btn:'Поехал',btnColor:'#2980B9'},
     {time:'15:30',icon:'📋',bg:'#F5EEF8',name:'Подготовить документы Айгерим Е.',btn:'Задача',btnColor:'#8E44AD'},
   ];
   document.getElementById('tasks-today').innerHTML = todayTasks.map(t=>`
