@@ -956,6 +956,7 @@ function openLeadModal(id=null) {
 }
 
 function saveLead(id) {
+  // Переопределена через API ниже
   const name = gv('l-name'); if(!name) return;
   const obj = {id:id||uid(),name,phone:gv('l-phone'),channel:gv('l-ch'),managerId:gv('l-mgr'),interest:gv('l-int'),date:new Date().toISOString().slice(0,10),status:id?leads.find(l=>l.id===id)?.status:'new'};
   if(id) leads = leads.map(l=>l.id===id?obj:l); else leads=[obj,...leads];
@@ -1008,10 +1009,246 @@ function initDate() {
   document.getElementById('greeting').textContent = `${gr}, Жанибек! 👋`;
 }
 
+// ── API ───────────────────────────────────────────────────────────────────────
+const API = '/api';
+let apiStats = null;
+
+async function apiFetch(path, options={}) {
+  try {
+    const res = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'API error');
+    return data;
+  } catch(err) {
+    console.error('API error:', path, err.message);
+    throw err;
+  }
+}
+
+// Загрузить лиды из API
+async function loadLeads() {
+  try {
+    const data = await apiFetch('/leads');
+    leads = (data.data || []).map(l => ({
+      ...l,
+      managerId: l.manager_id,
+      date: l.created_at?.slice(0,10),
+    }));
+    document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
+  } catch(e) {
+    // fallback to localStorage
+    console.warn('Using localStorage for leads');
+  }
+}
+
+// Загрузить авто из API
+async function loadCars() {
+  try {
+    const data = await apiFetch('/cars');
+    if (data.data && data.data.length > 0) {
+      cars = data.data.map(c => ({
+        ...c,
+        photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
+        videos: typeof c.videos === 'string' ? JSON.parse(c.videos) : (c.videos || []),
+      }));
+    }
+  } catch(e) {
+    console.warn('Using localStorage for cars');
+  }
+}
+
+// Загрузить сделки из API
+async function loadDeals() {
+  try {
+    const data = await apiFetch('/deals');
+    if (data.data && data.data.length > 0) {
+      deals = data.data.map(d => ({
+        ...d,
+        clientId: d.client_id,
+        managerId: d.manager_id,
+      }));
+    }
+  } catch(e) {
+    console.warn('Using localStorage for deals');
+  }
+}
+
+// Загрузить статистику из API
+async function loadStats() {
+  try {
+    apiStats = await apiFetch('/stats');
+    return apiStats;
+  } catch(e) {
+    console.warn('Stats API unavailable');
+    return null;
+  }
+}
+
+// Сохранить лид через API
+async function saveLeadApi(id, data) {
+  try {
+    if (id) {
+      return await apiFetch('/leads?id=' + id, { method: 'PATCH', body: data });
+    } else {
+      return await apiFetch('/leads', { method: 'POST', body: data });
+    }
+  } catch(e) {
+    showToast('⚠️ Ошибка сохранения: ' + e.message);
+    return null;
+  }
+}
+
+// Сохранить авто через API
+async function saveCarApi(id, data) {
+  try {
+    if (id) {
+      return await apiFetch('/cars?id=' + id, { method: 'PATCH', body: data });
+    } else {
+      return await apiFetch('/cars', { method: 'POST', body: data });
+    }
+  } catch(e) {
+    showToast('⚠️ Ошибка сохранения: ' + e.message);
+    return null;
+  }
+}
+
+// Сохранить сделку через API
+async function saveDealApi(id, data) {
+  try {
+    if (id) {
+      return await apiFetch('/deals?id=' + id, { method: 'PATCH', body: data });
+    } else {
+      return await apiFetch('/deals', { method: 'POST', body: data });
+    }
+  } catch(e) {
+    showToast('⚠️ Ошибка сохранения: ' + e.message);
+    return null;
+  }
+}
+
+// Переопределяем save функции чтобы писали в API
+const _origSaveLead = window.saveLead;
+window.saveLead = async function(id) {
+  const name = gv('l-name'); if(!name) return;
+  const body = {
+    name, phone: gv('l-phone'), email: '',
+    channel: gv('l-ch'), manager_id: gv('l-mgr'),
+    interest: gv('l-int'),
+  };
+  showToast('💾 Сохраняем…');
+  const result = await saveLeadApi(id || null, body);
+  if (result) {
+    showToast('✅ Лид сохранён в базе данных!');
+    closeModal();
+    await loadLeads();
+    renderLeads();
+  }
+};
+
+const _origSaveCar = window.saveCar;
+window.saveCar = async function(id) {
+  const make = gv('c-make'); if(!make) return;
+  const existing = id ? cars.find(c=>c.id===id) : null;
+  const fileInput = document.getElementById('c-photos');
+  const files = Array.from(fileInput?.files||[]);
+
+  const doSaveApi = async (newPhotos) => {
+    const body = {
+      make, model: gv('c-model'), year: Number(gv('c-year')),
+      color: gv('c-color'), price: Number(gv('c-price')),
+      mileage: Number(gv('c-mileage')), vin: gv('c-vin'),
+      status: gv('c-status'),
+      photos: [...(existing?.photos||[]), ...newPhotos],
+    };
+    showToast('💾 Сохраняем авто…');
+    const result = await saveCarApi(id || null, body);
+    if (result) {
+      showToast(`✅ ${make} ${body.model} сохранён в базе!`);
+      closeModal();
+      await loadCars();
+      renderCars();
+    }
+  };
+
+  if (files.length) {
+    const newPhotos = [];
+    files.forEach(f => {
+      const r = new FileReader();
+      r.onload = e => {
+        newPhotos.push(e.target.result);
+        if (newPhotos.length === files.length) doSaveApi(newPhotos);
+      };
+      r.readAsDataURL(f);
+    });
+  } else {
+    doSaveApi([]);
+  }
+};
+
+const _origSaveDeal = window.saveDeal;
+window.saveDeal = async function(id) {
+  const title = gv('d-title'); if(!title) return;
+  const body = {
+    title, client_id: gv('d-client'), stage: gv('d-stage'),
+    amount: Number(gv('d-amount'))||0, manager_id: gv('d-mgr'),
+  };
+  showToast('💾 Сохраняем сделку…');
+  const result = await saveDealApi(id || null, body);
+  if (result) {
+    showToast('✅ Сделка сохранена в базе!');
+    closeModal();
+    await loadDeals();
+    renderDeals();
+  }
+};
+
+// Обновлённый renderDashboard с реальными данными
+const _origRenderDashboard = renderDashboard;
+window.renderDashboard = async function() {
+  _origRenderDashboard();  // показываем заглушки сразу
+  const stats = await loadStats();
+  if (!stats) return;
+
+  // Обновляем KPI реальными данными
+  document.getElementById('d-rev') && (document.getElementById('d-rev').textContent = fmt(stats.revenue.this_month));
+  const growth = stats.revenue.growth_pct;
+  document.getElementById('d-rev-delta') && (document.getElementById('d-rev-delta').textContent =
+    (growth >= 0 ? '+' : '') + growth + '% к прошлому месяцу');
+
+  // KPI карточки
+  const kpiEls = document.querySelectorAll('.kpi-val');
+  if (kpiEls.length >= 6) {
+    kpiEls[0].textContent = fmt(stats.revenue.this_month);
+    kpiEls[1].textContent = stats.deals.closed;
+    kpiEls[2].textContent = stats.leads.total;
+    kpiEls[3].textContent = stats.deals.in_progress;
+    kpiEls[4].textContent = stats.deals.closed;
+    kpiEls[5].textContent = fmt(stats.deals.avg_check);
+  }
+
+  // Значки в меню
+  document.getElementById('leads-cnt').textContent = stats.leads.new;
+};
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 initDate();
-renderDashboard();
+
+// Загружаем всё из API параллельно
+(async () => {
+  showToast('🔄 Подключаемся к базе данных…');
+  try {
+    await Promise.all([loadLeads(), loadCars(), loadDeals()]);
+    showToast('✅ Данные загружены из базы!');
+  } catch(e) {
+    showToast('⚠️ Используем локальные данные');
+  }
+  renderDashboard();
+  updateMeta && updateMeta();
+})();
 </script>
 </body>
 </html>
-
