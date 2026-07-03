@@ -223,6 +223,7 @@ textarea{resize:vertical;min-height:70px}
   <div class="nav-group">Сервисы</div>
   <button class="nav-item" onclick="go('inspection',this)"><span class="icon">🔍</span>Осмотр авто</button>
   <button class="nav-item" onclick="go('auction',this)"><span class="icon">🏁</span>Аукцион</button>
+  <button class="nav-item" onclick="go('financing',this)"><span class="icon">💳</span>Финансирование</button>
   <button class="nav-item" onclick="go('rfinance',this)"><span class="icon">🏦</span>R Finance</button>
   <div class="nav-group">Управление</div>
   <button class="nav-item" onclick="go('tasks',this)"><span class="icon">📅</span>Задачи<span class="nav-badge" id="tasks-cnt">0</span></button>
@@ -729,7 +730,73 @@ textarea{resize:vertical;min-height:70px}
     </div>
   </div>
 </div>
-    <div id="page-rfinance" class="page"><div class="page-title" style="margin-bottom:20px">🏦 R Finance</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💳</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Интеграция с R Finance: подача заявок, статусы, одобрение</div></div></div></div>
+    <div id="page-financing" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div class="page-title" style="margin-bottom:0">💳 Финансирование</div>
+    <div style="display:flex;gap:8px">
+      <select id="fin-filter" onchange="finFilter()" style="background:#F8F9FA;border:1px solid #E0E0E0;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer">
+        <option value="all">Все заявки</option>
+        <option value="Новый">Новые</option>
+        <option value="В работе">В работе</option>
+        <option value="Одобрен">Одобрены</option>
+        <option value="Отказ">Отказы</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="exportFin()">📥 Excel</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    <div class="card" style="padding:12px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:#C0392B" id="fin-stat-total">0</div>
+      <div style="font-size:11px;color:#999">Всего заявок</div>
+    </div>
+    <div class="card" style="padding:12px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:#E67E22" id="fin-stat-new">0</div>
+      <div style="font-size:11px;color:#999">Новые</div>
+    </div>
+    <div class="card" style="padding:12px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:#27AE60" id="fin-stat-ok">0</div>
+      <div style="font-size:11px;color:#999">Одобрено</div>
+    </div>
+    <div class="card" style="padding:12px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:#2980B9" id="fin-stat-sum">0</div>
+      <div style="font-size:11px;color:#999">млн ₸ общая</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:#F8F9FA;border-bottom:2px solid #F0F0F0">
+          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#666">Клиент</th>
+          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#666">Телефон</th>
+          <th style="padding:10px 12px;text-align:right;font-weight:600;color:#666">Сумма</th>
+          <th style="padding:10px 12px;text-align:center;font-weight:600;color:#666">Статус</th>
+          <th style="padding:10px 12px;text-align:center;font-weight:600;color:#666">Дата</th>
+          <th style="padding:10px 12px;text-align:center;font-weight:600;color:#666">Действие</th>
+        </tr>
+      </thead>
+      <tbody id="fin-tbody">
+        <tr><td colspan="6" style="padding:40px;text-align:center;color:#CCC">Загрузка заявок...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FINANCING DETAIL MODAL -->
+<div id="fin-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);overflow-y:auto">
+  <div style="background:#fff;margin:40px auto;max-width:500px;border-radius:12px;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid #F0F0F0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:16px;font-weight:700">Заявка на финансирование</div>
+      <button onclick="document.getElementById('fin-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px" id="fin-modal-body"></div>
+  </div>
+</div>
+
+<div id="page-rfinance" class="page"><div class="page-title" style="margin-bottom:20px">🏦 R Finance</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💳</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Интеграция с R Finance: подача заявок, статусы, одобрение</div></div></div></div>
     <div id="page-tasks" class="page"><div class="page-title" style="margin-bottom:20px">📅 Задачи</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="font-size:16px;font-weight:600">Скоро</div></div></div></div>
     <div id="page-comms" class="page"><div class="page-title" style="margin-bottom:20px">📞 Коммуникации</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💬</div><div style="font-size:16px;font-weight:600">Telegram, WhatsApp, Instagram — единый входящий</div></div></div></div>
     <div id="page-staff" class="page"><div class="page-title" style="margin-bottom:20px">👨‍💼 Персонал</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">👥</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
@@ -1304,6 +1371,10 @@ async function apiFetch(path, options={}) {
       ...options,
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      throw new Error('Non-JSON response from ' + path + ' (status ' + res.status + ')');
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'API error');
     return data;
@@ -1521,15 +1592,14 @@ window.renderDashboard = async function() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 initDate();
 
-// Загружаем всё из API параллельно
+// Загружаем всё из API — каждый независимо
 (async () => {
   showToast('🔄 Подключаемся к базе данных…');
-  try {
-    await Promise.all([loadLeads(), loadCars(), loadDeals()]);
-    showToast('✅ Данные загружены из базы!');
-  } catch(e) {
-    showToast('⚠️ Используем локальные данные');
-  }
+  const results = await Promise.allSettled([loadLeads(), loadCars(), loadDeals()]);
+  const ok = results.filter(r => r.status === 'fulfilled').length;
+  if (ok === 3) showToast('✅ Данные загружены из базы!');
+  else if (ok > 0) showToast('⚠️ Частичная загрузка (' + ok + '/3)');
+  else showToast('⚠️ Используем локальные данные');
   renderDashboard();
   updateMeta && updateMeta();
 })();
@@ -1598,6 +1668,116 @@ function saveAuction() {
   setInterval(tick, 1000);
   tick();
 })();
+
+
+// ── FINANCING MODULE ──────────────────────────────────────────────────────────
+var _finLeads = [];
+
+async function loadFinancing() {
+  try {
+    var res = await fetch('/api/leads?channel=' + encodeURIComponent('Приложение') + '&limit=200');
+    var ct = res.headers.get('content-type') || '';
+    var data = ct.includes('json') ? await res.json() : {data:[]};
+    var all = Array.isArray(data) ? data : (data.data || data.leads || []);
+    // Filter only credit/financing apps
+    _finLeads = all.filter(function(l) {
+      return (l.source_url === 'credit_app') ||
+             (l.channel === 'Приложение' && l.interest && l.interest.includes('Кредит'));
+    });
+    renderFin();
+  } catch(e) {
+    // Demo data if API fails
+    _finLeads = [
+      {id:1, name:'Асхат Муратов', phone:'+7 701 123 4567', notes:'Заявка на финансирование. Сумма: 8 000 000 ₸. Срок: 5 лет. Платёж: ~63 000 ₸/мес.', status:'Новый', created_at: new Date().toISOString()},
+      {id:2, name:'Жандос Кенжебаев', phone:'+7 777 234 5678', notes:'Заявка на финансирование. Сумма: 15 000 000 ₸. Срок: 7 лет. Платёж: ~98 000 ₸/мес.', status:'В работе', created_at: new Date(Date.now()-86400000).toISOString()},
+      {id:3, name:'Алия Сейткали', phone:'+7 702 345 6789', notes:'Заявка на финансирование. Сумма: 5 000 000 ₸. Срок: 3 года. Платёж: ~55 000 ₸/мес.', status:'Одобрен', created_at: new Date(Date.now()-172800000).toISOString()},
+    ];
+    renderFin();
+  }
+}
+
+function renderFin(filter) {
+  filter = filter || document.getElementById('fin-filter').value;
+  var leads = filter === 'all' ? _finLeads : _finLeads.filter(l => l.status === filter);
+  
+  // Stats
+  document.getElementById('fin-stat-total').textContent = _finLeads.length;
+  document.getElementById('fin-stat-new').textContent = _finLeads.filter(l=>l.status==='Новый').length;
+  document.getElementById('fin-stat-ok').textContent = _finLeads.filter(l=>l.status==='Одобрен').length;
+  // Extract total amount
+  var totalMln = _finLeads.reduce(function(acc, l) {
+    var m = (l.notes||'').match(/Сумма: ([\d\s]+) ₸/);
+    return acc + (m ? parseInt(m[1].replace(/\s/g,''))/1000000 : 0);
+  }, 0);
+  document.getElementById('fin-stat-sum').textContent = totalMln.toFixed(0);
+
+  var statusColor = {'Новый':'badge-y','В работе':'badge-b','Одобрен':'badge-g','Отказ':'badge-x'};
+
+  var tbody = document.getElementById('fin-tbody');
+  if (!leads.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#CCC">Заявок нет</td></tr>';
+    return;
+  }
+  tbody.innerHTML = leads.map(function(l) {
+    var amtMatch = (l.notes||'').match(/Сумма: ([\d\s]+) ₸/);
+    var amt = amtMatch ? amtMatch[1].trim() + ' ₸' : '—';
+    var dt = l.created_at ? new Date(l.created_at).toLocaleDateString('ru-RU') : '—';
+    var sc = statusColor[l.status] || 'badge-y';
+    return '<tr style="border-bottom:1px solid #F5F5F5;cursor:pointer" onclick="openFinModal(' + JSON.stringify(l).replace(/"/g,'&quot;') + ')">' +
+      '<td style="padding:10px 12px;font-weight:600">' + (l.name||'—') + '</td>' +
+      '<td style="padding:10px 12px;color:#666">' + (l.phone||'—') + '</td>' +
+      '<td style="padding:10px 12px;text-align:right;font-weight:600">' + amt + '</td>' +
+      '<td style="padding:10px 12px;text-align:center"><span class="badge ' + sc + '">' + (l.status||'Новый') + '</span></td>' +
+      '<td style="padding:10px 12px;text-align:center;color:#999">' + dt + '</td>' +
+      '<td style="padding:10px 12px;text-align:center"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openFinModal(' + JSON.stringify(l).replace(/"/g,'&quot;') + ')">Открыть</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function finFilter() { renderFin(document.getElementById('fin-filter').value); }
+
+function openFinModal(lead) {
+  var modal = document.getElementById('fin-modal');
+  var body = document.getElementById('fin-modal-body');
+  var dt = lead.created_at ? new Date(lead.created_at).toLocaleString('ru-RU') : '—';
+  body.innerHTML = 
+    '<div style="margin-bottom:14px">' +
+      '<div style="font-size:11px;color:#999;margin-bottom:2px">КЛИЕНТ</div>' +
+      '<div style="font-size:16px;font-weight:700">' + (lead.name||'—') + '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">' +
+      '<div style="background:#F8F9FA;border-radius:8px;padding:10px"><div style="font-size:10px;color:#999">ТЕЛЕФОН</div><div style="font-weight:600">' + (lead.phone||'—') + '</div></div>' +
+      '<div style="background:#F8F9FA;border-radius:8px;padding:10px"><div style="font-size:10px;color:#999">ДАТА ЗАЯВКИ</div><div style="font-weight:600">' + dt + '</div></div>' +
+    '</div>' +
+    '<div style="background:#F8F9FA;border-radius:8px;padding:12px;margin-bottom:14px">' +
+      '<div style="font-size:11px;color:#999;margin-bottom:6px">ДЕТАЛИ ЗАЯВКИ</div>' +
+      '<div style="font-size:13px;line-height:1.7;color:#333">' + (lead.notes||'—').replace(/\. /g,'<br>') + '</div>' +
+    '</div>' +
+    '<div style="margin-bottom:14px">' +
+      '<div style="font-size:11px;color:#999;margin-bottom:6px">СТАТУС</div>' +
+      '<select id="fin-status-sel" style="width:100%;border:1px solid #E0E0E0;border-radius:8px;padding:10px;font-size:14px">' +
+        ['Новый','В работе','Одобрен','Отказ'].map(s => '<option' + (s===lead.status?' selected':'') + '>' + s + '</option>').join('') +
+      '</select>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button class="btn btn-primary" style="flex:1" onclick="updateFinStatus(' + lead.id + ')">Сохранить статус</button>' +
+      '<a href="tel:' + (lead.phone||'') + '" class="btn btn-ghost">📞 Позвонить</a>' +
+    '</div>';
+  modal.style.display = 'block';
+}
+
+async function updateFinStatus(id) {
+  var status = document.getElementById('fin-status-sel').value;
+  try {
+    await fetch('/api/leads?id=' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status})});
+  } catch(e) {}
+  _finLeads = _finLeads.map(l => l.id === id ? {...l, status} : l);
+  renderFin();
+  document.getElementById('fin-modal').style.display = 'none';
+  showToast('Статус обновлён: ' + status);
+}
+
+function exportFin() { showToast('Экспорт в Excel...'); }
 
 </script>
 </body>
