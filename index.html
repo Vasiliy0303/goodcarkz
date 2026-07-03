@@ -709,25 +709,53 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
   <div class="scrl">
     <div class="fbody">
       <div class="fsub">Заполните данные — опубликуем за 30 минут</div>
-      <div class="upbox" onclick="showToast('Выберите фото')"><span class="ti ti-camera-plus"><svg viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M9 3H6a3 3 0 00-3 3v10a3 3 0 003 3h12a3 3 0 003-3V9"/><path d="M18 3v6"/><path d="M21 6h-6"/><circle cx="11" cy="13" r="3"/></svg></span><p style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">Добавить фото</p><p>До 20 фото · JPG, PNG</p></div>
-      <div class="fld"><label>Марка</label><select><option>Toyota</option><option>Nissan</option><option>Hyundai</option><option>Kia</option><option>Skoda</option><option>Volkswagen</option><option>BMW</option><option>Mercedes-Benz</option><option>Другая</option></select></div>
-      <div class="fld"><label>Модель</label><input type="text" placeholder="Например: Camry, Patrol, Elantra"></div>
+
+      <!-- PHOTOS -->
+      <div id="adPhotoWrap" style="margin-bottom:12px">
+        <div id="adPhotoZone" onclick="adChoosePhoto()" style="border:1.5px dashed rgba(192,57,43,0.5);border-radius:14px;padding:22px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.03)">
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="#C0392B" fill="none" stroke-width="1.5" style="margin-bottom:8px"><path d="M15 8h.01"/><path d="M9 3H6a3 3 0 00-3 3v10a3 3 0 003 3h12a3 3 0 003-3V9"/><path d="M18 3v6"/><path d="M21 6h-6"/><circle cx="11" cy="13" r="3"/></svg>
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">Добавить фото</p>
+          <p style="font-size:11px;color:rgba(255,255,255,0.4)">До 20 фото · JPG, PNG</p>
+        </div>
+        <div id="adPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+      </div>
+      <!-- hidden inputs -->
+      <input type="file" id="adFileInput" accept="image/*" multiple style="display:none" onchange="adHandleFiles(this)">
+      <input type="file" id="adCamInput" accept="image/*" capture="environment" style="display:none" onchange="adHandleFiles(this)">
+
+      <!-- FIELDS -->
+      <div class="fld"><label>Марка</label><select id="ad-make"><option>Toyota</option><option>Nissan</option><option>Hyundai</option><option>Kia</option><option>Skoda</option><option>Volkswagen</option><option>BMW</option><option>Mercedes-Benz</option><option>Lexus</option><option>Honda</option><option>Mazda</option><option>Subaru</option><option>Другая</option></select></div>
+      <div class="fld"><label>Модель</label><input id="ad-model" type="text" placeholder="Например: Camry, Patrol, Elantra"></div>
       <div class="fld2">
-        <div class="fld"><label>Год</label><select><option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option><option>2015</option><option>2014</option><option>2013</option><option>2012</option><option>2010</option></select></div>
-        <div class="fld"><label>Пробег (км)</label><input type="number" placeholder="0" inputmode="numeric"></div>
+        <div class="fld"><label>Год</label><select id="ad-year"></select></div>
+        <div class="fld"><label>Пробег (км)</label><input id="ad-mileage" type="number" placeholder="0" inputmode="numeric"></div>
       </div>
       <div class="fld2">
-        <div class="fld"><label>Двигатель</label><select><option>1.4L</option><option>1.6L</option><option>1.8L</option><option>2.0L</option><option>2.5L</option><option>3.0L</option><option>3.0D</option><option>3.5L</option></select></div>
-        <div class="fld"><label>КПП</label><select><option>Автомат</option><option>Механика</option><option>Вариатор</option><option>Робот</option></select></div>
+        <div class="fld"><label>Двигатель</label><select id="ad-engine"><option>1.4L</option><option>1.6L</option><option>1.8L</option><option>2.0L</option><option>2.5L</option><option>3.0L</option><option>3.0D</option><option>3.5L</option><option>Электро</option></select></div>
+        <div class="fld"><label>КПП</label><select id="ad-trans"><option>Автомат</option><option>Механика</option><option>Вариатор</option><option>Робот</option></select></div>
       </div>
       <div class="fld2">
-        <div class="fld"><label>Привод</label><select><option>Передний</option><option>Задний</option><option>Полный</option></select></div>
-        <div class="fld"><label>Цвет</label><select><option>Белый</option><option>Чёрный</option><option>Серый</option><option>Серебристый</option><option>Красный</option><option>Синий</option></select></div>
+        <div class="fld"><label>Привод</label><select id="ad-drive"><option>Передний</option><option>Задний</option><option>Полный</option></select></div>
+        <div class="fld"><label>Цвет</label><select id="ad-color"><option>Белый</option><option>Чёрный</option><option>Серый</option><option>Серебристый</option><option>Красный</option><option>Синий</option><option>Зелёный</option><option>Бежевый</option><option>Другой</option></select></div>
       </div>
-      <div class="fld"><label>Цена (₸)</label><input type="number" placeholder="0 000 000" class="price-fld" inputmode="numeric"></div>
-      <div class="fld"><label>Описание</label><input type="text" placeholder="Состояние, комплектация, торг..."></div>
-      <div class="fld"><label>Ваш телефон</label><input type="tel" placeholder="+7 (___) ___ __ __" inputmode="tel"></div>
-      <button class="btn-full" onclick="showModal('publish')">ОПУБЛИКОВАТЬ</button>
+      <div class="fld"><label>Цена (₸)</label><input id="ad-price" type="number" placeholder="0 000 000" class="price-fld" inputmode="numeric"></div>
+      <div class="fld"><label>Описание</label><textarea id="ad-desc" placeholder="Состояние, комплектация, торг..." style="width:100%;background:var(--s2);border:0.5px solid var(--bdr);border-radius:10px;padding:12px;color:#fff;font-family:inherit;font-size:14px;min-height:80px;resize:none;outline:none"></textarea></div>
+
+      <!-- VIDEO -->
+      <div class="fld">
+        <label style="display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="#FF0000"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.1 2.8 12 2.8 12 2.8s-4.1 0-6.8.1c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2.1.3 4.2.3 4.2s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.2 21.6 12 21.6 12 21.6s4.1 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-2C23.3 9.1 23 7 23 7zm-13.4 8.5V8.4l8.1 3.6-8.1 3.5z"/></svg>
+          Видеообзор (YouTube)
+        </label>
+        <input id="ad-video" type="url" placeholder="https://youtube.com/watch?v=..." style="background:var(--s2);border:0.5px solid var(--bdr);border-radius:10px;padding:12px;color:#fff;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <div id="ad-video-preview" style="margin-top:8px;display:none;border-radius:10px;overflow:hidden;position:relative;padding-top:56.25%">
+          <iframe id="ad-video-iframe" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <div class="fld"><label>Ваш телефон</label><input id="ad-phone" type="tel" placeholder="+7 (___) ___ __ __" inputmode="tel"></div>
+
+      <button class="btn-full" id="adSubmitBtn" onclick="adSubmit()" style="margin-bottom:20px">ОПУБЛИКОВАТЬ</button>
     </div>
   </div>
 </div>
@@ -1127,6 +1155,160 @@ document.querySelectorAll("[data-gc3]").forEach(function(el){var m={"0":_g3_0,"1
     });
   }
 })();
+
+// ── AD FORM ──────────────────────────────────────────────────────────────────
+// Fill year select
+(function(){
+  var sel = document.getElementById('ad-year');
+  if(!sel) return;
+  var cur = new Date().getFullYear();
+  for(var y = cur; y >= 2000; y--){
+    var o = document.createElement('option');
+    o.value = o.textContent = y;
+    sel.appendChild(o);
+  }
+})();
+
+// Photo choice sheet
+function adChoosePhoto(){
+  // Show action sheet
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end';
+  sheet.innerHTML = `
+    <div onclick="this.parentElement.remove()" style="flex:1;background:rgba(0,0,0,0.5)"></div>
+    <div style="background:#1e1e24;border-radius:18px 18px 0 0;padding:16px">
+      <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:12px">Добавить фото</div>
+      <button onclick="document.getElementById('adCamInput').click();this.closest('[style*=fixed]').remove()" style="width:100%;background:rgba(255,255,255,0.07);border:none;border-radius:12px;padding:15px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:10px">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="#C0392B" fill="none" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Снять на камеру
+      </button>
+      <button onclick="document.getElementById('adFileInput').click();this.closest('[style*=fixed]').remove()" style="width:100%;background:rgba(255,255,255,0.07);border:none;border-radius:12px;padding:15px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:10px">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="#C0392B" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Выбрать из галереи
+      </button>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="width:100%;background:none;border:none;border-radius:12px;padding:14px;color:rgba(255,255,255,0.5);font-size:15px;cursor:pointer">Отмена</button>
+    </div>`;
+  document.body.appendChild(sheet);
+}
+
+var _adPhotos = []; // base64 array
+
+function adHandleFiles(input){
+  var files = Array.from(input.files);
+  if(!files.length) return;
+  var remaining = 20 - _adPhotos.length;
+  files.slice(0, remaining).forEach(function(f){
+    var r = new FileReader();
+    r.onload = function(e){
+      _adPhotos.push(e.target.result);
+      adRenderPhotos();
+    };
+    r.readAsDataURL(f);
+  });
+  input.value = '';
+}
+
+function adRenderPhotos(){
+  var grid = document.getElementById('adPhotoGrid');
+  var zone = document.getElementById('adPhotoZone');
+  if(!grid) return;
+  grid.innerHTML = _adPhotos.map(function(src, i){
+    return '<div style="position:relative;width:calc(33.33% - 6px);aspect-ratio:4/3;border-radius:10px;overflow:hidden;flex-shrink:0">' +
+      '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover">' +
+      '<button onclick="adRemovePhoto('+i+')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:13px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>' +
+    '</div>';
+  }).join('');
+  zone.style.display = _adPhotos.length >= 20 ? 'none' : 'block';
+}
+
+function adRemovePhoto(idx){
+  _adPhotos.splice(idx, 1);
+  adRenderPhotos();
+}
+
+// YouTube preview
+document.addEventListener('input', function(e){
+  if(e.target.id !== 'ad-video') return;
+  var val = e.target.value.trim();
+  var preview = document.getElementById('ad-video-preview');
+  var iframe = document.getElementById('ad-video-iframe');
+  var vid = '';
+  var m = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if(m) vid = m[1];
+  if(vid){
+    iframe.src = 'https://www.youtube.com/embed/' + vid;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+    iframe.src = '';
+  }
+});
+
+// Submit
+async function adSubmit(){
+  var make  = document.getElementById('ad-make').value;
+  var model = document.getElementById('ad-model').value.trim();
+  var year  = document.getElementById('ad-year').value;
+  var price = document.getElementById('ad-price').value;
+  var phone = document.getElementById('ad-phone').value.trim();
+
+  if(!model){ showToast('Укажите модель'); return; }
+  if(!price){ showToast('Укажите цену'); return; }
+  if(!phone){ showToast('Укажите телефон'); return; }
+
+  var btn = document.getElementById('adSubmitBtn');
+  btn.textContent = 'ПУБЛИКУЕМ...';
+  btn.disabled = true;
+
+  var videoUrl = document.getElementById('ad-video').value.trim();
+  var videos = videoUrl ? [videoUrl] : [];
+
+  var body = {
+    make: make,
+    model: model,
+    year: parseInt(year),
+    mileage: parseInt(document.getElementById('ad-mileage').value) || 0,
+    engine: document.getElementById('ad-engine').value,
+    transmission: document.getElementById('ad-trans').value,
+    drive_type: document.getElementById('ad-drive').value,
+    color: document.getElementById('ad-color').value,
+    price: parseFloat(price),
+    description: document.getElementById('ad-desc').value.trim(),
+    photos: _adPhotos,
+    videos: videos,
+    status: 'Новый'
+  };
+
+  try {
+    var res = await fetch('/api/cars', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if(res.ok){
+      showToast('✅ Объявление подано! Опубликуем за 30 минут');
+      // Reset form
+      _adPhotos = [];
+      adRenderPhotos();
+      document.getElementById('ad-model').value = '';
+      document.getElementById('ad-price').value = '';
+      document.getElementById('ad-phone').value = '';
+      document.getElementById('ad-desc').value = '';
+      document.getElementById('ad-video').value = '';
+      document.getElementById('ad-video-preview').style.display = 'none';
+      setTimeout(function(){ nav('home'); }, 1500);
+    } else {
+      showToast('Ошибка: ' + (data.error || 'попробуйте снова'));
+    }
+  } catch(err) {
+    showToast('Ошибка соединения');
+  }
+
+  btn.textContent = 'ОПУБЛИКОВАТЬ';
+  btn.disabled = false;
+}
+
 </script>
 </body>
 </html>
