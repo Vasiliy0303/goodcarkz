@@ -483,7 +483,252 @@ textarea{resize:vertical;min-height:70px}
 
     <!-- OTHER PAGES (placeholders) -->
     <div id="page-inspection" class="page"><div class="page-title" style="margin-bottom:20px">🔍 Осмотр авто</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">🔧</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Скоро здесь появится система осмотра автомобилей с фото, видео и схемой повреждений</div></div></div></div>
-    <div id="page-auction" class="page"><div class="page-title" style="margin-bottom:20px">🏁 Аукцион</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">🏆</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Здесь будут ставки, таймеры и история аукционов</div></div></div></div>
+    <div id="page-auction" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div class="page-title" style="margin-bottom:0">🏁 Аукцион</div>
+    <button class="btn btn-primary" onclick="openAuctionCreate()">+ Новый аукцион</button>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-primary" id="atab-active" onclick="auctionTab('active',this)">Активные</button>
+    <button class="btn btn-ghost" id="atab-pending" onclick="auctionTab('pending',this)">Ожидают</button>
+    <button class="btn btn-ghost" id="atab-closed" onclick="auctionTab('closed',this)">Завершённые</button>
+  </div>
+
+  <!-- Active auctions -->
+  <div id="auction-active">
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:80px;height:60px;border-radius:8px;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🚗</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="font-weight:700;font-size:14px">Toyota Land Cruiser 200 · 2020</div>
+            <span class="badge badge-g">Открытый</span>
+          </div>
+          <div style="font-size:12px;color:#666;margin-bottom:6px">Мин. цена: скрыта · VIN: JTxxxxx</div>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div>
+              <div style="font-size:10px;color:#999">Текущая ставка</div>
+              <div style="font-size:18px;font-weight:800;color:#C0392B">42 500 000 ₸</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#999">Ставок</div>
+              <div style="font-size:16px;font-weight:700">7</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#999">Осталось</div>
+              <div style="font-size:14px;font-weight:700;color:#C0392B;font-family:monospace" id="timer-1">23:41:15</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F5;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="openAuctionDetail('a1')">Управление</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyAuctionLink('a1')">🔗 Ссылка</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:80px;height:60px;border-radius:8px;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🚙</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="font-weight:700;font-size:14px">BMW X5 · 2019</div>
+            <span class="badge badge-b">Закрытый</span>
+          </div>
+          <div style="font-size:12px;color:#666;margin-bottom:6px">Мин. цена: скрыта · 1 ставка/участник</div>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div>
+              <div style="font-size:10px;color:#999">Участников</div>
+              <div style="font-size:16px;font-weight:700">12</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#999">Взносов</div>
+              <div style="font-size:14px;font-weight:700;color:#27AE60">1 200 000 ₸</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#999">Осталось</div>
+              <div style="font-size:14px;font-weight:700;color:#C0392B;font-family:monospace" id="timer-2">11:22:08</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F5;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="openAuctionDetail('a2')">Управление</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyAuctionLink('a2')">🔗 Ссылка</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div id="auction-pending" style="display:none">
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:80px;height:60px;border-radius:8px;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🚗</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="font-weight:700;font-size:14px">Nissan Patrol · 2018</div>
+            <span class="badge badge-y">Ожидает старта</span>
+          </div>
+          <div style="font-size:12px;color:#666;margin-bottom:4px">Старт: 20 июля 2025, 12:00</div>
+          <div style="font-size:12px;color:#666">Гарантийный взнос: 100 000 ₸ · Тип: Открытый</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F5;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="openAuctionDetail('a3')">Редактировать</button>
+        <button class="btn btn-ghost btn-sm" style="color:#C0392B" onclick="showToast('Аукцион отменён')">Отменить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closed -->
+  <div id="auction-closed" style="display:none">
+    <div class="card" style="margin-bottom:12px">
+      <div style="background:#F8F9FA;border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-weight:700">Lexus RX 350 · 2021</div>
+          <span class="badge badge-g">Продан</span>
+        </div>
+        <div style="display:flex;gap:16px">
+          <div><div style="font-size:10px;color:#999">Итоговая цена</div><div style="font-weight:700;color:#27AE60">32 000 000 ₸</div></div>
+          <div><div style="font-size:10px;color:#999">Победитель</div><div style="font-weight:600">Асхат М.</div></div>
+          <div><div style="font-size:10px;color:#999">Комиссия</div><div style="font-weight:600">960 000 ₸</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="showToast('Открываю протокол...')">📄 Протокол</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="showToast('Открываю ставки...')">📊 Ставки</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="background:#FFF5F5;border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-weight:700">Honda CR-V · 2017</div>
+          <span class="badge badge-x">Не продан</span>
+        </div>
+        <div style="font-size:12px;color:#666">Мин. цена не достигнута · Макс. ставка: 8 900 000 ₸</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Повторный аукцион...')">🔁 Повторить аукцион</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUCTION DETAIL MODAL -->
+<div id="auction-detail-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);overflow-y:auto">
+  <div style="background:#fff;margin:20px auto;max-width:700px;border-radius:12px;overflow:hidden">
+    <div style="padding:20px;border-bottom:1px solid #F5F5F5;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:18px;font-weight:700" id="adm-title">Управление аукционом</div>
+      <button onclick="document.getElementById('auction-detail-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px">
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid #F5F5F5;padding-bottom:12px">
+        <button class="btn btn-primary btn-sm" onclick="admTab('bids',this)">Ставки</button>
+        <button class="btn btn-ghost btn-sm" onclick="admTab('participants',this)">Участники</button>
+        <button class="btn btn-ghost btn-sm" onclick="admTab('settings',this)">Настройки</button>
+      </div>
+
+      <!-- Bids tab -->
+      <div id="adm-bids">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:12px;color:#666">Всего ставок: <b>7</b></div>
+          <div style="font-size:12px;color:#666">Взносов заблокировано: <b>700 000 ₸</b></div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#F8F9FA"><th style="padding:8px;text-align:left">Участник</th><th style="padding:8px;text-align:right">Ставка</th><th style="padding:8px;text-align:center">Время</th><th style="padding:8px;text-align:center">Статус</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #F5F5F5"><td style="padding:8px">Асхат М. 🟢</td><td style="padding:8px;text-align:right;font-weight:700;color:#C0392B">42 500 000 ₸</td><td style="padding:8px;text-align:center;color:#999">14:23</td><td style="padding:8px;text-align:center"><span class="badge badge-g">Лидер</span></td></tr>
+            <tr style="border-bottom:1px solid #F5F5F5"><td style="padding:8px">Жандос К.</td><td style="padding:8px;text-align:right">41 000 000 ₸</td><td style="padding:8px;text-align:center;color:#999">14:18</td><td style="padding:8px;text-align:center"><span class="badge badge-b">Активен</span></td></tr>
+            <tr style="border-bottom:1px solid #F5F5F5"><td style="padding:8px">Алия С.</td><td style="padding:8px;text-align:right">40 500 000 ₸</td><td style="padding:8px;text-align:center;color:#999">14:10</td><td style="padding:8px;text-align:center"><span class="badge badge-b">Активен</span></td></tr>
+            <tr><td style="padding:8px;color:#999">+4 участника</td><td colspan="3"></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="showToast('Аукцион завершён досрочно')">🏁 Завершить досрочно</button>
+          <button class="btn btn-ghost" onclick="showToast('Уведомления отправлены')">📢 Уведомить всех</button>
+        </div>
+      </div>
+
+      <!-- Participants tab -->
+      <div id="adm-participants" style="display:none">
+        <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;color:#666">12 участников · Взносы: 1 200 000 ₸</div>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Экспорт...')">📥 Excel</button>
+        </div>
+        <div style="border:1px solid #F0F0F0;border-radius:8px;overflow:hidden">
+          <div style="padding:10px 12px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #F5F5F5">
+            <div style="width:32px;height:32px;background:#27AE60;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700">АМ</div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:600">Асхат Муратов</div><div style="font-size:11px;color:#666">+7 701 *** 1234 · Взнос: ✅ 100 000 ₸</div></div>
+            <span style="font-size:10px;background:#E8F5E9;color:#27AE60;padding:2px 8px;border-radius:4px">Лидер</span>
+          </div>
+          <div style="padding:10px 12px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #F5F5F5">
+            <div style="width:32px;height:32px;background:#2980B9;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700">ЖК</div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:600">Жандос Кенжебаев</div><div style="font-size:11px;color:#666">+7 777 *** 5678 · Взнос: ✅ 100 000 ₸</div></div>
+            <span style="font-size:10px;background:#E3F2FD;color:#2980B9;padding:2px 8px;border-radius:4px">Активен</span>
+          </div>
+          <div style="padding:10px 12px;text-align:center;color:#999;font-size:12px">+10 участников</div>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Разблокировка взносов...')">🔓 Разблокировать все взносы</button>
+        </div>
+      </div>
+
+      <!-- Settings tab -->
+      <div id="adm-settings" style="display:none">
+        <div class="form-group"><label class="form-label">Минимальная цена (резервная)</label><input type="number" class="form-control" placeholder="Не видна участникам" value="40000000"></div>
+        <div class="form-group"><label class="form-label">Тип аукциона</label><select class="form-control"><option>Открытый (все видят ставки)</option><option>Закрытый (одна ставка)</option></select></div>
+        <div class="form-group"><label class="form-label">Гарантийный взнос (₸)</label><input type="number" class="form-control" value="100000"></div>
+        <div class="form-group"><label class="form-label">Дата и время окончания</label><input type="datetime-local" class="form-control"></div>
+        <div class="form-group"><label class="form-label">Шаг ставки (₸)</label><input type="number" class="form-control" value="100000"></div>
+        <button class="btn btn-primary" onclick="showToast('Настройки сохранены')">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUCTION CREATE MODAL -->
+<div id="auction-create-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);overflow-y:auto">
+  <div style="background:#fff;margin:20px auto;max-width:600px;border-radius:12px;overflow:hidden">
+    <div style="padding:20px;border-bottom:1px solid #F5F5F5;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:18px;font-weight:700">Создать аукцион</div>
+      <button onclick="document.getElementById('auction-create-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="form-group"><label class="form-label">Автомобиль</label><select class="form-control" id="acm-car"><option value="">— Выберите автомобиль —</option></select></div>
+      <div class="form-group"><label class="form-label">Тип аукциона</label>
+        <div style="display:flex;gap:12px;margin-top:6px">
+          <label style="flex:1;border:2px solid #C0392B;border-radius:10px;padding:12px;cursor:pointer;text-align:center">
+            <input type="radio" name="atype" value="open" checked style="display:none">
+            <div style="font-size:20px;margin-bottom:4px">📢</div>
+            <div style="font-weight:700;font-size:13px">Открытый</div>
+            <div style="font-size:11px;color:#666">Все видят ставки</div>
+          </label>
+          <label style="flex:1;border:2px solid #E0E0E0;border-radius:10px;padding:12px;cursor:pointer;text-align:center">
+            <input type="radio" name="atype" value="closed" style="display:none">
+            <div style="font-size:20px;margin-bottom:4px">🔒</div>
+            <div style="font-weight:700;font-size:13px">Закрытый</div>
+            <div style="font-size:11px;color:#666">Одна финальная ставка</div>
+          </label>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Гарантийный взнос (₸)</label><input type="number" class="form-control" value="100000" placeholder="100 000"></div>
+        <div class="form-group"><label class="form-label">Шаг ставки (₸)</label><input type="number" class="form-control" value="100000" placeholder="100 000"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Резервная цена (₸) — скрыта от участников</label><input type="number" class="form-control" placeholder="Минимальная цена продажи"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Начало</label><input type="datetime-local" class="form-control"></div>
+        <div class="form-group"><label class="form-label">Конец</label><input type="datetime-local" class="form-control"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Комиссия GoodCar (%)</label><input type="number" class="form-control" value="3" min="1" max="10"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveAuction()">🏁 Запустить аукцион</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('auction-create-modal').style.display='none'">Отмена</button>
+      </div>
+    </div>
+  </div>
+</div>
     <div id="page-rfinance" class="page"><div class="page-title" style="margin-bottom:20px">🏦 R Finance</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💳</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Интеграция с R Finance: подача заявок, статусы, одобрение</div></div></div></div>
     <div id="page-tasks" class="page"><div class="page-title" style="margin-bottom:20px">📅 Задачи</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="font-size:16px;font-weight:600">Скоро</div></div></div></div>
     <div id="page-comms" class="page"><div class="page-title" style="margin-bottom:20px">📞 Коммуникации</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💬</div><div style="font-size:16px;font-weight:600">Telegram, WhatsApp, Instagram — единый входящий</div></div></div></div>
@@ -1288,6 +1533,72 @@ initDate();
   renderDashboard();
   updateMeta && updateMeta();
 })();
+
+// ── AUCTION MODULE ────────────────────────────────────────────────────────────
+function auctionTab(tab, el) {
+  ['active','pending','closed'].forEach(t => {
+    document.getElementById('auction-' + t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('atab-' + t).className = t === tab ? 'btn btn-primary' : 'btn btn-ghost';
+  });
+}
+
+function admTab(tab, el) {
+  ['bids','participants','settings'].forEach(t => {
+    document.getElementById('adm-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  el.closest('div').querySelectorAll('button').forEach(b => b.className = 'btn btn-ghost btn-sm');
+  el.className = 'btn btn-primary btn-sm';
+}
+
+function openAuctionDetail(id) {
+  document.getElementById('auction-detail-modal').style.display = 'block';
+}
+
+function openAuctionCreate() {
+  // Populate car select
+  var sel = document.getElementById('acm-car');
+  if (sel && carsData && carsData.length > 0) {
+    sel.innerHTML = '<option value="">— Выберите автомобиль —</option>' +
+      carsData.filter(c => c.status !== 'На аукционе' && c.status !== 'Продан').map(c =>
+        '<option value="' + c.id + '">' + c.make + ' ' + c.model + ' ' + c.year + ' · ' + Number(c.price).toLocaleString('ru-RU') + ' ₸</option>'
+      ).join('');
+  }
+  document.getElementById('auction-create-modal').style.display = 'block';
+}
+
+function copyAuctionLink(id) {
+  var link = 'https://goodcarkz-yack.vercel.app/auction/' + id;
+  if (navigator.clipboard) navigator.clipboard.writeText(link);
+  showToast('Ссылка скопирована: ' + link);
+}
+
+function saveAuction() {
+  var car = document.getElementById('acm-car').value;
+  if (!car) { showToast('Выберите автомобиль'); return; }
+  showToast('✅ Аукцион создан! Участники могут регистрироваться');
+  document.getElementById('auction-create-modal').style.display = 'none';
+}
+
+// Auction timers
+(function startAuctionTimers() {
+  function tick() {
+    var now = Date.now();
+    var t1 = document.getElementById('timer-1');
+    var t2 = document.getElementById('timer-2');
+    if (t1) {
+      var rem1 = Math.max(0, 85275 - Math.floor((now % 86400000) / 1000));
+      t1.textContent = fmt(Math.floor(rem1/3600)) + ':' + fmt(Math.floor((rem1%3600)/60)) + ':' + fmt(rem1%60);
+    }
+    if (t2) {
+      var rem2 = Math.max(0, 40928 - Math.floor((now % 86400000) / 1000));
+      t2.textContent = fmt(Math.floor(rem2/3600)) + ':' + fmt(Math.floor((rem2%3600)/60)) + ':' + fmt(rem2%60);
+    }
+  }
+  function fmt(n) { return n.toString().padStart(2,'0'); }
+  setInterval(tick, 1000);
+  tick();
+})();
+
 </script>
 </body>
 </html>
