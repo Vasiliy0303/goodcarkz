@@ -1294,10 +1294,17 @@ async function loadCatalog() {
   try {
     var res = await fetch('/api/cars?limit=200');
     var ct = res.headers.get('content-type') || '';
-    if (!ct.includes('json')) throw new Error('Not JSON');
+    var statusCode = res.status;
+    if (!ct.includes('json')) {
+      var txt = await res.text();
+      throw new Error('HTTP ' + statusCode + ': сервер вернул не JSON. ' + txt.substring(0,100));
+    }
     var data = await res.json();
     var all = Array.isArray(data) ? data : (data.data || data.cars || []);
-    // Show all non-archived cars in catalog
+    if (all.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p>База пуста</p><p style="font-size:11px;margin-top:4px;color:rgba(255,255,255,0.2)">API: ' + statusCode + ' · total: ' + (data.total||0) + '</p></div>';
+      return;
+    }
     _catalogCars = all.filter(function(c) {
       var s = (c.status || '').toLowerCase();
       return s !== 'архив' && s !== 'продан';
@@ -1305,7 +1312,7 @@ async function loadCatalog() {
     renderCatalog();
   } catch(e) {
     console.error('Catalog error:', e);
-    if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p>Не удалось загрузить каталог</p><p style="font-size:11px;margin-top:8px">' + e.message + '</p></div>';
+    if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p>⚠️ Ошибка загрузки</p><p style="font-size:11px;margin-top:8px;color:rgba(255,0,0,0.6)">' + e.message + '</p></div>';
   }
 }
 
