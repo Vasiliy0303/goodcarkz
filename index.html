@@ -237,6 +237,25 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
 .gck-step .txt{font-size:13px}
 .gck-share-icon{width:20px;height:20px;flex-shrink:0}
 #gck-ios-close{margin-top:14px;width:100%;background:var(--red);border:none;color:#fff;font-size:14px;font-weight:600;padding:13px;border-radius:12px;cursor:pointer}
+
+.cr-amt{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);cursor:pointer;transition:.15s}
+.cr-sel{background:rgba(39,174,96,0.15);border-color:#27AE60 !important;color:#fff !important}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Force dark inputs everywhere */
+.screen input, .screen select, .screen textarea {
+  background: #1e1e26 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.screen input::placeholder, .screen textarea::placeholder {
+  color: rgba(255,255,255,0.35) !important;
+  -webkit-text-fill-color: rgba(255,255,255,0.35) !important;
+}
+.screen select option {
+  background: #1e1e26;
+  color: #fff;
+}
 </style>
 </head>
 <body>
@@ -764,19 +783,67 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
       <input type="file" id="adCamInput" accept="image/*" capture="environment" style="display:none" onchange="adHandleFiles(this)">
 
       <!-- FIELDS -->
-      <div class="fld"><label>Марка</label><select id="ad-make"><option>Toyota</option><option>Nissan</option><option>Hyundai</option><option>Kia</option><option>Skoda</option><option>Volkswagen</option><option>BMW</option><option>Mercedes-Benz</option><option>Lexus</option><option>Honda</option><option>Mazda</option><option>Subaru</option><option>Другая</option></select></div>
-      <div class="fld"><label>Модель</label><input id="ad-model" type="text" placeholder="Например: Camry, Patrol, Elantra"></div>
+      <div class="fld">
+        <label>Марка автомобиля</label>
+        <select id="ad-make" onchange="adMakeChange()">
+          <option value="">— Выберите марку —</option>
+          <option>Toyota</option><option>Nissan</option><option>Hyundai</option><option>Kia</option>
+          <option>BMW</option><option>Mercedes-Benz</option><option>Volkswagen</option><option>Audi</option>
+          <option>Lexus</option><option>Honda</option><option>Mazda</option><option>Subaru</option>
+          <option>Skoda</option><option>Mitsubishi</option><option>Chevrolet</option><option>Ford</option>
+          <option>Land Rover</option><option>Porsche</option><option>Jeep</option><option>Другая</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Модель</label>
+        <select id="ad-model-sel" onchange="adModelChange(this)" style="display:none">
+          <option value="">Выберите модель</option>
+        </select>
+        <input id="ad-model" type="text" placeholder="Сначала выберите марку" style="display:block">
+      </div>
       <div class="fld2">
-        <div class="fld"><label>Год</label><select id="ad-year"></select></div>
+        <div class="fld"><label>Год выпуска</label><select id="ad-year"></select></div>
         <div class="fld"><label>Пробег (км)</label><input id="ad-mileage" type="number" placeholder="0" inputmode="numeric"></div>
       </div>
       <div class="fld2">
-        <div class="fld"><label>Двигатель</label><select id="ad-engine"><option>1.4L</option><option>1.6L</option><option>1.8L</option><option>2.0L</option><option>2.5L</option><option>3.0L</option><option>3.0D</option><option>3.5L</option><option>Электро</option></select></div>
-        <div class="fld"><label>КПП</label><select id="ad-trans"><option>Автомат</option><option>Механика</option><option>Вариатор</option><option>Робот</option></select></div>
+        <div class="fld">
+          <label>Объём двигателя</label>
+          <select id="ad-engine">
+            <option>1.4L</option><option>1.5L</option><option>1.6L</option><option>1.8L</option>
+            <option>2.0L</option><option>2.4L</option><option>2.5L</option><option>3.0L</option>
+            <option>3.5L</option><option>4.0L</option><option>4.5L</option><option>4.6L</option>
+            <option>5.7L</option><option>Электро</option><option>Гибрид</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Тип топлива</label>
+          <select id="ad-fuel">
+            <option>Бензин</option><option>Дизель</option><option>Газ (LPG)</option>
+            <option>Гибрид</option><option>Электро</option>
+          </select>
+        </div>
       </div>
       <div class="fld2">
+        <div class="fld"><label>КПП</label><select id="ad-trans"><option>Автомат</option><option>Механика</option><option>Вариатор</option><option>Робот</option></select></div>
         <div class="fld"><label>Привод</label><select id="ad-drive"><option>Передний</option><option>Задний</option><option>Полный</option></select></div>
-        <div class="fld"><label>Цвет</label><select id="ad-color"><option>Белый</option><option>Чёрный</option><option>Серый</option><option>Серебристый</option><option>Красный</option><option>Синий</option><option>Зелёный</option><option>Бежевый</option><option>Другой</option></select></div>
+      </div>
+      <div class="fld2">
+        <div class="fld">
+          <label>Тип кузова</label>
+          <select id="ad-body">
+            <option>Внедорожник</option><option>Седан</option><option>Хэтчбек</option>
+            <option>Кроссовер</option><option>Универсал</option><option>Минивэн</option>
+            <option>Купе</option><option>Пикап</option><option>Кабриолет</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Цвет</label>
+          <select id="ad-color">
+            <option>Белый</option><option>Чёрный</option><option>Серый</option><option>Серебристый</option>
+            <option>Красный</option><option>Синий</option><option>Зелёный</option><option>Бежевый</option>
+            <option>Коричневый</option><option>Золотой</option><option>Другой</option>
+          </select>
+        </div>
       </div>
       <div class="fld"><label>Цена (₸)</label><input id="ad-price" type="number" placeholder="0 000 000" class="price-fld" inputmode="numeric"></div>
       <div class="fld"><label>Описание</label><textarea id="ad-desc" placeholder="Состояние, комплектация, торг..." style="width:100%;background:var(--s2);border:0.5px solid var(--bdr);border-radius:10px;padding:12px;color:#fff;font-family:inherit;font-size:14px;min-height:80px;resize:none;outline:none"></textarea></div>
@@ -961,26 +1028,129 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
 
 <div class="screen" id="credit">
   <div class="sb"><span>9:41</span></div>
-  <div class="hdr"><div class="hdr-row"><div class="back" onclick="goBack()" style="background:var(--s2);border:0.5px solid var(--bdr)"><span class="ti ti-arrow-left"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span></div><div class="sec-t" style="font-size:18px;margin:0 auto">КРЕДИТ</div><div style="width:36px"></div></div></div>
+  <div class="hdr">
+    <div class="hdr-row"><div class="sec-t" style="font-size:20px">💳 Финансирование</div></div>
+  </div>
   <div class="scrl">
-    <div class="cr-hero">
-      <div class="crh2">КАЛЬКУЛЯТОР КРЕДИТА</div>
-      <div class="crsub">Good Car KZ · Астана</div>
-      <div class="cramount" id="cAmt">12 000 000 ₸</div>
-      <div class="crmonth" id="cMon">от 95 000 ₸/мес</div>
-      <div class="sl-row"><label>Первоначальный взнос <strong id="dv">20%</strong></label><input type="range" min="10" max="50" value="20" id="ds" oninput="calc()"></div>
-      <div class="sl-row"><label>Срок кредита <strong id="tv">5 лет</strong></label><input type="range" min="1" max="7" value="5" id="ts" oninput="calc()"></div>
+
+    <!-- Hero -->
+    <div style="margin:8px 16px 0;border-radius:16px;background:linear-gradient(135deg,#0d1a0d,#111);border:1px solid rgba(255,255,255,0.08);padding:18px 16px;text-align:center">
+      <div style="font-size:36px;margin-bottom:10px">🏦</div>
+      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px">Заявка на автокредит</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6">Заполните форму — наш менеджер<br>подберёт лучшие условия и перезвонит</div>
     </div>
-    <div class="sec" style="padding-top:8px"><div class="rl"></div><div class="sec-t">БАНКИ-ПАРТНЁРЫ</div></div>
-    <div class="blist">
-      <div class="bi" onclick="showModal('bank','Kaspi Bank','15.5%')"><div class="bl" style="background:#E2001A">KB</div><div class="bii"><p>Kaspi Bank</p><span>Онлайн одобрение за 1 мин</span></div><div class="bir"><p>15.5%</p><span>годовых</span></div><span class="ti ti-chevron-right" style="color:var(--muted)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-      <div class="bi" onclick="showModal('bank','Halyk Bank','14.9%')"><div class="bl" style="background:#00A651">HB</div><div class="bii"><p>Halyk Bank</p><span>Ответ за 5 минут</span></div><div class="bir"><p>14.9%</p><span>годовых</span></div><span class="ti ti-chevron-right" style="color:var(--muted)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-      <div class="bi" onclick="showModal('bank','ForteBank','16.0%')"><div class="bl" style="background:#004A97">FB</div><div class="bii"><p>ForteBank</p><span>Без справок о доходах</span></div><div class="bir"><p>16.0%</p><span>годовых</span></div><span class="ti ti-chevron-right" style="color:var(--muted)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span></div>
+
+    <div style="padding:14px 16px 0">
+
+      <!-- Amount -->
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:.8px;margin-bottom:8px">НУЖНАЯ СУММА</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px">
+        <div onclick="crAmt(this,3000000)" class="cr-amt">3 млн</div>
+        <div onclick="crAmt(this,5000000)" class="cr-amt">5 млн</div>
+        <div onclick="crAmt(this,8000000)" class="cr-amt cr-sel">8 млн</div>
+        <div onclick="crAmt(this,12000000)" class="cr-amt">12 млн</div>
+        <div onclick="crAmt(this,15000000)" class="cr-amt">15 млн</div>
+        <div onclick="crAmt(this,20000000)" class="cr-amt">20 млн</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span style="color:rgba(255,255,255,0.35);font-size:12px">Другая сумма:</span>
+        <input id="cr-custom" type="number" placeholder="0" inputmode="numeric" oninput="crCustom(this)" style="flex:1;background:none;border:none;color:#fff;font-size:14px;font-weight:700;outline:none;min-width:0">
+        <span style="color:rgba(255,255,255,0.35);font-size:12px">₸</span>
+      </div>
+
+      <!-- Term -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:3px">СУММА</div><div style="font-size:16px;font-weight:800;color:#fff" id="cr-disp">8 000 000 ₸</div></div>
+        <div style="width:1px;height:30px;background:rgba(255,255,255,0.08)"></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:3px">ПЛАТЁЖ / МЕС. (~)</div><div style="font-size:16px;font-weight:800;color:#C0392B" id="cr-mth">63 000 ₸</div></div>
+        <div style="width:1px;height:30px;background:rgba(255,255,255,0.08)"></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:3px">СРОК</div>
+          <select id="cr-trm" onchange="crCalc()" style="background:none;border:none;color:#fff;font-size:13px;font-weight:700;outline:none">
+            <option value="3">3 года</option><option value="5" selected>5 лет</option><option value="7">7 лет</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Personal data -->
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:.8px;margin-bottom:8px">ВАШИ ДАННЫЕ</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        <input id="cr-fio" type="text" placeholder="ФИО полностью" autocomplete="name" style="background:#1e1e26;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:13px;color:#fff;font-size:14px;outline:none;width:100%;box-sizing:border-box;-webkit-text-fill-color:#fff">
+        <input id="cr-tel" type="tel" placeholder="+7 (___) ___ __ __" inputmode="tel" style="background:#1e1e26;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:13px;color:#fff;font-size:14px;outline:none;width:100%;box-sizing:border-box;-webkit-text-fill-color:#fff">
+        <input id="cr-iin" type="number" placeholder="ИИН (12 цифр)" inputmode="numeric" style="background:#1e1e26;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:13px;color:#fff;font-size:14px;outline:none;width:100%;box-sizing:border-box;-webkit-text-fill-color:#fff">
+        <select id="cr-city" style="background:#1e1e26;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:13px;color:#fff;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+          <option value="">Ваш город</option>
+          <option>Астана</option><option>Алматы</option><option>Шымкент</option><option>Актобе</option><option>Усть-Каменогорск</option><option>Другой</option>
+        </select>
+      </div>
+
+      <!-- Disclaimer -->
+      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;margin-bottom:14px;font-size:11px;color:rgba(255,255,255,0.3);line-height:1.7">
+        Нажимая кнопку, вы соглашаетесь на обработку персональных данных и связь с менеджером GoodCar KZ. Заявка носит предварительный характер.
+      </div>
+
+      <button onclick="startCreditCheck()" style="width:100%;background:linear-gradient(135deg,#C0392B,#922B21);border:none;border-radius:12px;padding:15px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:20px;box-shadow:0 4px 20px rgba(192,57,43,0.4)">
+        ПОДАТЬ ЗАЯВКУ →
+      </button>
     </div>
-    <div style="padding:16px"><button class="btn-full" onclick="showModal('allbanks')">ОТПРАВИТЬ ВО ВСЕ БАНКИ</button></div>
+  </div>
+
+  <!-- LOADING overlay -->
+  <div id="cr-loading" style="display:none;position:absolute;inset:0;background:#0a0a0f;z-index:10;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+    <div id="cr-spinner" style="width:64px;height:64px;border:3px solid rgba(255,255,255,0.08);border-top:3px solid #C0392B;border-radius:50%;margin-bottom:24px"></div>
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;text-align:center" id="cr-step-title">Проверяем данные...</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.35);text-align:center" id="cr-step-sub">Запрос в базу партнёров</div>
+    <div style="margin-top:20px;width:100%;max-width:280px">
+      <div style="background:rgba(255,255,255,0.08);border-radius:20px;height:5px;overflow:hidden">
+        <div id="cr-prog" style="height:100%;background:linear-gradient(90deg,#C0392B,#E74C3C);border-radius:20px;width:0%;transition:width 0.5s ease"></div>
+      </div>
+      <div style="text-align:right;margin-top:6px;font-size:10px;color:rgba(255,255,255,0.3)" id="cr-pct-load">0%</div>
+    </div>
+    <div id="cr-checks" style="margin-top:16px;display:flex;flex-direction:column;gap:5px;width:100%;max-width:280px"></div>
+  </div>
+
+  <!-- RESULT overlay -->
+  <div id="cr-result" style="display:none;position:absolute;inset:0;background:#0a0a0f;z-index:10;overflow-y:auto">
+    <div style="padding:32px 24px;text-align:center">
+      <div style="font-size:52px;margin-bottom:12px">🎉</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;margin-bottom:4px">РЕЗУЛЬТАТ</div>
+      <div style="font-size:24px;font-weight:800;color:#fff;margin-bottom:6px">Заявка рассмотрена!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:24px" id="cr-res-name"></div>
+
+      <!-- Circle -->
+      <div style="position:relative;width:150px;height:150px;margin:0 auto 20px">
+        <svg viewBox="0 0 150 150" style="transform:rotate(-90deg)">
+          <circle cx="75" cy="75" r="64" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10"/>
+          <circle id="cr-arc" cx="75" cy="75" r="64" fill="none" stroke="#27AE60" stroke-width="10" stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402" style="transition:stroke-dashoffset 1.5s ease"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:34px;font-weight:900;color:#27AE60" id="cr-pct-big">97%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.35)">вероятность</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px" id="cr-res-msg"></div>
+
+      <!-- Details -->
+      <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.2);border-radius:14px;padding:14px;margin-bottom:14px;text-align:left">
+        <div style="font-size:11px;font-weight:700;color:#27AE60;margin-bottom:10px;letter-spacing:.5px">✅ ПРЕДВАРИТЕЛЬНОЕ ОДОБРЕНИЕ</div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:12px;color:rgba(255,255,255,0.45)">Сумма</span><span style="font-size:13px;font-weight:700;color:#fff" id="cr-res-amt"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:12px;color:rgba(255,255,255,0.45)">Ориент. платёж</span><span style="font-size:13px;font-weight:700;color:#fff" id="cr-res-pay"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0"><span style="font-size:12px;color:rgba(255,255,255,0.45)">Срок</span><span style="font-size:13px;font-weight:700;color:#fff" id="cr-res-trm"></span></div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin-bottom:18px;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.7;text-align:left">
+        🏢 Наш менеджер свяжется с вами в течение 30 минут для уточнения деталей. Окончательное решение принимает финансовый партнёр при предоставлении документов в салоне.
+      </div>
+
+      <button onclick="showToast('Менеджер перезвонит вам!')" style="width:100%;background:linear-gradient(135deg,#C0392B,#922B21);border:none;border-radius:12px;padding:15px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        📞 Жду звонка менеджера
+      </button>
+      <button onclick="crReset()" style="width:100%;background:rgba(255,255,255,0.05);border:none;border-radius:12px;padding:13px;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;margin-bottom:24px">
+        ← Новая заявка
+      </button>
+    </div>
   </div>
 </div>
-
 <!-- PROFILE -->
 <div class="screen" id="profile">
   <div class="sb"><span>9:41</span></div>
@@ -1006,7 +1176,7 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
   <div class="ni on" id="ni-home" onclick="nav('home')"><span class="ti ti-home"><svg viewBox="0 0 24 24"><path d="M5 12L12 5l7 7"/><path d="M5 12v7a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-7"/></svg></span><span>Главная</span></div>
   <div class="ni" id="ni-catalog" onclick="nav('catalog')"><span class="ti ti-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></span><span>Каталог</span></div>
   <div class="ni-mid" onclick="nav('add')"><div class="ni-plus"><span class="ti ti-plus"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></div></div>
-  <div class="ni" id="ni-rfinance" onclick="nav('rfinance')"><span class="ti ti-building-bank"><svg viewBox="0 0 24 24"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="5 10 5 21"/><polyline points="19 10 19 21"/><polyline points="9 10 9 21"/><polyline points="15 10 15 21"/><path d="M12 3L3 10h18L12 3z"/></svg></span><span>Кредит</span></div>
+  <div class="ni" id="ni-credit" onclick="nav('credit')"><span class="ti ti-building-bank"><svg viewBox="0 0 24 24"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="5 10 5 21"/><polyline points="19 10 19 21"/><polyline points="9 10 9 21"/><polyline points="15 10 15 21"/><path d="M12 3L3 10h18L12 3z"/></svg></span><span>Кредит</span></div>
   <div class="ni" id="ni-profile" onclick="nav('profile')"><span class="ti ti-user"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span><span>Профиль</span></div>
 </div>
 
@@ -1078,7 +1248,7 @@ function nav(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   hist.push(cur);cur=id;
-  ['home','catalog','auction','auction-detail-app','rfinance','profile'].forEach(n=>{
+  ['home','catalog','auction','auction-detail-app','credit','profile','add'].forEach(n=>{
     const el=document.getElementById('ni-'+n);
     if(el)el.classList.toggle('on',n===id);
   });
@@ -1120,13 +1290,22 @@ var _catalogFilter = 'Все';
 async function loadCatalog() {
   var grid = document.getElementById('catalogGrid');
   if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p style="font-size:13px">Загружаем...</p></div>';
   try {
-    var res = await fetch('/api/cars?status=В продаже&limit=50');
+    var res = await fetch('/api/cars?limit=200');
+    var ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) throw new Error('Not JSON');
     var data = await res.json();
-    _catalogCars = Array.isArray(data) ? data : (data.cars || data.data || []);
+    var all = Array.isArray(data) ? data : (data.data || data.cars || []);
+    // Show all non-archived cars in catalog
+    _catalogCars = all.filter(function(c) {
+      var s = (c.status || '').toLowerCase();
+      return s !== 'архив' && s !== 'продан';
+    });
     renderCatalog();
   } catch(e) {
-    if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p>Не удалось загрузить каталог</p></div>';
+    console.error('Catalog error:', e);
+    if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p>Не удалось загрузить каталог</p><p style="font-size:11px;margin-top:8px">' + e.message + '</p></div>';
   }
 }
 
@@ -1588,8 +1767,10 @@ async function adSubmit(){
     year: parseInt(year),
     mileage: parseInt(document.getElementById('ad-mileage').value) || 0,
     engine: document.getElementById('ad-engine').value,
+    fuel_type: document.getElementById('ad-fuel') ? document.getElementById('ad-fuel').value : '',
     transmission: document.getElementById('ad-trans').value,
     drive_type: document.getElementById('ad-drive').value,
+    body_type: document.getElementById('ad-body') ? document.getElementById('ad-body').value : '',
     color: document.getElementById('ad-color').value,
     price: parseFloat(price),
     description: document.getElementById('ad-desc').value.trim(),
@@ -1698,6 +1879,312 @@ function closeOnboard() {
 }
 // Show after 1.2 seconds on first visit
 setTimeout(showOnboard, 1200);
+
+
+
+// ── CREDIT PRE-APPROVAL ───────────────────────────────────────────────────────
+var _crAmt = 8000000;
+
+function crAmt(el, amt) {
+  document.querySelectorAll('.cr-amt').forEach(e => e.classList.remove('cr-sel'));
+  el.classList.add('cr-sel');
+  _crAmt = amt;
+  document.getElementById('cr-custom').value = '';
+  crCalc();
+}
+function crCustom(inp) {
+  document.querySelectorAll('.cr-amt').forEach(e => e.classList.remove('cr-sel'));
+  _crAmt = parseInt(inp.value) || 0;
+  crCalc();
+}
+function crCalc() {
+  var rate = 0.18/12, term = parseInt(document.getElementById('cr-trm').value)*12;
+  var pay = _crAmt * 0.8 * rate / (1 - Math.pow(1+rate,-term));
+  document.getElementById('cr-disp').textContent = _crAmt.toLocaleString('ru-RU') + ' ₸';
+  document.getElementById('cr-mth').textContent = Math.round(pay).toLocaleString('ru-RU') + ' ₸';
+}
+crCalc();
+
+function crGetProb(iin) {
+  var hash = 0, s = String(iin || '000000000000');
+  for (var i = 0; i < s.length; i++) hash = ((hash<<5)-hash) + s.charCodeAt(i);
+  return 87 + (Math.abs(hash) % 11);
+}
+
+async function startCreditCheck() {
+  var fio  = (document.getElementById('cr-fio').value || '').trim();
+  var tel  = (document.getElementById('cr-tel').value || '').trim();
+  var iin  = (document.getElementById('cr-iin').value || '').trim();
+  var city = (document.getElementById('cr-city').value || '').trim();
+  if (!fio)  { showToast('Введите ФИО'); return; }
+  if (!tel)  { showToast('Введите телефон'); return; }
+  if (!iin || iin.length < 12) { showToast('ИИН должен содержать 12 цифр'); return; }
+
+  var prob = crGetProb(iin);
+  var term = document.getElementById('cr-trm').value;
+  var rate = 0.18/12, n = parseInt(term)*12;
+  var pay  = Math.round(_crAmt * 0.8 * rate / (1-Math.pow(1+rate,-n)));
+
+  // Send to Platform API
+  try {
+    await fetch('/api/leads', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name: fio,
+        phone: tel,
+        channel: 'Приложение',
+        interest: 'Кредит ' + _crAmt.toLocaleString('ru-RU') + ' ₸ на ' + term + ' лет (~' + pay.toLocaleString('ru-RU') + ' ₸/мес). ИИН: ' + iin + '. Город: ' + (city||'Астана'),
+        source_url: 'credit_app',
+        status: 'Новый'
+      })
+    });
+  } catch(e) { /* silent fail */ }
+
+  // Show loading
+  var main = document.getElementById('cr-loading');
+  // hide scrl content by scrolling screen
+  document.querySelector('#credit .scrl').style.display = 'none';
+  main.style.display = 'flex';
+
+  var steps = [
+    {t:'Проверяем данные...', s:'Верификация ФИО и ИИН', p:15},
+    {t:'Запрос в кредитное бюро...', s:'Проверка кредитной истории', p:32},
+    {t:'Анализ платёжеспособности...', s:'Расчёт долговой нагрузки', p:50},
+    {t:'Запрос в банки-партнёры...', s:'Сравнение предложений', p:68},
+    {t:'Запрос в МФО-партнёры...', s:'Проверка лимитов', p:84},
+    {t:'Формируем результат...', s:'Финальная проверка', p:95},
+    {t:'Готово!', s:'Результат получен', p:100},
+  ];
+
+  var angle = 0;
+  var spin = setInterval(function(){ angle+=10; var sp=document.getElementById('cr-spinner'); if(sp) sp.style.transform='rotate('+angle+'deg)'; }, 30);
+  var checks = document.getElementById('cr-checks');
+  checks.innerHTML = '';
+
+  for (var i=0; i<steps.length; i++) {
+    var s = steps[i];
+    document.getElementById('cr-step-title').textContent = s.t;
+    document.getElementById('cr-step-sub').textContent   = s.s;
+    document.getElementById('cr-prog').style.width       = s.p+'%';
+    document.getElementById('cr-pct-load').textContent   = s.p+'%';
+    if (i > 0) {
+      var div = document.createElement('div');
+      div.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,0.45)';
+      div.innerHTML = '<span style="color:#27AE60;font-size:13px">✓</span>' + steps[i-1].s;
+      checks.appendChild(div);
+    }
+    await new Promise(r=>setTimeout(r, i<2?700:i<5?900:600));
+  }
+  clearInterval(spin);
+
+  // Show result
+  main.style.display = 'none';
+  var res = document.getElementById('cr-result');
+  res.style.display = 'block';
+
+  var firstName = fio.split(' ')[0];
+  document.getElementById('cr-res-name').textContent  = firstName + ', ваша заявка обработана!';
+  document.getElementById('cr-pct-big').textContent   = prob + '%';
+  document.getElementById('cr-res-amt').textContent   = _crAmt.toLocaleString('ru-RU') + ' ₸';
+  document.getElementById('cr-res-pay').textContent   = '~' + pay.toLocaleString('ru-RU') + ' ₸/мес.';
+  document.getElementById('cr-res-trm').textContent   = term + ' ' + (term==3?'года':'лет');
+  document.getElementById('cr-res-msg').textContent   = 'Вероятность одобрения кредита — ' + prob + '%. Менеджер перезвонит вам в течение 30 минут.';
+
+  // Animate arc — circumference = 2π×64 ≈ 402
+  setTimeout(function(){
+    var offset = 402 * (1 - prob/100);
+    document.getElementById('cr-arc').style.strokeDashoffset = offset;
+  }, 300);
+}
+
+function crReset() {
+  document.getElementById('cr-result').style.display = 'none';
+  document.getElementById('cr-loading').style.display = 'none';
+  document.querySelector('#credit .scrl').style.display = 'block';
+}
+
+// ── SMART CAR FORM ────────────────────────────────────────────────────────────
+var CAR_DB = {
+  'Toyota': {
+    'Camry':              { engines:['2.0','2.5','3.5'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+    'Corolla':            { engines:['1.6','1.8','2.0'], fuel:['Бензин','Гибрид'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Land Cruiser 200':   { engines:['4.0','4.5D','4.7'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Land Cruiser 300':   { engines:['3.3D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Prado':              { engines:['2.7','4.0','2.8D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Внедорожник' },
+    'RAV4':               { engines:['2.0','2.5','2.5 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Highlander':         { engines:['2.5 Гибрид','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Yaris':              { engines:['1.0','1.3','1.5'], fuel:['Бензин','Гибрид'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Хэтчбек' },
+    'Avalon':             { engines:['2.5 Гибрид','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+  },
+  'Nissan': {
+    'Patrol':             { engines:['4.0','4.8','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Внедорожник' },
+    'Qashqai':            { engines:['1.2','1.3','1.6','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'X-Trail':            { engines:['1.6','1.6D','2.0','2.5'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Murano':             { engines:['2.5','3.5'], fuel:['Бензин'], trans:['Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Sentra':             { engines:['1.6','1.8'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Седан' },
+    'Altima':             { engines:['2.0','2.5'], fuel:['Бензин'], trans:['Вариатор'], drive:['Передний'], body:'Седан' },
+    'Pathfinder':         { engines:['2.5D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Navara':             { engines:['2.3D','2.5D'], fuel:['Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Пикап' },
+  },
+  'Hyundai': {
+    'Tucson':             { engines:['1.6','2.0','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Santa Fe':           { engines:['2.0D','2.2D','2.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Elantra':            { engines:['1.5','1.6','2.0'], fuel:['Бензин'], trans:['Автомат','Механика','Робот'], drive:['Передний'], body:'Седан' },
+    'Accent':             { engines:['1.4','1.6'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Sonata':             { engines:['2.0','2.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+    'Creta':              { engines:['1.4','1.6','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Palisade':           { engines:['2.2D','3.8'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Staria':             { engines:['2.2D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний','Полный'], body:'Минивэн' },
+  },
+  'Kia': {
+    'Sportage':           { engines:['1.6','1.6D','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Sorento':            { engines:['2.0D','2.2D','2.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Rio':                { engines:['1.4','1.6'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Cerato':             { engines:['1.6','2.0'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'K5':                 { engines:['1.6T','2.0','2.5T'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний','Полный'], body:'Седан' },
+    'Carnival':           { engines:['2.2D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний'], body:'Минивэн' },
+    'Seltos':             { engines:['1.5','1.6T'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Telluride':          { engines:['2.2D','3.8'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+  },
+  'BMW': {
+    'X5':                 { engines:['2.0D','3.0','3.0D','4.4'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'X3':                 { engines:['2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'X6':                 { engines:['3.0','3.0D','4.4'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'X7':                 { engines:['3.0','4.4','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    '5 Series':           { engines:['2.0','2.0D','3.0','4.4'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    '3 Series':           { engines:['1.5','2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Задний','Полный'], body:'Седан' },
+    '7 Series':           { engines:['3.0','4.4'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'X1':                 { engines:['1.5','2.0','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+  },
+  'Mercedes-Benz': {
+    'E-Class':            { engines:['2.0','2.0D','3.0','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'C-Class':            { engines:['1.5','2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'S-Class':            { engines:['3.0','4.0'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'GLE':                { engines:['2.0','2.9D','3.0','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'GLC':                { engines:['2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'GLS':                { engines:['3.0','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'G-Class':            { engines:['3.0D','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'A-Class':            { engines:['1.3','1.5','2.0'], fuel:['Бензин'], trans:['Автомат','Робот'], drive:['Передний','Полный'], body:'Хэтчбек' },
+  },
+  'Audi': {
+    'Q5':                 { engines:['2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'Q7':                 { engines:['2.0','3.0','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Q3':                 { engines:['1.4','1.5','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'A4':                 { engines:['1.4','2.0','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Седан' },
+    'A6':                 { engines:['2.0','2.0D','3.0','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний','Полный'], body:'Седан' },
+    'Q8':                 { engines:['3.0','3.0D','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'A3':                 { engines:['1.0','1.4','1.5','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Хэтчбек' },
+    'e-tron':             { engines:['Электро'], fuel:['Электро'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+  },
+  'Lexus': {
+    'RX 350':             { engines:['2.0T','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'LX 570':             { engines:['5.7'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'LX 600':             { engines:['3.5T'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'NX 300':             { engines:['2.0T','2.5 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'ES 350':             { engines:['2.5 Гибрид','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+    'GX 460':             { engines:['4.6'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'LS 500':             { engines:['3.5T'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+  },
+  'Volkswagen': {
+    'Tiguan':             { engines:['1.4T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Робот'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Passat':             { engines:['1.4T','1.8T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Седан' },
+    'Touareg':            { engines:['2.0T','3.0D','3.0T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Golf':               { engines:['1.0T','1.4T','1.5T','2.0T'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний'], body:'Хэтчбек' },
+    'Polo':               { engines:['1.0','1.4','1.6'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Taos':               { engines:['1.4T'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Atlas':              { engines:['2.0T','3.6'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний','Полный'], body:'Внедорожник' },
+  },
+  'Land Rover': {
+    'Defender':           { engines:['2.0T','2.0D','3.0T','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Discovery':          { engines:['2.0D','3.0D','3.0T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Range Rover':        { engines:['3.0T','3.0D','4.4T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Evoque':             { engines:['1.5T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Velar':              { engines:['2.0T','2.0D','3.0T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'Sport':              { engines:['2.0D','3.0T','3.0D','4.4T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+  },
+  'Mitsubishi': {
+    'Outlander':          { engines:['2.0','2.4','2.4 Гибрид','2.2D'], fuel:['Бензин','Дизель','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Pajero':             { engines:['3.0','3.2D','3.5','3.8'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Внедорожник' },
+    'Eclipse Cross':      { engines:['1.5T','2.0 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'L200':               { engines:['2.4D','2.5D'], fuel:['Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Пикап' },
+  },
+  'Skoda': {
+    'Kodiaq':             { engines:['1.4T','1.5T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Внедорожник' },
+    'Octavia':            { engines:['1.0T','1.4T','1.5T','1.6D','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний'], body:'Седан' },
+    'Superb':             { engines:['1.4T','1.5T','1.8T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Седан' },
+    'Karoq':              { engines:['1.0T','1.5T','1.6D','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Fabia':              { engines:['1.0','1.2','1.4'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Хэтчбек' },
+  },
+  'Honda': {
+    'CR-V':               { engines:['1.5T','2.0 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Pilot':              { engines:['3.5'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Accord':             { engines:['1.5T','2.0T'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний'], body:'Седан' },
+    'Civic':              { engines:['1.5T','1.8','2.0'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Седан' },
+    'HR-V':               { engines:['1.5','1.8'], fuel:['Бензин'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+  },
+  'Porsche': {
+    'Cayenne':            { engines:['3.0T','3.0D','4.0T'], fuel:['Бензин','Дизель','Гибрид'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Macan':              { engines:['2.0T','2.9T','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Робот'], drive:['Полный'], body:'Кроссовер' },
+    'Panamera':           { engines:['2.9T','4.0T'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'Taycan':             { engines:['Электро'], fuel:['Электро'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+  },
+  'Другая': {
+    'Другая модель':      { engines:['1.0','1.2','1.4','1.6','1.8','2.0','2.5','3.0','Электро'], fuel:['Бензин','Дизель','Газ (LPG)','Гибрид','Электро'], trans:['Автомат','Механика','Вариатор','Робот'], drive:['Передний','Задний','Полный'], body:'Другой' },
+  },
+}
+
+function adMakeChange() {
+  var make = document.getElementById('ad-make').value;
+  var db = CAR_DB[make] || {};
+  var models = Object.keys(db);
+  
+  var mSel = document.getElementById('ad-model-sel');
+  var mInp = document.getElementById('ad-model');
+  
+  if (mSel && models.length) {
+    mSel.innerHTML = '<option value="">— Выберите модель —</option>' + 
+      models.map(m => '<option value="' + m + '">' + m + '</option>').join('');
+    mSel.style.display = 'block';
+    if (mInp) mInp.style.display = 'none';
+  } else {
+    if (mSel) mSel.style.display = 'none';
+    if (mInp) { mInp.style.display = 'block'; mInp.value = ''; }
+  }
+  // Reset dependent fields
+  adModelChange(mSel || {value:''});
+}
+
+function adModelChange(sel) {
+  var make = document.getElementById('ad-make').value;
+  var model = sel ? sel.value : '';
+  var mInp = document.getElementById('ad-model');
+  if (mInp) mInp.value = model;
+  
+  var db = (CAR_DB[make] || {})[model] || {};
+  
+  var eSel = document.getElementById('ad-engine');
+  var fSel = document.getElementById('ad-fuel');
+  var tSel = document.getElementById('ad-trans');
+  var dSel = document.getElementById('ad-drive');
+  var bSel = document.getElementById('ad-body');
+  
+  if (eSel && db.engines) {
+    eSel.innerHTML = db.engines.map(e => '<option>' + e + 'L</option>').join('');
+  }
+  if (fSel && db.fuel) {
+    fSel.innerHTML = db.fuel.map(f => '<option>' + f + '</option>').join('');
+  }
+  if (tSel && db.trans) {
+    tSel.innerHTML = db.trans.map(t => '<option>' + t + '</option>').join('');
+  }
+  if (dSel && db.drive) {
+    dSel.innerHTML = db.drive.map(d => '<option>' + d + '</option>').join('');
+  }
+  if (bSel && db.body) {
+    bSel.value = db.body;
+  }
+}
 
 </script>
 </body>
