@@ -479,6 +479,7 @@ textarea{resize:vertical;min-height:70px}
         <button class="btn btn-ghost btn-sm" onclick="filterCars('reserve')" id="cf-reserve">В резерве</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('prep')" id="cf-prep">На подготовке</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('auction')" id="cf-auction">На аукционе</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('archive')" id="cf-archive">Архив 🗄</button>
       </div>
       <div class="car-grid" id="cars-grid"></div>
     </div>
@@ -1239,7 +1240,7 @@ function renderDeals() {
 let carFilter = 'all';
 function filterCars(f) {
   carFilter = f;
-  ['all','new','sale','reserve','prep','auction'].forEach(x => {
+  ['all','new','sale','reserve','prep','auction','archive'].forEach(x => {
     const el = document.getElementById('cf-'+x);
     if(el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
   });
@@ -1252,6 +1253,8 @@ function renderCars(search='') {
   if(carFilter==='reserve') fc = fc.filter(c=>c.status==='В резерве');
   if(carFilter==='prep') fc = fc.filter(c=>c.status==='На подготовке');
   if(carFilter==='auction') fc = fc.filter(c=>c.status==='На аукционе');
+  if(carFilter==='archive') fc = fc.filter(c=>c.status==='Архив');
+  if(carFilter==='all') fc = fc.filter(c=>c.status!=='Архив');
   if(search) fc = fc.filter(c=>(c.make+' '+c.model+' '+c.vin).toLowerCase().includes(search.toLowerCase()));
 
   const stColor = {'Новый':'badge-y','В продаже':'badge-g','В резерве':'badge-b','На диагностике':'badge-y','На подготовке':'badge-y','На аукционе':'badge-p','Продан':'badge-x','Архив':'badge-x'};
@@ -1283,7 +1286,9 @@ function renderCars(search='') {
         <div style="display:flex;gap:6px;margin-top:8px">
           <button class="btn btn-primary btn-sm" style="flex:1" onclick="openCarModal('${car.id}')">Редактировать</button>
           <button class="btn btn-ghost btn-sm" onclick="viewCar('${car.id}')">👁</button>
-          <button class="btn btn-ghost btn-sm" title="Архивировать" style="color:#C0392B" onclick="deleteCar('${car.id}')">🗑</button>
+          ${car.status==='Архив'
+            ? `<button class="btn btn-ghost btn-sm" title="Удалить навсегда" style="color:#C0392B;font-weight:700" onclick="hardDeleteCar('${car.id}')">✕</button>`
+            : `<button class="btn btn-ghost btn-sm" title="Архивировать" style="color:#C0392B" onclick="deleteCar('${car.id}')">🗑</button>`}
         </div>
       </div>
     </div>`).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#CCC">Автомобилей не найдено</div>';
@@ -1530,6 +1535,21 @@ async function saveCar(id) {
       r.readAsDataURL(f);
     });
   } else { doSave([]); }
+}
+
+async function hardDeleteCar(id) {
+  const car = cars.find(c=>c.id===id);
+  const name = car ? car.make + ' ' + car.model : 'автомобиль';
+  if(!confirm(`Удалить ${name} НАВСЕГДА?\n\nЗапись будет стёрта из базы вместе с фото. Это действие нельзя отменить.`)) return;
+  try {
+    await apiFetch('/cars?id=' + id + '&hard=1', { method: 'DELETE' });
+    cars = cars.filter(c=>c.id!==id);
+    SS('gc:cars', cars);
+    renderCars();
+    showToast('🗑 Удалено навсегда: ' + name);
+  } catch(e) {
+    showToast('⚠️ Не удалось удалить: ' + e.message);
+  }
 }
 
 async function quickStatus(id, sel) {
