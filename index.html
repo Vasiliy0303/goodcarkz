@@ -1788,8 +1788,9 @@ async function adSubmit(){
       document.getElementById('ad-price').value = '';
       document.getElementById('ad-phone').value = '';
       document.getElementById('ad-desc').value = '';
-      document.getElementById('ad-video').value = '';
-      document.getElementById('ad-video-preview').style.display = 'none';
+      var mkSel = document.getElementById('ad-make'); if (mkSel) mkSel.value = '';
+      var mdSel = document.getElementById('ad-model-sel'); if (mdSel) { mdSel.innerHTML = '<option value="">Выберите модель</option>'; mdSel.style.display = 'none'; }
+      var mdInp = document.getElementById('ad-model'); if (mdInp) mdInp.style.display = 'block';
       setTimeout(function(){ nav('home'); }, 1500);
     } else {
       showToast('Ошибка: ' + (data.error || 'попробуйте снова'));
