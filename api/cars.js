@@ -58,7 +58,8 @@ export default async function handler(req, res) {
       const {
         make, model, year, vin, color, mileage, price, status = 'Новый',
         engine, transmission, body_type, fuel_type, drive_type,
-        description, photos = [], videos = [], manager_id, owner_id
+        description, photos = [], videos = [], manager_id, owner_id,
+        seller_name, seller_phone
       } = req.body;
 
       if (!make || !model || !year) {
@@ -69,8 +70,9 @@ export default async function handler(req, res) {
         INSERT INTO cars (
           make, model, year, vin, color, mileage, price, status,
           engine, transmission, body_type, fuel_type, drive_type,
-          description, photos, videos, manager_id, owner_id
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+          description, photos, videos, manager_id, owner_id,
+          seller_name, seller_phone
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
         RETURNING *
       `, [
         make, model, parseInt(year), vin || null, color || null,
@@ -78,8 +80,17 @@ export default async function handler(req, res) {
         engine || null, transmission || null, body_type || null,
         fuel_type || null, drive_type || null, description || null,
         JSON.stringify(photos), JSON.stringify(videos),
-        manager_id || null, owner_id || null
+        manager_id || null, owner_id || null,
+        seller_name || null, seller_phone || null
       ]);
+
+      // История статусов (не критично, если таблицы ещё нет)
+      try {
+        await pool.query(
+          `INSERT INTO car_status_history (car_id, status, changed_by) VALUES ($1, $2, $3)`,
+          [rows[0].id, status, seller_name || 'app']
+        );
+      } catch (e) { console.warn('history skip:', e.message); }
 
       await pool.query(`
         INSERT INTO analytics_events (event_type, entity_type, entity_id, meta)
@@ -95,7 +106,8 @@ export default async function handler(req, res) {
 
       const allowed = ['make','model','year','vin','color','mileage','price','status',
         'engine','transmission','body_type','fuel_type','drive_type',
-        'description','photos','videos','is_published','manager_id'];
+        'description','photos','videos','is_published','manager_id',
+        'seller_name','seller_phone'];
 
       const updates = [];
       const params = [id];
@@ -116,12 +128,29 @@ export default async function handler(req, res) {
         updates.push(`published_at = NOW()`);
       }
 
+      // Жизненный цикл: автоматические даты по смене статуса
+      if (req.body.status === 'В продаже') {
+        updates.push(`listed_at = COALESCE(listed_at, NOW())`);
+      }
+      if (req.body.status === 'Продан') {
+        updates.push(`sold_at = NOW()`);
+      }
+
       if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
 
       const { rows } = await pool.query(`
         UPDATE cars SET ${updates.join(', ')}, updated_at = NOW()
         WHERE id = $1 RETURNING *
       `, params);
+
+      if (req.body.status) {
+        try {
+          await pool.query(
+            `INSERT INTO car_status_history (car_id, status, changed_by) VALUES ($1, $2, $3)`,
+            [id, req.body.status, req.body.changed_by || null]
+          );
+        } catch (e) { console.warn('history skip:', e.message); }
+      }
 
       if (!rows.length) return res.status(404).json({ error: 'Car not found' });
       return res.status(200).json(rows[0]);
