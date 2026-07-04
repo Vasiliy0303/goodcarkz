@@ -474,6 +474,7 @@ textarea{resize:vertical;min-height:70px}
       <div class="sb2" style="flex-wrap:wrap;gap:8px">
         <input class="search-inp" placeholder="Марка, модель, VIN…" oninput="renderCars(this.value)">
         <button class="btn btn-ghost btn-sm" onclick="filterCars('all')" id="cf-all" style="background:#C0392B;color:#fff">Все</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterCars('new')" id="cf-new">Новые ⏳</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('sale')" id="cf-sale">В продаже</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('reserve')" id="cf-reserve">В резерве</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('prep')" id="cf-prep">На подготовке</button>
@@ -1238,7 +1239,7 @@ function renderDeals() {
 let carFilter = 'all';
 function filterCars(f) {
   carFilter = f;
-  ['all','sale','reserve','prep','auction'].forEach(x => {
+  ['all','new','sale','reserve','prep','auction'].forEach(x => {
     const el = document.getElementById('cf-'+x);
     if(el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
   });
@@ -1246,13 +1247,14 @@ function filterCars(f) {
 }
 function renderCars(search='') {
   let fc = cars;
+  if(carFilter==='new') fc = fc.filter(c=>c.status==='Новый');
   if(carFilter==='sale') fc = fc.filter(c=>c.status==='В продаже');
   if(carFilter==='reserve') fc = fc.filter(c=>c.status==='В резерве');
   if(carFilter==='prep') fc = fc.filter(c=>c.status==='На подготовке');
   if(carFilter==='auction') fc = fc.filter(c=>c.status==='На аукционе');
   if(search) fc = fc.filter(c=>(c.make+' '+c.model+' '+c.vin).toLowerCase().includes(search.toLowerCase()));
 
-  const stColor = {'В продаже':'badge-g','В резерве':'badge-b','На диагностике':'badge-y','На подготовке':'badge-y','На аукционе':'badge-p','Продан':'badge-x','Архив':'badge-x'};
+  const stColor = {'Новый':'badge-y','В продаже':'badge-g','В резерве':'badge-b','На диагностике':'badge-y','На подготовке':'badge-y','На аукционе':'badge-p','Продан':'badge-x','Архив':'badge-x'};
   document.getElementById('cars-grid').innerHTML = fc.map(car=>`
     <div class="car-card">
       <div class="car-photo" id="photo-wrap-${car.id}">
@@ -1270,6 +1272,7 @@ function renderCars(search='') {
           <span>📍 ${car.color||'—'}</span>
           <span>🔢 ${(car.mileage||0).toLocaleString('ru-RU')} км</span>
         </div>
+        ${car.videos&&car.videos.length>0?`<div style="display:inline-flex;align-items:center;gap:4px;background:#E8F8EF;color:#27AE60;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;margin-top:6px">✓ Осмотрен · есть видео</div>`:''}
         ${car.photos&&car.photos.length>1?`<div style="font-size:11px;color:#AAA;margin-top:6px">📸 ${car.photos.length} фото</div>`:''}
         <div style="display:flex;gap:6px;margin-top:10px">
           <button class="btn btn-primary btn-sm" style="flex:1" onclick="openCarModal('${car.id}')">Редактировать</button>
@@ -1400,7 +1403,7 @@ function openCarModal(id=null) {
         <div><label>Пробег (км)</label><input id="c-mileage" type="number" value="${car?.mileage||''}"></div>
       </div>
       <div><label>VIN</label><input id="c-vin" value="${car?.vin||''}" style="font-family:monospace"></div>
-      <div><label>Видеообзор (YouTube ссылка)</label><input id="c-youtube" value="${ytLink}" placeholder="https://youtube.com/watch?v=..."></div>
+      <div><label>Видеообзор (YouTube ссылка)</label><input id="c-youtube" value="${ytLink}" placeholder="https://youtube.com/watch?v=..."><div style="font-size:11px;color:#999;margin-top:4px">Добавляется после осмотра авто на площадке. У объявления с видео в приложении появится значок «✓ Осмотрен GoodCar»</div></div>
       <div><label>Описание</label><textarea id="c-desc" rows="3" style="width:100%;resize:vertical">${car?.description||''}</textarea></div>
       <div>
         <label>Фото (загрузить)</label>
@@ -2044,4 +2047,3 @@ function exportFin() { showToast('Экспорт в Excel...'); }
 </script>
 </body>
 </html>
-
