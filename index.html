@@ -1353,14 +1353,14 @@ function openCarDetail(car) {
     var vidMatch = vidUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)?([\w-]{11})/);
     var vidId = vidMatch ? vidMatch[1] : '';
     if (vidId) {
-      videoHtml = '<div style="margin:12px 16px 0;border-radius:12px;overflow:hidden;position:relative;cursor:pointer" onclick="window.open(\'' + vidUrl + '\',\'_blank\')">' +
+      videoHtml = '<div id="gc-video-box" style="margin:12px 16px 0;border-radius:12px;overflow:hidden;position:relative;cursor:pointer" onclick="gcPlayVideo(\'' + vidId + '\')">' +
         '<img src="https://img.youtube.com/vi/' + vidId + '/hqdefault.jpg" style="width:100%;display:block;border-radius:12px">' +
         '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3)">' +
           '<div style="width:52px;height:52px;background:rgba(255,0,0,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center">' +
             '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>' +
           '</div>' +
         '</div>' +
-        '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:10px;font-size:11px;color:#fff">▶ Видеообзор на YouTube</div>' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:10px;font-size:11px;color:#fff">▶ Смотреть видеообзор</div>' +
       '</div>';
     }
   }
@@ -2125,6 +2125,19 @@ var CAR_DB = {
   'Другая': {
     'Другая модель':      { engines:['1.0','1.2','1.4','1.6','1.8','2.0','2.5','3.0','Электро'], fuel:['Бензин','Дизель','Газ (LPG)','Гибрид','Электро'], trans:['Автомат','Механика','Вариатор','Робот'], drive:['Передний','Задний','Полный'], body:'Другой' },
   },
+}
+
+function gcPlayVideo(vidId) {
+  var box = document.getElementById('gc-video-box');
+  if (!box || !vidId) return;
+  box.onclick = null;
+  box.style.cursor = 'default';
+  // 16:9 контейнер + встроенный плеер YouTube (privacy-домен, autoplay, inline для iOS)
+  box.innerHTML = '<div style="position:relative;width:100%;padding-top:56.25%;background:#000">' +
+    '<iframe src="https://www.youtube-nocookie.com/embed/' + vidId + '?autoplay=1&playsinline=1&rel=0&modestbranding=1" ' +
+      'style="position:absolute;inset:0;width:100%;height:100%;border:0" ' +
+      'allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>' +
+  '</div>';
 }
 
 function adMakeChange() {
