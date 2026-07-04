@@ -848,6 +848,7 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
       <div class="fld"><label>Цена (₸)</label><input id="ad-price" type="number" placeholder="0 000 000" class="price-fld" inputmode="numeric"></div>
       <div class="fld"><label>Описание</label><textarea id="ad-desc" placeholder="Состояние, комплектация, торг..." style="width:100%;background:var(--s2);border:0.5px solid var(--bdr);border-radius:10px;padding:12px;color:#fff;font-family:inherit;font-size:14px;min-height:80px;resize:none;outline:none"></textarea></div>
 
+      <div class="fld"><label>Ваше имя</label><input id="ad-name" type="text" placeholder="Как к вам обращаться"></div>
       <div class="fld"><label>Ваш телефон</label><input id="ad-phone" type="tel" placeholder="+7 (___) ___ __ __" inputmode="tel"></div>
 
       <button class="btn-full" id="adSubmitBtn" onclick="adSubmit()" style="margin-bottom:20px">ОПУБЛИКОВАТЬ</button>
@@ -1743,9 +1744,11 @@ async function adSubmit(){
   var year  = document.getElementById('ad-year').value;
   var price = document.getElementById('ad-price').value;
   var phone = document.getElementById('ad-phone').value.trim();
+  var sellerName = document.getElementById('ad-name').value.trim();
 
   if(!model){ showToast('Укажите модель'); return; }
   if(!price){ showToast('Укажите цену'); return; }
+  if(!sellerName){ showToast('Укажите ваше имя'); return; }
   if(!phone){ showToast('Укажите телефон'); return; }
 
   var btn = document.getElementById('adSubmitBtn');
@@ -1769,7 +1772,9 @@ async function adSubmit(){
     description: document.getElementById('ad-desc').value.trim(),
     photos: _adPhotos,
     videos: videos,
-    status: 'Новый'
+    status: 'Новый',
+    seller_name: sellerName,
+    seller_phone: phone
   };
 
   try {
@@ -1780,6 +1785,20 @@ async function adSubmit(){
     });
     var data = await res.json();
     if(res.ok){
+      // Фиксируем продавца в базе клиентов (Лиды)
+      try {
+        await fetch('/api/leads', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name: sellerName,
+            phone: phone,
+            channel: 'Приложение',
+            interest: 'Продажа авто: ' + make + ' ' + model + ' ' + year + ', ' + parseInt(price).toLocaleString('ru-RU') + ' ₸',
+            source_url: 'app_sell'
+          })
+        });
+      } catch(e) { /* лид не критичен для подачи */ }
       showToast('✅ Объявление подано! Опубликуем за 30 минут');
       // Reset form
       _adPhotos = [];
@@ -1787,6 +1806,7 @@ async function adSubmit(){
       document.getElementById('ad-model').value = '';
       document.getElementById('ad-price').value = '';
       document.getElementById('ad-phone').value = '';
+      document.getElementById('ad-name').value = '';
       document.getElementById('ad-desc').value = '';
       var mkSel = document.getElementById('ad-make'); if (mkSel) mkSel.value = '';
       var mdSel = document.getElementById('ad-model-sel'); if (mdSel) { mdSel.innerHTML = '<option value="">Выберите модель</option>'; mdSel.style.display = 'none'; }
