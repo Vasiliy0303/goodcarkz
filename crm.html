@@ -827,7 +827,191 @@ const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
 const DEAL_STAGES = ['Новый лид','Первый контакт','Подбор авто','Осмотр','Проверка истории','Тест-драйв','Финансирование','Договор','Оплата','Выдача авто','Завершена','Неудача'];
 const STAGE_COLORS = {'Новый лид':'#C0392B','Первый контакт':'#E74C3C','Подбор авто':'#E67E22','Осмотр':'#F39C12','Проверка истории':'#8E44AD','Тест-драйв':'#2980B9','Финансирование':'#1ABC9C','Договор':'#16A085','Оплата':'#27AE60','Выдача авто':'#2ECC71','Завершена':'#27AE60','Неудача':'#95A5A6'};
-const CAR_STATUSES = ['В продаже','В резерве','На диагностике','На подготовке','На аукционе','Продан','Архив'];
+const CAR_STATUSES = ['Новый','В продаже','В резерве','На диагностике','На подготовке','На аукционе','Продан','Архив'];
+
+// ===== База марок/моделей (общая с App) =====
+var CAR_DB = {
+  'Toyota': {
+    'Camry':              { engines:['2.0','2.5','3.5'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+    'Corolla':            { engines:['1.6','1.8','2.0'], fuel:['Бензин','Гибрид'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Land Cruiser 200':   { engines:['4.0','4.5D','4.7'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Land Cruiser 300':   { engines:['3.3D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Prado':              { engines:['2.7','4.0','2.8D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Внедорожник' },
+    'RAV4':               { engines:['2.0','2.5','2.5 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Highlander':         { engines:['2.5 Гибрид','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Yaris':              { engines:['1.0','1.3','1.5'], fuel:['Бензин','Гибрид'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Хэтчбек' },
+    'Avalon':             { engines:['2.5 Гибрид','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+  },
+  'Nissan': {
+    'Patrol':             { engines:['4.0','4.8','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Внедорожник' },
+    'Qashqai':            { engines:['1.2','1.3','1.6','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'X-Trail':            { engines:['1.6','1.6D','2.0','2.5'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Murano':             { engines:['2.5','3.5'], fuel:['Бензин'], trans:['Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Sentra':             { engines:['1.6','1.8'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Седан' },
+    'Altima':             { engines:['2.0','2.5'], fuel:['Бензин'], trans:['Вариатор'], drive:['Передний'], body:'Седан' },
+    'Pathfinder':         { engines:['2.5D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Navara':             { engines:['2.3D','2.5D'], fuel:['Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Пикап' },
+  },
+  'Hyundai': {
+    'Tucson':             { engines:['1.6','2.0','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Santa Fe':           { engines:['2.0D','2.2D','2.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Elantra':            { engines:['1.5','1.6','2.0'], fuel:['Бензин'], trans:['Автомат','Механика','Робот'], drive:['Передний'], body:'Седан' },
+    'Accent':             { engines:['1.4','1.6'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Sonata':             { engines:['2.0','2.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+    'Creta':              { engines:['1.4','1.6','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Palisade':           { engines:['2.2D','3.8'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Staria':             { engines:['2.2D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний','Полный'], body:'Минивэн' },
+  },
+  'Kia': {
+    'Sportage':           { engines:['1.6','1.6D','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Sorento':            { engines:['2.0D','2.2D','2.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Rio':                { engines:['1.4','1.6'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Cerato':             { engines:['1.6','2.0'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'K5':                 { engines:['1.6T','2.0','2.5T'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний','Полный'], body:'Седан' },
+    'Carnival':           { engines:['2.2D','3.5'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний'], body:'Минивэн' },
+    'Seltos':             { engines:['1.5','1.6T'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Telluride':          { engines:['2.2D','3.8'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+  },
+  'BMW': {
+    'X5':                 { engines:['2.0D','3.0','3.0D','4.4'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'X3':                 { engines:['2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'X6':                 { engines:['3.0','3.0D','4.4'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'X7':                 { engines:['3.0','4.4','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    '5 Series':           { engines:['2.0','2.0D','3.0','4.4'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    '3 Series':           { engines:['1.5','2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Задний','Полный'], body:'Седан' },
+    '7 Series':           { engines:['3.0','4.4'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'X1':                 { engines:['1.5','2.0','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+  },
+  'Mercedes-Benz': {
+    'E-Class':            { engines:['2.0','2.0D','3.0','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'C-Class':            { engines:['1.5','2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'S-Class':            { engines:['3.0','4.0'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'GLE':                { engines:['2.0','2.9D','3.0','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'GLC':                { engines:['2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'GLS':                { engines:['3.0','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'G-Class':            { engines:['3.0D','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'A-Class':            { engines:['1.3','1.5','2.0'], fuel:['Бензин'], trans:['Автомат','Робот'], drive:['Передний','Полный'], body:'Хэтчбек' },
+  },
+  'Audi': {
+    'Q5':                 { engines:['2.0','2.0D','3.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'Q7':                 { engines:['2.0','3.0','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Q3':                 { engines:['1.4','1.5','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'A4':                 { engines:['1.4','2.0','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Седан' },
+    'A6':                 { engines:['2.0','2.0D','3.0','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний','Полный'], body:'Седан' },
+    'Q8':                 { engines:['3.0','3.0D','4.0'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'A3':                 { engines:['1.0','1.4','1.5','2.0'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Хэтчбек' },
+    'e-tron':             { engines:['Электро'], fuel:['Электро'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+  },
+  'Lexus': {
+    'RX 350':             { engines:['2.0T','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'LX 570':             { engines:['5.7'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'LX 600':             { engines:['3.5T'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'NX 300':             { engines:['2.0T','2.5 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'ES 350':             { engines:['2.5 Гибрид','3.5'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Передний'], body:'Седан' },
+    'GX 460':             { engines:['4.6'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'LS 500':             { engines:['3.5T'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+  },
+  'Volkswagen': {
+    'Tiguan':             { engines:['1.4T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Робот'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Passat':             { engines:['1.4T','1.8T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний','Полный'], body:'Седан' },
+    'Touareg':            { engines:['2.0T','3.0D','3.0T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Golf':               { engines:['1.0T','1.4T','1.5T','2.0T'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний'], body:'Хэтчбек' },
+    'Polo':               { engines:['1.0','1.4','1.6'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Taos':               { engines:['1.4T'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Atlas':              { engines:['2.0T','3.6'], fuel:['Бензин'], trans:['Автомат'], drive:['Передний','Полный'], body:'Внедорожник' },
+  },
+  'Land Rover': {
+    'Defender':           { engines:['2.0T','2.0D','3.0T','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Discovery':          { engines:['2.0D','3.0D','3.0T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Range Rover':        { engines:['3.0T','3.0D','4.4T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Evoque':             { engines:['1.5T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Velar':              { engines:['2.0T','2.0D','3.0T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Кроссовер' },
+    'Sport':              { engines:['2.0D','3.0T','3.0D','4.4T'], fuel:['Бензин','Дизель'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+  },
+  'Mitsubishi': {
+    'Outlander':          { engines:['2.0','2.4','2.4 Гибрид','2.2D'], fuel:['Бензин','Дизель','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Pajero':             { engines:['3.0','3.2D','3.5','3.8'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Внедорожник' },
+    'Eclipse Cross':      { engines:['1.5T','2.0 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'L200':               { engines:['2.4D','2.5D'], fuel:['Дизель'], trans:['Автомат','Механика'], drive:['Полный'], body:'Пикап' },
+  },
+  'Skoda': {
+    'Kodiaq':             { engines:['1.4T','1.5T','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Внедорожник' },
+    'Octavia':            { engines:['1.0T','1.4T','1.5T','1.6D','2.0T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика','Робот'], drive:['Передний'], body:'Седан' },
+    'Superb':             { engines:['1.4T','1.5T','1.8T','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Седан' },
+    'Karoq':              { engines:['1.0T','1.5T','1.6D','2.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Механика'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Fabia':              { engines:['1.0','1.2','1.4'], fuel:['Бензин'], trans:['Автомат','Механика'], drive:['Передний'], body:'Хэтчбек' },
+  },
+  'Honda': {
+    'CR-V':               { engines:['1.5T','2.0 Гибрид'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+    'Pilot':              { engines:['3.5'], fuel:['Бензин'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Accord':             { engines:['1.5T','2.0T'], fuel:['Бензин','Гибрид'], trans:['Автомат','Вариатор'], drive:['Передний'], body:'Седан' },
+    'Civic':              { engines:['1.5T','1.8','2.0'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Седан' },
+    'HR-V':               { engines:['1.5','1.8'], fuel:['Бензин'], trans:['Автомат','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
+  },
+  'Porsche': {
+    'Cayenne':            { engines:['3.0T','3.0D','4.0T'], fuel:['Бензин','Дизель','Гибрид'], trans:['Автомат'], drive:['Полный'], body:'Внедорожник' },
+    'Macan':              { engines:['2.0T','2.9T','3.0D'], fuel:['Бензин','Дизель'], trans:['Автомат','Робот'], drive:['Полный'], body:'Кроссовер' },
+    'Panamera':           { engines:['2.9T','4.0T'], fuel:['Бензин','Гибрид'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+    'Taycan':             { engines:['Электро'], fuel:['Электро'], trans:['Автомат'], drive:['Задний','Полный'], body:'Седан' },
+  },
+  'Другая': {
+    'Другая модель':      { engines:['1.0','1.2','1.4','1.6','1.8','2.0','2.5','3.0','Электро'], fuel:['Бензин','Дизель','Газ (LPG)','Гибрид','Электро'], trans:['Автомат','Механика','Вариатор','Робот'], drive:['Передний','Задний','Полный'], body:'Другой' },
+  },
+}
+
+
+const CRM_MAKES = Object.keys(CAR_DB).filter(m=>m!=='Другая').concat(
+  ['Mazda','Subaru','Chevrolet','Ford','Jeep','Другая']);
+const CRM_COLORS = ['Белый','Чёрный','Серый','Серебристый','Синий','Красный','Зелёный','Коричневый','Бежевый','Золотистый','Оранжевый','Жёлтый','Другой'];
+const CRM_ENGINES_ALL = ['1.0','1.2','1.4','1.5','1.6','1.8','2.0','2.2','2.5','2.7','2.8','3.0','3.3','3.5','4.0','4.4','4.5','4.7','5.0','Электро'];
+const CRM_FUEL_ALL = ['Бензин','Дизель','Газ (LPG)','Гибрид','Электро'];
+const CRM_TRANS_ALL = ['Автомат','Механика','Вариатор','Робот'];
+const CRM_DRIVE_ALL = ['Передний','Задний','Полный'];
+const CRM_BODY_ALL = ['Седан','Кроссовер','Внедорожник','Хэтчбек','Универсал','Купе','Кабриолет','Минивэн','Пикап','Лифтбек','Другой'];
+
+function crmFillSelect(id, items, selected) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = items.map(v=>`<option value="${v}"${v===selected?' selected':''}>${v}</option>`).join('');
+  if (selected && !items.includes(selected)) {
+    el.innerHTML = `<option value="${selected}" selected>${selected}</option>` + el.innerHTML;
+  }
+}
+
+function crmMakeChange(keepValues) {
+  const make = document.getElementById('c-make').value;
+  const db = CAR_DB[make] || {};
+  const models = Object.keys(db);
+  const mSel = document.getElementById('c-model-sel');
+  const mInp = document.getElementById('c-model');
+
+  if (models.length) {
+    mSel.innerHTML = '<option value="">— Выберите модель —</option>' +
+      models.map(m=>`<option value="${m}">${m}</option>`).join('');
+    mSel.style.display = 'block';
+    mInp.style.display = 'none';
+  } else {
+    mSel.style.display = 'none';
+    mInp.style.display = 'block';
+    if (!keepValues) mInp.value = '';
+  }
+  if (!keepValues) crmModelChange({value:''});
+}
+
+function crmModelChange(sel) {
+  const make = document.getElementById('c-make').value;
+  const model = sel ? sel.value : '';
+  const mInp = document.getElementById('c-model');
+  if (model) mInp.value = model;
+
+  const db = (CAR_DB[make] || {})[model] || {};
+  crmFillSelect('c-engine', db.engines ? db.engines.map(e=>e.includes('Электро')?e:e+'L') : CRM_ENGINES_ALL.map(e=>e==='Электро'?e:e+'L'));
+  crmFillSelect('c-fuel',  db.fuel  || CRM_FUEL_ALL);
+  crmFillSelect('c-trans', db.trans || CRM_TRANS_ALL);
+  crmFillSelect('c-drive', db.drive || CRM_DRIVE_ALL);
+  if (db.body) document.getElementById('c-body').value = db.body;
+}
+
 const CHANNELS = {telegram:{icon:'✈',color:'#229ED9',bg:'#E8F4FC',label:'Telegram'},whatsapp:{icon:'●',color:'#25D366',bg:'#E8FAF0',label:'WhatsApp'},instagram:{icon:'◆',color:'#E1306C',bg:'#FDE8F0',label:'Instagram'},tiktok:{icon:'♪',color:'#000',bg:'#F0F0F0',label:'TikTok'},call:{icon:'📞',color:'#8E44AD',bg:'#F5EEF8',label:'Звонок'},site:{icon:'🌐',color:'#2980B9',bg:'#EBF5FB',label:'Сайт'}};
 
 let managers = LS('gc:mgr') || [
@@ -1176,22 +1360,48 @@ function gv(id) { return document.getElementById(id)?.value||''; }
 function openCarModal(id=null) {
   const car = id ? cars.find(c=>c.id===id) : null;
   const stOpts = CAR_STATUSES.map(s=>`<option value="${s}"${s===(car?.status||'В продаже')?' selected':''}>${s}</option>`).join('');
+  const makeList = (car?.make && !CRM_MAKES.includes(car.make)) ? [car.make,...CRM_MAKES] : CRM_MAKES;
+  const makeOpts = '<option value="">— Выберите марку —</option>' +
+    makeList.map(m=>`<option value="${m}"${m===(car?.make||'')?' selected':''}>${m}</option>`).join('');
+  const years = []; for(let y=new Date().getFullYear()+1; y>=1990; y--) years.push(y);
+  const yearOpts = years.map(y=>`<option value="${y}"${y===Number(car?.year||new Date().getFullYear())?' selected':''}>${y}</option>`).join('');
+  const colorList = (car?.color && !CRM_COLORS.includes(car.color)) ? [car.color,...CRM_COLORS] : CRM_COLORS;
+  const colorOpts = colorList.map(cl=>`<option value="${cl}"${cl===(car?.color||'Белый')?' selected':''}>${cl}</option>`).join('');
+  const bodyOpts = CRM_BODY_ALL.map(b=>`<option value="${b}"${b===(car?.body_type||'')?' selected':''}>${b}</option>`).join('');
+  const ytLink = (car?.videos && car.videos.length) ? car.videos[0] : '';
+
   showModal(car?'Редактировать авто':'Новый автомобиль',
     `<div class="form-grid">
       <div class="form-row">
-        <div><label>Марка *</label><input id="c-make" value="${car?.make||''}"></div>
-        <div><label>Модель *</label><input id="c-model" value="${car?.model||''}"></div>
+        <div><label>Марка *</label><select id="c-make" onchange="crmMakeChange()">${makeOpts}</select></div>
+        <div><label>Модель *</label>
+          <select id="c-model-sel" onchange="crmModelChange(this)" style="display:none"><option value="">— Выберите модель —</option></select>
+          <input id="c-model" value="${car?.model||''}" placeholder="Сначала выберите марку">
+        </div>
       </div>
       <div class="form-row">
-        <div><label>Год</label><input id="c-year" type="number" value="${car?.year||new Date().getFullYear()}"></div>
-        <div><label>Цвет</label><input id="c-color" value="${car?.color||''}"></div>
+        <div><label>Год</label><select id="c-year">${yearOpts}</select></div>
+        <div><label>Цвет</label><select id="c-color">${colorOpts}</select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Двигатель</label><select id="c-engine"></select></div>
+        <div><label>Топливо</label><select id="c-fuel"></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>КПП</label><select id="c-trans"></select></div>
+        <div><label>Привод</label><select id="c-drive"></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Кузов</label><select id="c-body">${bodyOpts}</select></div>
+        <div><label>Статус</label><select id="c-status">${stOpts}</select></div>
       </div>
       <div class="form-row">
         <div><label>Цена (₸)</label><input id="c-price" type="number" value="${car?.price||''}"></div>
         <div><label>Пробег (км)</label><input id="c-mileage" type="number" value="${car?.mileage||''}"></div>
       </div>
       <div><label>VIN</label><input id="c-vin" value="${car?.vin||''}" style="font-family:monospace"></div>
-      <div><label>Статус</label><select id="c-status">${stOpts}</select></div>
+      <div><label>Видеообзор (YouTube ссылка)</label><input id="c-youtube" value="${ytLink}" placeholder="https://youtube.com/watch?v=..."></div>
+      <div><label>Описание</label><textarea id="c-desc" rows="3" style="width:100%;resize:vertical">${car?.description||''}</textarea></div>
       <div>
         <label>Фото (загрузить)</label>
         <div class="upload-zone" onclick="document.getElementById('c-photos').click()">
@@ -1203,26 +1413,71 @@ function openCarModal(id=null) {
         ${car?.photos?.length?`<div style="font-size:12px;color:#27AE60;margin-top:6px">✅ Уже загружено: ${car.photos.length} фото</div>`:''}
       </div>
     </div>`,
-    `${car?`<button class="btn btn-danger btn-sm" onclick="deleteCar('${car.id}')">Удалить</button>`:''}
+    `${car?`<button class="btn btn-danger btn-sm" onclick="deleteCar('${car.id}')">Архивировать</button>`:''}
     <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
     <button class="btn btn-primary" onclick="saveCar('${id||''}')">Сохранить</button>`
   );
+
+  // Инициализация зависимых списков
+  crmMakeChange(true);
+  if (car) {
+    const mSel = document.getElementById('c-model-sel');
+    if (mSel && mSel.style.display !== 'none' && car.model) {
+      if (![...mSel.options].some(o=>o.value===car.model)) {
+        mSel.innerHTML += `<option value="${car.model}">${car.model}</option>`;
+      }
+      mSel.value = car.model;
+    }
+    document.getElementById('c-model').value = car.model || '';
+    const db = (CAR_DB[car.make]||{})[car.model] || {};
+    crmFillSelect('c-engine', (db.engines||CRM_ENGINES_ALL).map(e=>e.includes('Электро')?e:e+'L'), car.engine);
+    crmFillSelect('c-fuel',  db.fuel  || CRM_FUEL_ALL,  car.fuel_type);
+    crmFillSelect('c-trans', db.trans || CRM_TRANS_ALL, car.transmission);
+    crmFillSelect('c-drive', db.drive || CRM_DRIVE_ALL, car.drive_type);
+    if (car.body_type) document.getElementById('c-body').value = car.body_type;
+  } else {
+    crmModelChange({value:''});
+  }
 }
 
-function saveCar(id) {
-  const make = gv('c-make'); if(!make) return;
+async function saveCar(id) {
+  const make = gv('c-make'); if(!make) { showToast('⚠️ Выберите марку'); return; }
+  const model = gv('c-model'); if(!model) { showToast('⚠️ Укажите модель'); return; }
   const fileInput = document.getElementById('c-photos');
-  const existing = id ? (cars.find(c=>c.id===id)?.photos||[]) : [];
+  const existingCar = id ? cars.find(c=>c.id===id) : null;
+  const existing = existingCar?.photos || [];
+  const yt = gv('c-youtube').trim();
 
-  const doSave = (newPhotos) => {
-    const obj = {
-      id: id||uid(), make, model:gv('c-model'), year:Number(gv('c-year')),
-      color:gv('c-color'), price:Number(gv('c-price')), mileage:Number(gv('c-mileage')),
-      vin:gv('c-vin'), status:gv('c-status'), photos:[...existing,...newPhotos]
+  const doSave = async (newPhotos) => {
+    const payload = {
+      make, model,
+      year: Number(gv('c-year')),
+      color: gv('c-color'),
+      price: Number(gv('c-price')) || null,
+      mileage: Number(gv('c-mileage')) || null,
+      vin: gv('c-vin'),
+      status: gv('c-status'),
+      engine: gv('c-engine'),
+      fuel_type: gv('c-fuel'),
+      transmission: gv('c-trans'),
+      drive_type: gv('c-drive'),
+      body_type: gv('c-body'),
+      description: gv('c-desc'),
+      photos: [...existing, ...newPhotos],
+      videos: yt ? [yt] : []
     };
-    if(id) cars = cars.map(c=>c.id===id?obj:c); else cars = [obj,...cars];
-    SS('gc:cars',cars); closeModal(); renderCars();
-    showToast(`✅ Автомобиль ${make} ${obj.model} сохранён`);
+    const res = await saveCarApi(id || null, payload);
+    if (res) {
+      await loadCars();
+      closeModal(); renderCars();
+      showToast(`✅ Автомобиль ${make} ${model} сохранён`);
+    } else {
+      // Fallback: localStorage, если API недоступен
+      const obj = { id: id||uid(), ...payload };
+      if(id) cars = cars.map(c=>c.id===id?obj:c); else cars = [obj,...cars];
+      SS('gc:cars',cars); closeModal(); renderCars();
+      showToast('⚠️ Сохранено локально (API недоступен)');
+    }
   };
 
   const files = Array.from(fileInput?.files||[]);
@@ -1239,10 +1494,17 @@ function saveCar(id) {
   } else { doSave([]); }
 }
 
-function deleteCar(id) {
-  if(!confirm('Удалить автомобиль?')) return;
-  cars = cars.filter(c=>c.id!==id);
-  SS('gc:cars',cars); closeModal(); renderCars();
+async function deleteCar(id) {
+  if(!confirm('Архивировать автомобиль? Он исчезнет из каталога.')) return;
+  try {
+    await apiFetch('/cars?id=' + id, { method: 'DELETE' });
+    await loadCars();
+  } catch(e) {
+    cars = cars.filter(c=>c.id!==id);
+    SS('gc:cars',cars);
+  }
+  closeModal(); renderCars();
+  showToast('📦 Автомобиль архивирован');
 }
 
 function openLeadModal(id=null) {
