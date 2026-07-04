@@ -1274,9 +1274,16 @@ function renderCars(search='') {
         </div>
         ${car.videos&&car.videos.length>0?`<div style="display:inline-flex;align-items:center;gap:4px;background:#E8F8EF;color:#27AE60;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;margin-top:6px">✓ Осмотрен · есть видео</div>`:''}
         ${car.photos&&car.photos.length>1?`<div style="font-size:11px;color:#AAA;margin-top:6px">📸 ${car.photos.length} фото</div>`:''}
-        <div style="display:flex;gap:6px;margin-top:10px">
+        <div style="display:flex;align-items:center;gap:6px;margin-top:10px">
+          <span style="font-size:11px;color:#AAA;font-weight:600;flex-shrink:0">СТАТУС:</span>
+          <select onchange="quickStatus('${car.id}', this)" style="flex:1;border:1px solid #E0E0E0;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:600;background:#FAFAFA;cursor:pointer">
+            ${CAR_STATUSES.map(s=>`<option value="${s}"${s===car.status?' selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px">
           <button class="btn btn-primary btn-sm" style="flex:1" onclick="openCarModal('${car.id}')">Редактировать</button>
           <button class="btn btn-ghost btn-sm" onclick="viewCar('${car.id}')">👁</button>
+          <button class="btn btn-ghost btn-sm" title="Архивировать" style="color:#C0392B" onclick="deleteCar('${car.id}')">🗑</button>
         </div>
       </div>
     </div>`).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#CCC">Автомобилей не найдено</div>';
@@ -1523,6 +1530,24 @@ async function saveCar(id) {
       r.readAsDataURL(f);
     });
   } else { doSave([]); }
+}
+
+async function quickStatus(id, sel) {
+  const newStatus = sel.value;
+  const car = cars.find(c=>c.id===id);
+  const prev = car ? car.status : null;
+  sel.disabled = true;
+  try {
+    await apiFetch('/cars?id=' + id, { method: 'PATCH', body: { status: newStatus } });
+    if (car) car.status = newStatus;
+    SS('gc:cars', cars);
+    renderCars();
+    showToast(`✅ ${car ? car.make + ' ' + car.model + ' — ' : ''}статус: «${newStatus}»`);
+  } catch(e) {
+    sel.value = prev || sel.value;
+    sel.disabled = false;
+    showToast('⚠️ Не удалось сменить статус: ' + e.message);
+  }
 }
 
 async function deleteCar(id) {
