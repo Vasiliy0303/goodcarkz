@@ -439,6 +439,7 @@ textarea{resize:vertical;min-height:70px}
     <div id="page-leads" class="page">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
         <div><div class="page-title">Лиды</div><div class="page-sub">Все входящие обращения</div></div>
+        <button class="btn btn-ghost" onclick="exportLeadsCsv()" style="margin-left:auto;margin-right:10px">⬇ Выписка CSV</button>
         <button class="btn btn-primary" onclick="openLeadModal()">+ Новый лид</button>
       </div>
       <div class="sb2" style="gap:8px;flex-wrap:wrap">
@@ -469,6 +470,7 @@ textarea{resize:vertical;min-height:70px}
     <div id="page-cars" class="page">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
         <div><div class="page-title">Автомобили</div><div class="page-sub">Весь склад</div></div>
+        <button class="btn btn-ghost" onclick="exportCarsCsv()" style="margin-left:auto;margin-right:10px">⬇ Выписка CSV</button>
         <button class="btn btn-primary" onclick="openCarModal()">+ Добавить авто</button>
       </div>
       <div class="sb2" style="flex-wrap:wrap;gap:8px">
@@ -1372,6 +1374,11 @@ function viewCar(id) {
         <div><div style="font-size:11px;color:#AAA;font-weight:600">ЦЕНА</div><div style="font-size:16px;font-weight:800;color:#C0392B;margin-top:3px">${fmt(car.price)}</div></div>
         <div><div style="font-size:11px;color:#AAA;font-weight:600">ПРОБЕГ</div><div style="font-size:14px;font-weight:700;margin-top:3px">${(car.mileage||0).toLocaleString('ru-RU')} км</div></div>
       </div>
+      ${car.seller_name||car.seller_phone?`<div style="background:#FFF8E7;border:1px solid #F0E0B0;border-radius:8px;padding:10px 12px">
+        <div style="font-size:11px;color:#B8860B;font-weight:700;margin-bottom:4px">ПРОДАВЕЦ (подал из приложения)</div>
+        <div style="font-size:14px;font-weight:700">${car.seller_name||'—'}</div>
+        ${car.seller_phone?`<a href="tel:${car.seller_phone}" style="font-size:13px;color:#C0392B;font-weight:600;text-decoration:none">📞 ${car.seller_phone}</a>`:''}
+      </div>`:''}
       <div class="form-row">
         <div><div style="font-size:11px;color:#AAA;font-weight:600">VIN</div><div style="font-size:12px;font-family:monospace;margin-top:3px">${car.vin||'—'}</div></div>
         <div><div style="font-size:11px;color:#AAA;font-weight:600">СТАТУС</div><div style="margin-top:3px"><span class="badge badge-g">${car.status}</span></div></div>
@@ -1507,7 +1514,8 @@ async function saveCar(id) {
       body_type: gv('c-body'),
       description: gv('c-desc'),
       photos: [...existing, ...newPhotos],
-      videos: yt ? [yt] : []
+      videos: yt ? [yt] : [],
+      changed_by: (window.GC_USER && GC_USER.name) || 'Platform'
     };
     const res = await saveCarApi(id || null, payload);
     if (res) {
@@ -1537,6 +1545,52 @@ async function saveCar(id) {
   } else { doSave([]); }
 }
 
+// ── Выписки CSV (открываются в Excel) ──────────────────────────────────────
+function csvDownload(filename, headers, rows) {
+  const esc = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const lines = [headers.map(esc).join(';')].concat(rows.map(r => r.map(esc).join(';')));
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+const fmtDate = d => d ? new Date(d).toLocaleString('ru-RU') : '';
+
+function exportCarsCsv() {
+  // Экспортируется текущий вид: тот же фильтр, что выбран на экране
+  let fc = [...cars];
+  if(carFilter==='new') fc = fc.filter(c=>c.status==='Новый');
+  if(carFilter==='sale') fc = fc.filter(c=>c.status==='В продаже');
+  if(carFilter==='reserve') fc = fc.filter(c=>c.status==='В резерве');
+  if(carFilter==='prep') fc = fc.filter(c=>c.status==='На подготовке');
+  if(carFilter==='auction') fc = fc.filter(c=>c.status==='На аукционе');
+  if(carFilter==='archive') fc = fc.filter(c=>c.status==='Архив');
+
+  csvDownload(
+    'goodcar_авто_' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Марка','Модель','Год','VIN','Цвет','Пробег, км','Цена, ₸','Статус','Продавец','Телефон продавца','Осмотрен (видео)','Подано','В продаже с','Продано'],
+    fc.map(c => [
+      c.make, c.model, c.year, c.vin||'', c.color||'', c.mileage||0, c.price||0, c.status,
+      c.seller_name||'', c.seller_phone||'',
+      (c.videos&&c.videos.length>0)?'Да':'Нет',
+      fmtDate(c.created_at), fmtDate(c.listed_at), fmtDate(c.sold_at)
+    ])
+  );
+  showToast('⬇ Выписка по авто скачана (' + fc.length + ' записей)');
+}
+
+function exportLeadsCsv() {
+  const src = (typeof leads !== 'undefined' && leads) ? leads : [];
+  csvDownload(
+    'goodcar_лиды_' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Имя','Телефон','Email','Канал','Интерес','Статус','Дата обращения'],
+    src.map(l => [l.name||'', l.phone||'', l.email||'', l.channel||'', l.interest||'', l.status||'', fmtDate(l.created_at)])
+  );
+  showToast('⬇ Выписка по лидам скачана (' + src.length + ' записей)');
+}
+
 async function hardDeleteCar(id) {
   const car = cars.find(c=>c.id===id);
   const name = car ? car.make + ' ' + car.model : 'автомобиль';
@@ -1558,7 +1612,7 @@ async function quickStatus(id, sel) {
   const prev = car ? car.status : null;
   sel.disabled = true;
   try {
-    await apiFetch('/cars?id=' + id, { method: 'PATCH', body: { status: newStatus } });
+    await apiFetch('/cars?id=' + id, { method: 'PATCH', body: { status: newStatus, changed_by: (window.GC_USER && GC_USER.name) || 'Platform' } });
     if (car) car.status = newStatus;
     SS('gc:cars', cars);
     renderCars();
