@@ -1520,6 +1520,25 @@ function adChoosePhoto(){
 
 var _adPhotos = []; // base64 array
 
+// Сжатие фото: до 1280px по большей стороне, JPEG ~72% — вес падает в 10-15 раз
+function gcCompress(dataUrl, cb){
+  var img = new Image();
+  img.onload = function(){
+    var maxSide = 1280;
+    var w = img.width, h = img.height;
+    if (Math.max(w, h) > maxSide) {
+      var k = maxSide / Math.max(w, h);
+      w = Math.round(w * k); h = Math.round(h * k);
+    }
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    cb(cv.toDataURL('image/jpeg', 0.72));
+  };
+  img.onerror = function(){ cb(dataUrl); };
+  img.src = dataUrl;
+}
+
 function adHandleFiles(input){
   var files = Array.from(input.files);
   if(!files.length) return;
@@ -1527,8 +1546,10 @@ function adHandleFiles(input){
   files.slice(0, remaining).forEach(function(f){
     var r = new FileReader();
     r.onload = function(e){
-      _adPhotos.push(e.target.result);
-      adRenderPhotos();
+      gcCompress(e.target.result, function(compressed){
+        _adPhotos.push(compressed);
+        adRenderPhotos();
+      });
     };
     r.readAsDataURL(f);
   });
