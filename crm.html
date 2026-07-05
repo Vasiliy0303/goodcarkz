@@ -1959,7 +1959,7 @@ async function saveCar(id) {
     color: gv('c-color'),
     price: Number(gv('c-price')) || null,
     mileage: Number(gv('c-mileage')) || null,
-    vin: gv('c-vin'),
+    vin: gv('c-vin').trim() || null,
     status: gv('c-status'),
     engine: gv('c-engine'),
     fuel_type: gv('c-fuel'),
