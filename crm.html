@@ -439,7 +439,8 @@ textarea{resize:vertical;min-height:70px}
     <div id="page-leads" class="page">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
         <div><div class="page-title">Лиды</div><div class="page-sub">Все входящие обращения</div></div>
-        <button class="btn btn-ghost" onclick="exportLeadsCsv()" style="margin-left:auto;margin-right:10px">⬇ Выписка CSV</button>
+        <button class="btn btn-ghost" onclick="exportUsersCsv()" style="margin-left:auto;margin-right:6px">👥 Клиенты App</button>
+        <button class="btn btn-ghost" onclick="exportLeadsCsv()" style="margin-right:10px">⬇ Выписка CSV</button>
         <button class="btn btn-primary" onclick="openLeadModal()">+ Новый лид</button>
       </div>
       <div class="sb2" style="gap:8px;flex-wrap:wrap">
@@ -1579,6 +1580,22 @@ function exportCarsCsv() {
     ])
   );
   showToast('⬇ Выписка по авто скачана (' + fc.length + ' записей)');
+}
+
+async function exportUsersCsv() {
+  try {
+    const res = await apiFetch('/users');
+    const users = res.data || [];
+    if (!users.length) { showToast('Пока нет зарегистрированных клиентов'); return; }
+    csvDownload(
+      'goodcar_клиенты_' + new Date().toISOString().slice(0,10) + '.csv',
+      ['Имя','Телефон','Город','Дата регистрации','Последняя активность'],
+      users.map(u => [u.name||'', u.phone||'', u.city||'', fmtDate(u.created_at), fmtDate(u.last_seen_at)])
+    );
+    showToast('👥 Клиенты App: ' + users.length + ' записей');
+  } catch(e) {
+    showToast('⚠️ ' + e.message);
+  }
 }
 
 function exportLeadsCsv() {
