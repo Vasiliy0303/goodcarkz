@@ -1906,6 +1906,27 @@ function openCarModal(id=null) {
 // ── Управление фотографиями в форме авто ───────────────────────────────────
 let _editPhotos = [];
 
+// Сжатие фото до 1280px / JPEG 72% (вес ~в 10-15 раз меньше)
+function crmCompress(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const maxSide = 1280;
+      let w = img.width, h = img.height;
+      if (Math.max(w, h) > maxSide) {
+        const k = maxSide / Math.max(w, h);
+        w = Math.round(w * k); h = Math.round(h * k);
+      }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(cv.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 function crmRenderPhotoGrid() {
   const grid = document.getElementById('c-photo-grid');
   if (!grid) return;
@@ -1939,8 +1960,8 @@ function crmAddPhotos(input) {
   let loaded = 0;
   files.forEach(f => {
     const r = new FileReader();
-    r.onload = e => {
-      _editPhotos.push(e.target.result);
+    r.onload = async e => {
+      _editPhotos.push(await crmCompress(e.target.result));
       if (++loaded === files.length) { crmRenderPhotoGrid(); showToast('📷 Добавлено: ' + files.length + ' фото'); }
     };
     r.readAsDataURL(f);
@@ -1972,16 +1993,21 @@ async function saveCar(id) {
     changed_by: (window.GC_USER && GC_USER.name) || 'Platform'
   };
 
+  // Дожимаем тяжёлые фото (старые загрузки без сжатия), чтобы уложиться в лимит запроса
+  showToast('⏳ Подготовка фото…');
+  payload.photos = await Promise.all(
+    payload.photos.map(p => (typeof p === 'string' && p.length > 400000) ? crmCompress(p) : Promise.resolve(p))
+  );
+  const totalMb = (JSON.stringify(payload).length / 1048576).toFixed(1);
+
   const res = await saveCarApi(id || null, payload);
   if (res) {
     await loadCars();
     closeModal(); renderCars();
     showToast(`✅ Автомобиль ${make} ${model} сохранён`);
   } else {
-    const obj = { id: id||uid(), ...payload };
-    if(id) cars = cars.map(c=>c.id===id?obj:c); else cars = [obj,...cars];
-    SS('gc:cars',cars); closeModal(); renderCars();
-    showToast('⚠️ Сохранено локально (API недоступен)');
+    // Ничего не подменяем локально — честно сообщаем и оставляем окно открытым
+    showToast('❌ Не сохранилось (размер запроса ' + totalMb + ' МБ). Попробуйте ещё раз или удалите часть фото.');
   }
 }
 
