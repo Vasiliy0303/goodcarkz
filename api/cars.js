@@ -109,6 +109,11 @@ export default async function handler(req, res) {
         'description','photos','videos','is_published','manager_id',
         'seller_name','seller_phone'];
 
+      // Пустой VIN храним как NULL — иначе конфликт уникальности cars_vin_key
+      if (req.body.vin !== undefined && String(req.body.vin).trim() === '') {
+        req.body.vin = null;
+      }
+
       const updates = [];
       const params = [id];
       let p = 2;
