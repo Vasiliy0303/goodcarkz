@@ -1906,12 +1906,11 @@ function openCarModal(id=null) {
 // ── Управление фотографиями в форме авто ───────────────────────────────────
 let _editPhotos = [];
 
-// Сжатие фото до 1280px / JPEG 72% (вес ~в 10-15 раз меньше)
-function crmCompress(dataUrl) {
+// Сжатие фото (maxSide px, JPEG quality)
+function crmCompress(dataUrl, maxSide = 1280, q = 0.72) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const maxSide = 1280;
       let w = img.width, h = img.height;
       if (Math.max(w, h) > maxSide) {
         const k = maxSide / Math.max(w, h);
@@ -1920,11 +1919,29 @@ function crmCompress(dataUrl) {
       const cv = document.createElement('canvas');
       cv.width = w; cv.height = h;
       cv.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(cv.toDataURL('image/jpeg', 0.72));
+      resolve(cv.toDataURL('image/jpeg', q));
     };
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
   });
+}
+
+// Ужимаем набор фото под бюджет запроса Vercel (лимит ~4.5 МБ, целимся в 3.5)
+async function crmShrinkToBudget(photos) {
+  const BUDGET = 3500000;
+  const size = arr => arr.reduce((s, p) => s + (p ? p.length : 0), 0);
+  // Проход 1: стандартное сжатие всего, что больше ~180 КБ
+  let ps = await Promise.all(photos.map(p =>
+    (typeof p === 'string' && p.length > 240000) ? crmCompress(p, 1280, 0.72) : Promise.resolve(p)));
+  // Проход 2: если всё ещё не влезаем — жёстче
+  if (size(ps) > BUDGET) {
+    ps = await Promise.all(ps.map(p => crmCompress(p, 1024, 0.6)));
+  }
+  // Проход 3: совсем жёстко
+  if (size(ps) > BUDGET) {
+    ps = await Promise.all(ps.map(p => crmCompress(p, 800, 0.5)));
+  }
+  return ps;
 }
 
 function crmRenderPhotoGrid() {
@@ -1993,12 +2010,12 @@ async function saveCar(id) {
     changed_by: (window.GC_USER && GC_USER.name) || 'Platform'
   };
 
-  // Дожимаем тяжёлые фото (старые загрузки без сжатия), чтобы уложиться в лимит запроса
-  showToast('⏳ Подготовка фото…');
-  payload.photos = await Promise.all(
-    payload.photos.map(p => (typeof p === 'string' && p.length > 400000) ? crmCompress(p) : Promise.resolve(p))
-  );
+  // Ужимаем фото под лимит запроса
+  const beforeMb = (JSON.stringify(payload).length / 1048576).toFixed(1);
+  showToast('⏳ Сжимаю фото (' + beforeMb + ' МБ)…');
+  payload.photos = await crmShrinkToBudget(payload.photos);
   const totalMb = (JSON.stringify(payload).length / 1048576).toFixed(1);
+  showToast('📦 Отправляю: ' + totalMb + ' МБ…');
 
   const res = await saveCarApi(id || null, payload);
   if (res) {
@@ -2378,45 +2395,7 @@ window.saveLead = async function(id) {
   }
 };
 
-const _origSaveCar = window.saveCar;
-window.saveCar = async function(id) {
-  const make = gv('c-make'); if(!make) return;
-  const existing = id ? cars.find(c=>c.id===id) : null;
-  const fileInput = document.getElementById('c-photos');
-  const files = Array.from(fileInput?.files||[]);
-
-  const doSaveApi = async (newPhotos) => {
-    const body = {
-      make, model: gv('c-model'), year: Number(gv('c-year')),
-      color: gv('c-color'), price: Number(gv('c-price')),
-      mileage: Number(gv('c-mileage')), vin: gv('c-vin'),
-      status: gv('c-status'),
-      photos: [...(existing?.photos||[]), ...newPhotos],
-    };
-    showToast('💾 Сохраняем авто…');
-    const result = await saveCarApi(id || null, body);
-    if (result) {
-      showToast(`✅ ${make} ${body.model} сохранён в базе!`);
-      closeModal();
-      await loadCars();
-      renderCars();
-    }
-  };
-
-  if (files.length) {
-    const newPhotos = [];
-    files.forEach(f => {
-      const r = new FileReader();
-      r.onload = e => {
-        newPhotos.push(e.target.result);
-        if (newPhotos.length === files.length) doSaveApi(newPhotos);
-      };
-      r.readAsDataURL(f);
-    });
-  } else {
-    doSaveApi([]);
-  }
-};
+// (устаревшее переопределение saveCar удалено — актуальная версия выше, с управлением фото)
 
 const _origSaveDeal = window.saveDeal;
 window.saveDeal = async function(id) {
@@ -2475,7 +2454,7 @@ initDate();
   else if (ok > 0) showToast('⚠️ Частичная загрузка (' + ok + '/3)');
   else showToast('⚠️ Используем локальные данные');
   renderDashboard();
-  updateMeta && updateMeta();
+  if (typeof updateMeta === 'function') updateMeta();
 })();
 
 // ── AUCTION MODULE ────────────────────────────────────────────────────────────
