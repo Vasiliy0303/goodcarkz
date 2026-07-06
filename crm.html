@@ -1106,6 +1106,8 @@ var CAR_DB = {
     'Symbol': { engines:['1.4','1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
     'Duster': { engines:['1.3T','1.6','2.0'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
     'Logan': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Logan Stepway': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Лифтбек' },
+    'Sandero Stepway': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Хэтчбек' },
     'Sandero': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика'], drive:['Передний'], body:'Хэтчбек' },
     'Arkana': { engines:['1.3T','1.6'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
     'Kaptur': { engines:['1.3T','1.6','2.0'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
@@ -1814,13 +1816,8 @@ function gv(id) { return document.getElementById(id)?.value||''; }
 function openCarModal(id=null) {
   const car = id ? cars.find(c=>c.id===id) : null;
   const stOpts = CAR_STATUSES.map(s=>`<option value="${s}"${s===(car?.status||'В продаже')?' selected':''}>${s}</option>`).join('');
-  const restMakes = EXTRA_MAKES.filter(m => !CRM_POPULAR.includes(m));
-  const opt = m => `<option value="${m}"${m===(car?.make||'')?' selected':''}>${m}</option>`;
-  const makeOpts = '<option value="">— Выберите марку —</option>' +
-    ((car?.make && !CRM_MAKES.includes(car.make)) ? opt(car.make) : '') +
-    '<optgroup label="Популярные">' + CRM_POPULAR.map(opt).join('') + '</optgroup>' +
-    '<optgroup label="Все марки (A–Я)">' + restMakes.map(opt).join('') + '</optgroup>' +
-    opt('Другая');
+  const allMakes = [...new Set([...CRM_POPULAR, ...EXTRA_MAKES])].sort((a,b)=>a.localeCompare(b,'ru'));
+  const makesDatalist = '<datalist id="makes-dl">' + allMakes.map(m=>`<option value="${m}">`).join('') + '</datalist>';
   const years = []; for(let y=new Date().getFullYear()+1; y>=1990; y--) years.push(y);
   const yearOpts = years.map(y=>`<option value="${y}"${y===Number(car?.year||new Date().getFullYear())?' selected':''}>${y}</option>`).join('');
   const colorList = (car?.color && !CRM_COLORS.includes(car.color)) ? [car.color,...CRM_COLORS] : CRM_COLORS;
@@ -1831,7 +1828,7 @@ function openCarModal(id=null) {
   showModal(car?'Редактировать авто':'Новый автомобиль',
     `<div class="form-grid">
       <div class="form-row">
-        <div><label>Марка *</label><select id="c-make" onchange="crmMakeChange()">${makeOpts}</select></div>
+        <div><label>Марка *</label><input id="c-make" list="makes-dl" value="${car?.make||''}" placeholder="Начните вводить: Toyota, Renault…" onchange="crmMakeChange()" autocomplete="off">${makesDatalist}</div>
         <div><label>Модель *</label>
           <select id="c-model-sel" onchange="crmModelChange(this)" style="display:none"><option value="">— Выберите модель —</option></select>
           <input id="c-model" value="${car?.model||''}" placeholder="Сначала выберите марку">
