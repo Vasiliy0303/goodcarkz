@@ -538,7 +538,7 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
       <!-- FIELDS -->
       <div class="fld">
         <label>Марка автомобиля</label>
-        <select id="ad-make" onchange="adMakeChange()"><option value="">— Выберите марку —</option></select>
+        <input id="ad-make" list="ad-makes-dl" placeholder="Начните вводить марку…" onchange="adMakeChange()" autocomplete="off"><datalist id="ad-makes-dl"></datalist>
       </div>
       <div class="fld">
         <label>Модель</label>
@@ -576,11 +576,7 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
       <div class="fld2">
         <div class="fld">
           <label>Тип кузова</label>
-          <select id="ad-body">
-            <option>Внедорожник</option><option>Седан</option><option>Хэтчбек</option>
-            <option>Кроссовер</option><option>Универсал</option><option>Минивэн</option>
-            <option>Купе</option><option>Пикап</option><option>Кабриолет</option>
-          </select>
+          <select id="ad-body"><option>Седан</option><option>Кроссовер</option><option>Внедорожник</option><option>Хэтчбек</option><option>Универсал</option><option>Купе</option><option>Кабриолет</option><option>Минивэн</option><option>Пикап</option><option>Лифтбек</option><option>Другой</option></select>
         </div>
         <div class="fld">
           <label>Цвет</label>
@@ -2156,6 +2152,8 @@ var CAR_DB = {
     'Symbol': { engines:['1.4','1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
     'Duster': { engines:['1.3T','1.6','2.0'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
     'Logan': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика'], drive:['Передний'], body:'Седан' },
+    'Logan Stepway': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Лифтбек' },
+    'Sandero Stepway': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика','Вариатор'], drive:['Передний'], body:'Хэтчбек' },
     'Sandero': { engines:['1.6'], fuel:['Бензин','Газ (LPG)'], trans:['Автомат','Механика'], drive:['Передний'], body:'Хэтчбек' },
     'Arkana': { engines:['1.3T','1.6'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
     'Kaptur': { engines:['1.3T','1.6','2.0'], fuel:['Бензин'], trans:['Автомат','Механика','Вариатор'], drive:['Передний','Полный'], body:'Кроссовер' },
@@ -2420,14 +2418,12 @@ var EXTRA_MAKES = ["AITO", "Acura", "Alfa Romeo", "Alpina", "Arcfox", "Aston Mar
 
 // Заполняем список марок: популярные (с моделями) + полный алфавит
 ;(function fillMakes(){
-  var sel = document.getElementById('ad-make');
-  if (!sel) return;
+  var dl = document.getElementById('ad-makes-dl');
+  if (!dl) return;
   var popular = Object.keys(CAR_DB).filter(function(m){ return m !== 'Другая'; });
-  var rest = EXTRA_MAKES.filter(function(m){ return popular.indexOf(m) === -1; });
-  sel.innerHTML = '<option value="">— Выберите марку —</option>' +
-    '<optgroup label="Популярные">' + popular.map(function(mk){ return '<option>' + mk + '</option>'; }).join('') + '</optgroup>' +
-    '<optgroup label="Все марки (A–Я)">' + rest.map(function(mk){ return '<option>' + mk + '</option>'; }).join('') + '</optgroup>' +
-    '<option>Другая</option>';
+  var all = popular.concat(EXTRA_MAKES.filter(function(m){ return popular.indexOf(m) === -1; }));
+  all.sort(function(a,b){ return a.localeCompare(b,'ru'); });
+  dl.innerHTML = all.map(function(mk){ return '<option value="' + mk + '">'; }).join('');
 })();
 
 
