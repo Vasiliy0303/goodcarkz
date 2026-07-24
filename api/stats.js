@@ -1,19 +1,27 @@
 // GET /api/stats?city=Астана|Кокшетау|all
 // Все цифры дашборда одним запросом. Колонки — по реальной схеме:
 // deals.stage (enum) + deals.amount + deals.closed_at, cars.price, leads.*
-const { Pool } = require('pg');
+import pg from 'pg';
+const { Pool } = pg;
 
 let pool;
 function db() {
-  if (!pool) pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: 3,
-  });
+  if (!pool) {
+    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL не задан в настройках проекта Vercel');
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 3,
+      connectionTimeoutMillis: 8000,
+    });
+    // Без этого обработчика ошибка простаивающего клиента роняет весь процесс
+    // и Vercel отдаёт FUNCTION_INVOCATION_FAILED вместо читаемого ответа.
+    pool.on('error', e => console.error('pg pool error:', e.message));
+  }
   return pool;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -124,4 +132,4 @@ module.exports = async (req, res) => {
     console.error('stats error:', e);
     res.status(500).json({ error: e.message });
   }
-};
+}
