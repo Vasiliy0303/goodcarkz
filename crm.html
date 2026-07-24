@@ -273,36 +273,36 @@ textarea{resize:vertical;min-height:70px}
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#FDE8E8">💰</div>Выручка за месяц</div>
-          <div class="kpi-val" style="color:#C0392B">127 500 000 ₸</div>
-          <div class="kpi-delta up">+18.6% к прошлому месяцу</div>
+          <div class="kpi-val" style="color:#C0392B">—</div>
+          <div class="kpi-delta neu">загрузка…</div>
           <div class="mini-chart" id="mc1"></div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#FEF9E7">🛒</div>Продажи за месяц</div>
-          <div class="kpi-val">68</div>
-          <div class="kpi-delta up">+12 сделок</div>
+          <div class="kpi-val">—</div>
+          <div class="kpi-delta neu"></div>
           <div class="mini-chart" id="mc2"></div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#EBF5FB">👤</div>Новые лиды</div>
-          <div class="kpi-val">152</div>
-          <div class="kpi-delta up">+27 сегодня</div>
+          <div class="kpi-val">—</div>
+          <div class="kpi-delta neu"></div>
           <div class="mini-chart" id="mc3"></div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#F5EEF8">⚡</div>В работе</div>
-          <div class="kpi-val">43</div>
-          <div class="kpi-delta down">-5 к прошлой неделе</div>
+          <div class="kpi-val">—</div>
+          <div class="kpi-delta neu"></div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#E8F8F0">✅</div>Закрытые сделки</div>
-          <div class="kpi-val">25</div>
-          <div class="kpi-delta up">+8 к прошлой неделе</div>
+          <div class="kpi-val">—</div>
+          <div class="kpi-delta neu"></div>
         </div>
         <div class="kpi">
           <div class="kpi-label"><div class="kpi-icon" style="background:#FDE8E8">📊</div>Средний чек</div>
-          <div class="kpi-val">3 420 000 ₸</div>
-          <div class="kpi-delta up">+7.3% к прошлому месяцу</div>
+          <div class="kpi-val">—</div>
+          <div class="kpi-delta neu"></div>
         </div>
       </div>
 
@@ -316,27 +316,7 @@ textarea{resize:vertical;min-height:70px}
               <option>Месяц</option><option>Неделя</option><option>Квартал</option>
             </select>
           </div>
-          <svg viewBox="0 0 300 120" style="width:100%;height:120px">
-            <defs>
-              <linearGradient id="gfact" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#C0392B" stop-opacity=".3"/>
-                <stop offset="100%" stop-color="#C0392B" stop-opacity="0"/>
-              </linearGradient>
-              <linearGradient id="gplan" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3498DB" stop-opacity=".2"/>
-                <stop offset="100%" stop-color="#3498DB" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <!-- Plan -->
-            <path d="M0,90 C30,85 60,75 90,70 C120,65 150,60 180,55 C210,50 240,45 300,40" fill="url(#gplan)" stroke="#3498DB" stroke-width="1.5" stroke-dasharray="4,3" fill-opacity=".3"/>
-            <!-- Fact -->
-            <path d="M0,100 C20,95 40,88 70,80 C100,72 120,65 150,55 C180,45 220,35 260,25 C280,20 295,18 300,16" fill="url(#gfact)" stroke="#C0392B" stroke-width="2"/>
-            <!-- Labels -->
-            <text x="2" y="118" font-size="8" fill="#CCC">1 мая</text>
-            <text x="85" y="118" font-size="8" fill="#CCC">11 мая</text>
-            <text x="175" y="118" font-size="8" fill="#CCC">21 мая</text>
-            <text x="265" y="118" font-size="8" fill="#CCC">31 мая</text>
-          </svg>
+          <div id="sales-chart" style="height:120px"></div>
           <div style="display:flex;gap:14px;margin-top:4px">
             <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><span style="width:14px;height:2px;background:#C0392B;display:block;border-radius:1px"></span>Факт</div>
             <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#666"><span style="width:14px;height:2px;background:#3498DB;display:block;border-radius:1px;border-top:1px dashed #3498DB"></span>План</div>
@@ -349,26 +329,11 @@ textarea{resize:vertical;min-height:70px}
           <div id="funnel-chart"></div>
         </div>
 
-        <!-- R Finance -->
+        <!-- Заявки на финансирование -->
         <div class="card">
-          <div class="card-header"><div class="card-title">🏦 Заявки в R Finance</div></div>
-          <div class="donut-wrap">
-            <svg viewBox="0 0 80 80" style="width:80px;height:80px;flex-shrink:0">
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#F0F0F0" stroke-width="12"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#27AE60" stroke-width="12" stroke-dasharray="100 88" stroke-dashoffset="25" transform="rotate(-90 40 40)"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#F39C12" stroke-width="12" stroke-dasharray="72 116" stroke-dashoffset="-75" transform="rotate(-90 40 40)"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#3498DB" stroke-width="12" stroke-dasharray="17 171" stroke-dashoffset="-147" transform="rotate(-90 40 40)"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#E74C3C" stroke-width="12" stroke-dasharray="17 171" stroke-dashoffset="-164" transform="rotate(-90 40 40)"/>
-              <text x="40" y="37" text-anchor="middle" font-size="10" font-weight="700" fill="#1A1A2E">Всего</text>
-              <text x="40" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#1A1A2E">34</text>
-            </svg>
-            <div class="donut-legend">
-              <div class="legend-item"><div class="legend-dot" style="background:#27AE60"></div>Одобрено 18 (53%)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#F39C12"></div>На рассмотрении 10 (39%)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#3498DB"></div>Доп. документы 3 (9%)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#E74C3C"></div>Отказано 3 (9%)</div>
-            </div>
-          </div>
+          <div class="card-header"><div class="card-title">🏦 Заявки на кредит</div>
+            <a class="card-link" onclick="go('financing',null)">Все заявки →</a></div>
+          <div id="fin-summary" style="color:#CCC;font-size:12px">загрузка…</div>
         </div>
       </div>
 
@@ -383,23 +348,7 @@ textarea{resize:vertical;min-height:70px}
         <!-- Cars stock -->
         <div class="card">
           <div class="card-header"><div class="card-title">🚗 Автомобили в наличии</div><a class="card-link" onclick="go('cars',document.querySelector('.nav-item:nth-child(5))'))">Все авто →</a></div>
-          <div style="display:flex;align-items:center;gap:14px">
-            <svg viewBox="0 0 80 80" style="width:80px;height:80px;flex-shrink:0">
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#F0F0F0" stroke-width="10"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#27AE60" stroke-width="10" stroke-dasharray="112 76" stroke-dashoffset="25" transform="rotate(-90 40 40)"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#3498DB" stroke-width="10" stroke-dasharray="27 161" stroke-dashoffset="-87" transform="rotate(-90 40 40)"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#F39C12" stroke-width="10" stroke-dasharray="18 170" stroke-dashoffset="-114" transform="rotate(-90 40 40)"/>
-              <circle cx="40" cy="40" r="30" fill="none" stroke="#9B59B6" stroke-width="10" stroke-dasharray="13 175" stroke-dashoffset="-132" transform="rotate(-90 40 40)"/>
-              <text x="40" y="37" text-anchor="middle" font-size="9" fill="#999">Всего</text>
-              <text x="40" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#1A1A2E">127</text>
-            </svg>
-            <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
-              <div class="legend-item"><div class="legend-dot" style="background:#27AE60"></div>В продаже 75 (59%)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#3498DB"></div>В резерве 18 (14%)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#F39C12"></div>На подготовке 12 (9%)</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#9B59B6"></div>На диагностике 9 (7%)</div>
-            </div>
-          </div>
+          <div style="display:flex;align-items:center;gap:14px;color:#CCC;font-size:12px">загрузка…</div>
         </div>
 
         <!-- База обзвона -->
@@ -1364,110 +1313,26 @@ function go(id, btn) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function renderDashboard() {
-  // Mini charts
+  // Только каркас: никаких выдуманных чисел, иначе при заходе на секунду
+  // мелькает старая демо-версия дашборда, а потом её сменяют настоящие данные.
+  const skeleton = '<div style="color:#CCC;font-size:12px;padding:14px 0">загрузка…</div>';
+
   ['mc1','mc2','mc3'].forEach(id => {
     const el = document.getElementById(id);
-    const vals = Array.from({length:12},()=>Math.floor(Math.random()*80+20));
-    const max = Math.max(...vals);
-    el.innerHTML = vals.map(v=>`<div class="mini-bar" style="height:${v/max*100}%;background:#C0392B"></div>`).join('');
+    if (el) el.innerHTML = '';
   });
 
-  // Funnel
-  const funnel = [
-    {label:'Новый лид',val:152,pct:100},
-    {label:'Первый контакт',val:112,pct:74},
-    {label:'Подбор авто',val:86,pct:57},
-    {label:'Осмотр',val:64,pct:42},
-    {label:'Тест-драйв',val:38,pct:25},
-    {label:'Договор',val:31,pct:20},
-    {label:'Завершена',val:25,pct:16},
-  ];
-  document.getElementById('funnel-chart').innerHTML = funnel.map(f=>`
-    <div class="funnel-row">
-      <div class="funnel-label" style="font-size:11px">${f.label}</div>
-      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${f.pct}%;background:${f.pct>50?'#C0392B':f.pct>25?'#E67E22':'#27AE60'}"></div></div>
-      <div class="funnel-val">${f.val}</div>
-    </div>`).join('');
+  ['funnel-chart','locations-list','auctions-list','top-managers','bi-cards','sales-chart']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = skeleton; });
 
-  // Locations
-  const locs = [
-    {name:'Алматы, Тимиразова 42',pct:85,color:'#27AE60'},
-    {name:'Алматы, Момышулы 71',pct:60,color:'#F39C12'},
-    {name:'Алматы, Рыскулова 348',pct:35,color:'#E74C3C'},
-    {name:'Астана, Сатпаева 38',pct:55,color:'#F39C12'},
-  ];
-  document.getElementById('locations-list').innerHTML = locs.map(l=>`
-    <div class="loc-item">
-      <div class="loc-icon">📍</div>
-      <div><div style="font-size:12px;font-weight:600">${l.name}</div>
-      <div class="prog-wrap" style="width:120px;margin-top:3px"><div class="prog" style="width:${l.pct}%;background:${l.color}"></div></div></div>
-      <div class="loc-pct" style="color:${l.color}">${l.pct}%</div>
-    </div>`).join('');
+  const rd = document.getElementById('recent-deals');
+  if (rd) rd.innerHTML = '<tr><td colspan="4" style="color:#CCC;padding:14px">загрузка…</td></tr>';
 
-  // Блок заполняется реальными сегментами базы из /api/stats
-
-  // Tasks today
-  const todayTasks = [
-    {time:'15:00',icon:'📞',bg:'#FDE8E8',name:'Позвонить клиенту по Toyota Camry',btn:'Звонок',btnColor:'#C0392B'},
-    {time:'11:30',icon:'🚗',bg:'#EBF5FB',name:'Встреча и тест-драйв BMW X5',btn:'Поехал',btnColor:'#2980B9'},
-    {time:'15:30',icon:'📋',bg:'#F5EEF8',name:'Подготовить документы Айгерим Е.',btn:'Задача',btnColor:'#8E44AD'},
-  ];
-  document.getElementById('tasks-today').innerHTML = todayTasks.map(t=>`
-    <div class="task-item">
-      <div class="task-time">${t.time}</div>
-      <div class="task-dot" style="background:${t.bg}">${t.icon}</div>
-      <div style="flex:1;min-width:0"><div class="task-name" style="font-size:12px">${t.name}</div></div>
-      <button class="task-btn" style="background:${t.btnColor}22;color:${t.btnColor};border:1px solid ${t.btnColor}44">${t.btn}</button>
-    </div>`).join('');
-
-  // Recent deals
-  const rd = [...deals].slice(0,4);
-  document.getElementById('recent-deals').innerHTML = rd.map(d=>{
-    const cl = leads.find(l=>l.id===d.clientId);
-    const st = d.stage==='Завершена'?'badge-g':d.stage==='Неудача'?'badge-r':'badge-b';
-    const sl = d.stage==='Завершена'?'Успешно':d.stage==='Неудача'?'Неудача':d.stage;
-    return `<tr><td><div style="font-weight:600;font-size:12px">${d.title}</div></td>
-      <td style="font-size:11px;color:#888">Клиент: ${cl?.name?.split(' ')[0]||'—'} ${cl?.name?.split(' ')[1]?cl.name.split(' ')[1][0]+'.':''}</td>
-      <td style="font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap">${fmt(d.amount)}</td>
-      <td><span class="badge ${st}">${sl}</span></td></tr>`;
-  }).join('');
-
-  // Top managers
-  const mgrStats = managers.map(m=>({
-    ...m,
-    won: deals.filter(d=>d.managerId===m.id&&d.stage==='Завершена').reduce((s,d)=>s+d.amount,0),
-    cnt: deals.filter(d=>d.managerId===m.id).length,
-  })).sort((a,b)=>b.won-a.won);
-  const maxWon = Math.max(...mgrStats.map(m=>m.won),1);
-  document.getElementById('top-managers').innerHTML = mgrStats.slice(0,5).map((m,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F5F5F5">
-      <div class="av av-sm ${i<3?'rank-'+(i+1):''}">${i<3?['🥇','🥈','🥉'][i]:m.avatar||m.name[0]}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700">${m.name}</div>
-        <div class="prog-wrap"><div class="prog" style="width:${m.won/maxWon*100}%;background:${i===0?'#F1C40F':'#C0392B'}"></div></div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:12px;font-weight:700;color:#C0392B">${fmt(m.won)}</div>
-        <div style="font-size:10px;color:#AAA">${m.cnt} сделок</div>
-      </div>
-    </div>`).join('');
-
-  // BI cards
-  const biData = [
-    {label:'Прогноз выручки',val:'156 000 000 ₸',delta:'+22% к плану'},
-    {label:'Конверсия лидов',val:'18.7%',delta:'+2.4%'},
-    {label:'Среднее время сделки',val:'12.4 дня',delta:'-1.2 дня'},
-    {label:'Авто на складе >60 дней',val:'23 авто',delta:'На сумму 48.7 млн ₸'},
-  ];
-  document.getElementById('bi-cards').innerHTML = biData.map(b=>`
-    <div class="bi-card">
-      <div class="bi-label">${b.label}</div>
-      <div class="bi-val">${b.val}</div>
-      <div class="bi-delta">${b.delta}</div>
-    </div>`).join('');
-
-  document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
-  document.getElementById('tasks-cnt').textContent = 3;
+  // Модуль задач ещё не сделан — честнее показать это, чем выдуманный список
+  const tt = document.getElementById('tasks-today');
+  if (tt) tt.innerHTML = '<div style="color:#CCC;font-size:12px;padding:14px 0">Модуль задач в разработке</div>';
+  const tc = document.getElementById('tasks-cnt');
+  if (tc) { tc.textContent = '0'; tc.style.display = 'none'; }
 }
 
 // ── Leads ─────────────────────────────────────────────────────────────────────
@@ -2685,6 +2550,39 @@ const setKpi = (i, val, delta) => {
 
 const PIE = ['#27AE60','#3498DB','#F39C12','#9B59B6','#E74C3C','#1ABC9C','#95A5A6','#E67E22'];
 
+// График строится по фактическому ряду из /api/stats за 30 дней.
+// Пока сделок нет — честно пишем об этом, а не рисуем красивую кривую.
+function salesChart(series) {
+  const box = document.getElementById('sales-chart');
+  if (!box) return;
+  const pts = (series || []).filter(r => Number(r.sum_amount) > 0);
+  if (!pts.length) {
+    box.innerHTML = `<div style="height:120px;display:flex;align-items:center;justify-content:center;
+      color:#CCC;font-size:12px;text-align:center">Закрытых сделок за 30 дней нет<br>
+      <span style="font-size:11px">график появится после первой продажи</span></div>`;
+    return;
+  }
+  const W = 300, H = 100, max = Math.max(...pts.map(r => Number(r.sum_amount)));
+  const step = pts.length > 1 ? W / (pts.length - 1) : 0;
+  const xy = pts.map((r, i) => [i * step, H - (Number(r.sum_amount) / max) * (H - 10)]);
+  const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const area = `${line} L${W},${H} L0,${H} Z`;
+  const d1 = new Date(pts[0].day).toLocaleDateString('ru-RU', {day:'numeric', month:'short'});
+  const d2 = new Date(pts[pts.length-1].day).toLocaleDateString('ru-RU', {day:'numeric', month:'short'});
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} 120" style="width:100%;height:120px">
+      <defs><linearGradient id="gf" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#C0392B" stop-opacity=".28"/>
+        <stop offset="100%" stop-color="#C0392B" stop-opacity="0"/></linearGradient></defs>
+      <path d="${area}" fill="url(#gf)"/>
+      <path d="${line}" fill="none" stroke="#C0392B" stroke-width="2"/>
+      ${xy.map(([x,y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="#C0392B"/>`).join('')}
+      <text x="2" y="116" font-size="8" fill="#CCC">${d1}</text>
+      <text x="${W-2}" y="116" font-size="8" fill="#CCC" text-anchor="end">${d2}</text>
+    </svg>
+    <div style="font-size:11px;color:#999;margin-top:2px">Максимум за день: ${fmt(max)}</div>`;
+}
+
 function donut(items, total, centerLabel) {
   const R = 30, C = 2 * Math.PI * R;
   let off = 0;
@@ -2838,6 +2736,42 @@ window.renderDashboard = async function() {
     {label:'База обзвона',       val: s.leads.base.toLocaleString('ru-RU'),  delta: 'номеров не обработано'},
   ].map(b => `<div class="bi-card"><div class="bi-label">${b.label}</div>
       <div class="bi-val">${b.val}</div><div class="bi-delta">${b.delta}</div></div>`).join('');
+
+  salesChart(s.sales_series);
+
+  // Мини-столбики под KPI: раньше это были случайные числа
+  const ser = s.sales_series || [];
+  const bars = (vals, color) => {
+    const mx = Math.max(...vals, 1);
+    return vals.map(v => `<div class="mini-bar" style="height:${Math.max(4, v/mx*100)}%;background:${color}"></div>`).join('');
+  };
+  const last = n => ser.slice(-n);
+  const m1 = document.getElementById('mc1');
+  const m2 = document.getElementById('mc2');
+  const m3 = document.getElementById('mc3');
+  if (m1) m1.innerHTML = ser.length ? bars(last(12).map(r => Number(r.sum_amount)), '#C0392B') : '';
+  if (m2) m2.innerHTML = ser.length ? bars(last(12).map(r => r.cnt), '#E67E22') : '';
+  if (m3) m3.innerHTML = '';
+
+  // ── Заявки на кредит из приложения ──
+  const finBox = document.getElementById('fin-summary');
+  if (finBox) {
+    try {
+      const p = new URLSearchParams({ channel: 'Приложение', limit: '200' });
+      if (GC_CITY !== 'all') p.set('city', GC_CITY);
+      const r = await apiFetch('/leads?' + p.toString());
+      const apps = (r.data || []).filter(l =>
+        l.source_url === 'credit_app' || /кредит/i.test(l.interest || ''));
+      const byStatus = apps.reduce((a, l) => (a[l.status] = (a[l.status] || 0) + 1, a), {});
+      finBox.innerHTML = apps.length ? `
+        <div style="font-size:26px;font-weight:800;color:#C0392B;margin-bottom:8px">${apps.length}</div>
+        ${Object.entries(byStatus).map(([st, n]) => `
+          <div class="legend-item" style="margin-bottom:5px">
+            <div class="legend-dot" style="background:${st==='Новый'?'#E67E22':st==='Одобрен'?'#27AE60':'#3498DB'}"></div>
+            ${st} — ${n}</div>`).join('')}`
+        : '<div style="color:#CCC;font-size:12px">Заявок пока нет</div>';
+    } catch(e) { finBox.innerHTML = '<div style="color:#CCC;font-size:12px">—</div>'; }
+  }
 
   document.getElementById('leads-cnt').textContent = s.leads.new;
 
