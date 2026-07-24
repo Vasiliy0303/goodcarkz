@@ -1,14 +1,22 @@
 // /api/cars — GET | POST | PATCH (?id=X) | DELETE (?id=X)
 // Это тот самый файл, из-за отсутствия которого /api/cars отдавал 404.
-const { Pool } = require('pg');
+import pg from 'pg';
+const { Pool } = pg;
 
 let pool;
 function db() {
-  if (!pool) pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: 3,
-  });
+  if (!pool) {
+    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL не задан в настройках проекта Vercel');
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 3,
+      connectionTimeoutMillis: 8000,
+    });
+    // Без этого обработчика ошибка простаивающего клиента роняет весь процесс
+    // и Vercel отдаёт FUNCTION_INVOCATION_FAILED вместо читаемого ответа.
+    pool.on('error', e => console.error('pg pool error:', e.message));
+  }
   return pool;
 }
 
@@ -19,7 +27,7 @@ const FIELDS = ['make','model','year','price','photos','videos','documents',
                 'color','mileage','description','status','city','vin',
                 'seller_name','seller_phone','is_published','manager_id'];
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -110,4 +118,4 @@ module.exports = async (req, res) => {
     console.error('cars error:', e);
     return res.status(500).json({ error: e.message });
   }
-};
+}
