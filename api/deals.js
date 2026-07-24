@@ -1,141 +1,131 @@
-// api/deals.js
-// GET  /api/deals       — список сделок
-// POST /api/deals       — создать сделку
-// PATCH /api/deals?id= — обновить / сменить этап
+// /api/deals — GET | POST | PATCH (?id=X) | DELETE (?id=X)
+// stage — enum deal_stage (латиница), amount — numeric, closed_at — метка закрытия.
+const { Pool } = require('pg');
 
-import { Pool } from 'pg';
+let pool;
+function db() {
+  if (!pool) pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 3,
+  });
+  return pool;
+}
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 5,
-});
+// Единственный источник правды по этапам — совпадает с enum в БД
+const STAGES = ['new','consultation','showing','inspection','history_check',
+                'test_drive','proposal','financing','deposit','contract',
+                'handover','closed','lost'];
+const FINAL = ['closed','lost'];
 
-const STAGES = ['new','consultation','showing','proposal','deposit','closed','lost'];
+const FIELDS = ['title','client_id','lead_id','car_id','manager_id','amount',
+                'deadline','notes','city','client_name','client_phone'];
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  const c = db();
+
   try {
+    // ── GET ────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
-      const { stage, manager_id, client_id, limit = 50, offset = 0 } = req.query;
+      const { city, stage, manager_id } = req.query;
+      const limit  = Math.min(parseInt(req.query.limit, 10) || 300, 500);
+      const offset = parseInt(req.query.offset, 10) || 0;
 
-      let where = [];
-      let params = [];
-      let p = 1;
+      const where = [], params = [];
+      if (city && city !== 'all')   { params.push(city);  where.push(`d.city = $${params.length}`); }
+      if (stage && stage !== 'all') { params.push(stage); where.push(`d.stage = $${params.length}`); }
+      if (manager_id)               { params.push(manager_id); where.push(`d.manager_id = $${params.length}`); }
+      const W = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      if (stage)      { where.push(`d.stage = $${p++}`);      params.push(stage); }
-      if (manager_id) { where.push(`d.manager_id = $${p++}`); params.push(manager_id); }
-      if (client_id)  { where.push(`d.client_id = $${p++}`);  params.push(client_id); }
+      const [{ count }] = (await c.query(`SELECT COUNT(*)::int AS count FROM deals d ${W}`, params)).rows;
 
-      const whereStr = where.length ? 'WHERE ' + where.join(' AND ') : '';
+      // Название авто подтягиваем из cars, если сделка связана
+      const rows = (await c.query(
+        `SELECT d.*, d.stage::text AS stage,
+                COALESCE(d.client_name, l.name)  AS client_display,
+                COALESCE(d.client_phone, l.phone) AS client_phone_display,
+                CASE WHEN car.id IS NOT NULL
+                     THEN car.make || ' ' || car.model || ' ' || COALESCE(car.year::text,'')
+                     ELSE d.title END AS car_display
+         FROM deals d
+         LEFT JOIN leads l  ON l.id  = d.lead_id
+         LEFT JOIN cars car ON car.id = d.car_id
+         ${W} ORDER BY d.created_at DESC
+         LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        [...params, limit, offset]
+      )).rows;
 
-      const { rows } = await pool.query(`
-        SELECT
-          d.*,
-          c.company_name AS client_name,
-          u.name AS manager_name
-        FROM deals d
-        LEFT JOIN clients c ON c.id = d.client_id
-        LEFT JOIN users u ON u.id = d.manager_id
-        ${whereStr}
-        ORDER BY d.created_at DESC
-        LIMIT $${p} OFFSET $${p+1}
-      `, [...params, parseInt(limit), parseInt(offset)]);
-
-      // Статистика по этапам
-      const { rows: stats } = await pool.query(`
-        SELECT stage, COUNT(*) as count, SUM(amount) as total
-        FROM deals GROUP BY stage
-      `);
-
-      return res.status(200).json({
-        data: rows,
-        stats,
-        total: rows.length,
-      });
+      return res.status(200).json({ data: rows, total: count, stages: STAGES, limit, offset });
     }
 
+    // ── POST ───────────────────────────────────────────────────────────
     if (req.method === 'POST') {
-      const { title, client_id, manager_id, stage = 'new', amount = 0, deadline, notes } = req.body;
+      const b = req.body || {};
+      if (!b.title) return res.status(400).json({ error: 'title обязателен' });
 
-      if (!title) return res.status(400).json({ error: 'title is required' });
+      const stage = STAGES.includes(b.stage) ? b.stage : 'new';
+      const cols = ['title','stage','city'], vals = [b.title, stage, b.city || 'Астана'];
+      for (const f of FIELDS) {
+        if (f === 'title' || f === 'city' || b[f] === undefined || b[f] === '') continue;
+        cols.push(f); vals.push(b[f]);
+      }
+      if (FINAL.includes(stage)) { cols.push('closed_at'); vals.push(new Date()); }
 
-      const { rows } = await pool.query(`
-        INSERT INTO deals (title, client_id, manager_id, stage, amount, deadline, notes)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING *
-      `, [title, client_id || null, manager_id || null, stage,
-          parseFloat(amount) || 0, deadline || null, notes || null]);
-
-      await pool.query(`
-        INSERT INTO analytics_events (event_type, entity_type, entity_id, amount, meta)
-        VALUES ('deal_created', 'deal', $1, $2, $3)
-      `, [rows[0].id, amount, JSON.stringify({ title, stage })]);
-
-      return res.status(201).json(rows[0]);
+      const ph = vals.map((_, i) => '$' + (i + 1));
+      const r = await c.query(
+        `INSERT INTO deals (${cols.join(',')}) VALUES (${ph.join(',')})
+         RETURNING *, stage::text AS stage`, vals);
+      return res.status(201).json({ data: r.rows[0] });
     }
 
+    // ── PATCH ──────────────────────────────────────────────────────────
     if (req.method === 'PATCH') {
-      const { id } = req.query;
-      if (!id) return res.status(400).json({ error: 'id is required' });
+      const id = req.query.id;
+      if (!id) return res.status(400).json({ error: 'id обязателен' });
 
-      // Получаем текущий этап для истории
-      const { rows: current } = await pool.query(
-        'SELECT stage FROM deals WHERE id = $1', [id]
-      );
-      if (!current.length) return res.status(404).json({ error: 'Deal not found' });
+      const b = req.body || {}, sets = [], params = [];
 
-      const allowed = ['title','stage','amount','deadline','notes','manager_id','client_id'];
-      const updates = [];
-      const params = [id];
-      let p = 2;
-
-      for (const key of allowed) {
-        if (req.body[key] !== undefined) {
-          updates.push(`${key} = $${p++}`);
-          params.push(req.body[key]);
-        }
+      if (b.stage !== undefined) {
+        if (!STAGES.includes(b.stage))
+          return res.status(400).json({ error: 'Неизвестный этап: ' + b.stage });
+        params.push(b.stage); sets.push(`stage = $${params.length}::deal_stage`);
+        // Закрытие проставляется автоматически — на нём держится вся статистика
+        sets.push(FINAL.includes(b.stage)
+          ? 'closed_at = COALESCE(closed_at, now())'
+          : 'closed_at = NULL');
       }
-
-      // Если сделка закрыта — фиксируем дату
-      if (req.body.stage === 'closed' || req.body.stage === 'lost') {
-        updates.push(`closed_at = NOW()`);
+      for (const f of FIELDS) {
+        if (b[f] === undefined) continue;
+        params.push(b[f] === '' ? null : b[f]); sets.push(`${f} = $${params.length}`);
       }
+      if (!sets.length) return res.status(400).json({ error: 'нет полей для обновления' });
+      sets.push('updated_at = now()');
 
-      if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
+      params.push(id);
+      const r = await c.query(
+        `UPDATE deals SET ${sets.join(', ')} WHERE id = $${params.length}
+         RETURNING *, stage::text AS stage`, params);
+      if (!r.rowCount) return res.status(404).json({ error: 'Сделка не найдена' });
+      return res.status(200).json({ data: r.rows[0] });
+    }
 
-      const { rows } = await pool.query(`
-        UPDATE deals SET ${updates.join(', ')}, updated_at = NOW()
-        WHERE id = $1 RETURNING *
-      `, params);
-
-      // Пишем историю смены этапа
-      if (req.body.stage && req.body.stage !== current[0].stage) {
-        await pool.query(`
-          INSERT INTO deal_history (deal_id, from_stage, to_stage)
-          VALUES ($1, $2, $3)
-        `, [id, current[0].stage, req.body.stage]);
-
-        // Событие аналитики для закрытых сделок
-        if (req.body.stage === 'closed') {
-          await pool.query(`
-            INSERT INTO analytics_events (event_type, entity_type, entity_id, amount)
-            VALUES ('deal_closed', 'deal', $1, $2)
-          `, [id, rows[0].amount]);
-        }
-      }
-
-      return res.status(200).json(rows[0]);
+    // ── DELETE ─────────────────────────────────────────────────────────
+    if (req.method === 'DELETE') {
+      const id = req.query.id;
+      if (!id) return res.status(400).json({ error: 'id обязателен' });
+      const r = await c.query(`DELETE FROM deals WHERE id = $1 RETURNING id`, [id]);
+      if (!r.rowCount) return res.status(404).json({ error: 'Сделка не найдена' });
+      return res.status(200).json({ data: { id, deleted: true } });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
-
-  } catch (err) {
-    console.error('deals API error:', err);
-    return res.status(500).json({ error: err.message });
+  } catch (e) {
+    console.error('deals error:', e);
+    return res.status(500).json({ error: e.message });
   }
-}
+};
