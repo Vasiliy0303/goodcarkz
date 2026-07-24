@@ -2,7 +2,13 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#C0392B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="GoodCar CRM">
+<link rel="manifest" href="/manifest-crm.json">
 <title>GoodCar Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -203,9 +209,92 @@ textarea{resize:vertical;min-height:70px}
 .search-inp:focus{outline:none;border-color:#C0392B}
 .search-inp::placeholder{color:#CCC}
 .fmt{font-family:monospace}
+
+/* ══ МОБИЛЬНАЯ ВЁРСТКА ═══════════════════════════════════════════════════
+   Основная работа менеджеров идёт с телефона, поэтому ниже 900px
+   раскладка перестраивается полностью, а не просто сжимается.        */
+
+/* Кнопка меню и затемнение — на десктопе скрыты */
+.burger{display:none;width:38px;height:38px;border-radius:9px;background:#F5F5F5;border:none;
+  align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:18px}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150}
+.sb-overlay.show{display:block}
+
+@media (max-width: 900px) {
+  .app{height:100dvh}
+  .sidebar{position:fixed;top:0;left:-270px;bottom:0;width:255px;z-index:200;
+    transition:left .22s ease;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+  .sidebar.open{left:0}
+  .burger{display:flex}
+
+  .topbar{padding:0 12px;height:56px;gap:8px}
+  .tb-greeting{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+  .tb-date{display:none}
+  .tb-search{display:none}
+  .tb-right{gap:7px}
+  .tb-user > div:not(.tb-avatar){display:none}
+  .tb-user span{display:none}
+  #city-switch{font-size:12px;padding:6px 7px;max-width:130px}
+
+  .content{padding:12px}
+  .page-title{font-size:19px}
+
+  /* Инлайновые grid-template-columns в разметке перебивают классы,
+     поэтому здесь без !important не обойтись */
+  .kpi-grid{grid-template-columns:1fr 1fr!important;gap:10px}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr!important;gap:12px}
+
+  .kpi{padding:13px}
+  .kpi-val{font-size:17px}
+  .kpi-label{font-size:10px}
+  .card{padding:14px}
+
+  /* Канбан листается пальцем, колонки прилипают */
+  #deals-kanban{scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+  .deal-stage-col{min-width:78vw;scroll-snap-align:start}
+
+  .car-grid{grid-template-columns:1fr;gap:12px}
+
+  /* Модалка на весь экран — так удобнее заполнять с телефона */
+  .modal-ov{padding:0;align-items:flex-end}
+  .modal-box{max-width:100%;max-height:92vh;border-radius:16px 16px 0 0;padding:18px}
+  .form-row{grid-template-columns:1fr}
+
+  .sb2{gap:6px}
+  .search-inp{width:100%}
+  .btn{padding:9px 13px}
+  .btn-sm{padding:7px 11px}   /* палец должен попадать */
+}
+
+@media (max-width: 600px) {
+  /* Таблицы превращаются в карточки: семь колонок на телефон не влезают */
+  .tbl thead{display:none}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+  .tbl tr{border:1px solid #EEE;border-radius:12px;margin-bottom:10px;padding:10px 12px;background:#fff}
+  .tbl tr:hover td{background:transparent}
+  .tbl td{border:none;padding:5px 0;display:flex;justify-content:space-between;
+    align-items:center;gap:10px;text-align:right}
+  .tbl td::before{content:attr(data-label);font-size:10px;font-weight:700;color:#BBB;
+    text-transform:uppercase;letter-spacing:.5px;text-align:left;flex-shrink:0}
+  .tbl td:empty{display:none}
+  .tbl td > div,.tbl td > span{text-align:right}
+  /* Имя клиента — первой строкой, крупно, без подписи */
+  .tbl td:first-child{display:block;text-align:left;padding-bottom:8px;
+    margin-bottom:4px;border-bottom:1px solid #F5F5F5}
+  .tbl td:first-child::before{display:none}
+  .tbl td:first-child > div{text-align:left}
+
+  .card{padding:12px}
+  .page-header{margin-bottom:14px}
+  .funnel-label{width:96px;font-size:10px}
+  .funnel-val{width:38px}
+  .donut-wrap{flex-direction:column;align-items:flex-start}
+}
+
 </style>
 </head>
 <body>
+<div class="sb-overlay" id="sb-overlay" onclick="toggleMenu(false)"></div>
 <div class="app">
 
 <!-- SIDEBAR -->
@@ -237,8 +326,9 @@ textarea{resize:vertical;min-height:70px}
 <div class="main">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div style="display:flex;align-items:center">
-      <div class="tb-greeting" id="greeting">Доброе утро, Жанибек! 👋</div>
+    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+      <button class="burger" onclick="toggleMenu()" aria-label="Меню">☰</button>
+      <div class="tb-greeting" id="greeting">Доброе утро! 👋</div>
       <div class="tb-date" id="tb-date"></div>
     </div>
     <div class="tb-right">
@@ -1298,8 +1388,56 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const fmt = n => (Number(n) || 0).toLocaleString('ru-RU') + ' ₸';
 const num = n => Number(n) || 0;
 
+// ── Установка на телефон ──────────────────────────────────────────────────
+// Ставится с иконки на весь экран, без адресной строки браузера.
+let _installEvt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installEvt = e;
+  if (localStorage.getItem('gc:install-hidden')) return;
+  const bar = document.createElement('div');
+  bar.id = 'install-bar';
+  bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;'
+    + 'background:#1A1A2E;color:#fff;border-radius:14px;padding:13px 15px;display:flex;'
+    + 'align-items:center;gap:12px;box-shadow:0 8px 28px rgba(0,0,0,.3)';
+  bar.innerHTML = `
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700">Установить на телефон</div>
+      <div style="font-size:11px;opacity:.7">Открывается с иконки, как приложение</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="doInstall()">Установить</button>
+    <button onclick="hideInstall()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer">✕</button>`;
+  document.body.appendChild(bar);
+});
+
+async function doInstall() {
+  if (!_installEvt) return hideInstall();
+  _installEvt.prompt();
+  await _installEvt.userChoice;
+  _installEvt = null;
+  hideInstall();
+}
+
+function hideInstall() {
+  document.getElementById('install-bar')?.remove();
+  localStorage.setItem('gc:install-hidden', '1');
+}
+
+// ── Меню на телефоне ──────────────────────────────────────────────────────
+function toggleMenu(force) {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.getElementById('sb-overlay');
+  const open = force === undefined ? !sb.classList.contains('open') : force;
+  sb.classList.toggle('open', open);
+  ov.classList.toggle('show', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+const isMobile = () => window.innerWidth <= 900;
+
 // ── Navigation ─────────────────────────────────────────────────────────────────
 function go(id, btn) {
+  if (isMobile()) toggleMenu(false);   // выбрал раздел — панель убралась
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1393,17 +1531,17 @@ function renderLeads() {
     return `<tr style="cursor:pointer" onclick="openCallCard('${l.id}')">
       <td><div style="font-weight:600">${l.name || 'Без имени'}${seg}</div>
           <a href="tel:${phone}" style="font-size:11px;color:#C0392B;text-decoration:none">${phone}</a></td>
-      <td><div class="ch-icon" style="background:${c.bg};color:${c.color};display:inline-flex">${c.icon}</div>
+      <td data-label="Источник"><div class="ch-icon" style="background:${c.bg};color:${c.color};display:inline-flex">${c.icon}</div>
           <span style="font-size:12px;color:${c.color};font-weight:600">${c.label}</span></td>
-      <td style="font-size:12px;color:#555">${l.interest || '—'}</td>
-      <td>${mgrName
+      <td data-label="Интерес" style="font-size:12px;color:#555">${l.interest || '—'}</td>
+      <td data-label="Менеджер">${mgrName
         ? `<div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${l.manager_avatar || mgrName[0]}</div><span style="font-size:12px">${mgrName.split(' ')[0]}</span></div>`
         : (canTake()
             ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();takeLead('${l.id}')">Взять себе</button>`
             : '<span style="font-size:12px;color:#CCC">свободен</span>')}</td>
-      <td style="font-size:12px;color:#AAA">${date}</td>
-      <td><span class="badge ${badge}">${st}</span></td>
-      <td><button class="btn btn-ghost btn-sm" onclick="openLeadModal('${l.id}')">✏</button></td>
+      <td data-label="Дата" style="font-size:12px;color:#AAA">${date}</td>
+      <td data-label="Статус"><span class="badge ${badge}">${st}</span></td>
+      <td data-label=""><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openLeadModal('${l.id}')">✏ Изменить</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:#CCC">Лидов не найдено</td></tr>';
 
@@ -1532,15 +1670,15 @@ async function renderStaff() {
         <div class="av av-sm" style="background:${u.color || '#999'}">${u.avatar || u.name[0]}</div>
         <div><div style="font-weight:600">${u.name}</div>
         <div style="font-size:11px;color:#AAA">${u.email}</div></div></div></td>
-      <td style="font-size:12px">${u.position || '—'}</td>
-      <td style="font-size:12px">${u.city || 'Все'}</td>
-      <td>${isBoss() && u.id !== meId()
+      <td data-label="Должность" style="font-size:12px">${u.position || '—'}</td>
+      <td data-label="Филиал" style="font-size:12px">${u.city || 'Все'}</td>
+      <td data-label="Права">${isBoss() && u.id !== meId()
         ? `<select onchange="changeRole('${u.id}',this.value)" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #E8E8E8">
              ${Object.entries(ROLE_LABEL).map(([k,v]) => `<option value="${k}"${k===u.role?' selected':''}>${v}</option>`).join('')}
            </select>`
         : `<span class="badge ${u.role==='admin'?'badge-r':u.role==='manager'?'badge-b':'badge-y'}">${ROLE_LABEL[u.role]}</span>`}</td>
-      <td style="font-size:12px;color:#AAA">${u.last_login ? new Date(u.last_login).toLocaleString('ru-RU') : 'ни разу'}</td>
-      <td>${isBoss() && u.id !== meId()
+      <td data-label="Вход" style="font-size:12px;color:#AAA">${u.last_login ? new Date(u.last_login).toLocaleString('ru-RU') : 'ни разу'}</td>
+      <td data-label="">${isBoss() && u.id !== meId()
         ? `<button class="btn btn-ghost btn-sm" style="color:#C0392B" onclick="rejectStaff('${u.id}','${u.name}')">Удалить</button>` : ''}</td>
     </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#CCC">Сотрудников пока нет</td></tr>';
 }
@@ -2366,7 +2504,10 @@ function logout() {
 const API = '/api';
 let apiStats = null;
 
-async function apiFetch(path, options={}) {
+// Neon на бесплатном тарифе усыпляет базу при простое. Первый запрос
+// после паузы может не дождаться пробуждения — поэтому тихо повторяем.
+async function apiFetch(path, options={}, attempt = 1) {
+  const MAX = 3;
   try {
     const res = await fetch(API + path, {
       headers: { 'Content-Type': 'application/json' },
@@ -2374,13 +2515,32 @@ async function apiFetch(path, options={}) {
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
     const ct = res.headers.get('content-type') || '';
+
     if (!ct.includes('application/json')) {
-      throw new Error('Non-JSON response from ' + path + ' (status ' + res.status + ')');
+      // 5xx и пустой ответ — обычно спящая база, есть смысл повторить
+      if (res.status >= 500 && attempt < MAX) {
+        await new Promise(r => setTimeout(r, attempt * 900));
+        return apiFetch(path, options, attempt + 1);
+      }
+      throw new Error('Сервер вернул не JSON (' + res.status + ') на ' + path);
     }
+
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'API error');
+    if (!res.ok) {
+      if (res.status >= 500 && attempt < MAX) {
+        await new Promise(r => setTimeout(r, attempt * 900));
+        return apiFetch(path, options, attempt + 1);
+      }
+      throw new Error(data.error || 'Ошибка API');
+    }
+    if (attempt > 1) console.info('Запрос прошёл с ' + attempt + '-й попытки:', path);
     return data;
   } catch(err) {
+    // Обрыв связи — тоже повод попробовать ещё раз
+    if (err instanceof TypeError && attempt < MAX) {
+      await new Promise(r => setTimeout(r, attempt * 900));
+      return apiFetch(path, options, attempt + 1);
+    }
     console.error('API error:', path, err.message);
     throw err;
   }
@@ -2703,9 +2863,9 @@ window.renderDashboard = async function() {
       const cls = kk === 'closed' ? 'badge-g' : kk === 'lost' ? 'badge-r' : 'badge-b';
       return `<tr>
         <td><div style="font-weight:600;font-size:12px">${d.title || '—'}</div></td>
-        <td style="font-size:11px;color:#888">${d.client_name || '—'}</td>
-        <td style="font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap">${fmt(d.amount)}</td>
-        <td><span class="badge ${cls}">${STAGE_LABEL[kk]}</span></td></tr>`;
+        <td data-label="Клиент" style="font-size:11px;color:#888">${d.client_name || '—'}</td>
+        <td data-label="Сумма" style="font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap">${fmt(d.amount)}</td>
+        <td data-label="Этап"><span class="badge ${cls}">${STAGE_LABEL[kk]}</span></td></tr>`;
     }).join('') || '<tr><td colspan="4" style="color:#CCC;padding:14px">Сделок пока нет</td></tr>';
 
   // ── Менеджеры ──
