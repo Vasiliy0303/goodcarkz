@@ -228,7 +228,7 @@ textarea{resize:vertical;min-height:70px}
   <div class="nav-group">Управление</div>
   <button class="nav-item" onclick="go('tasks',this)"><span class="icon">📅</span>Задачи<span class="nav-badge" id="tasks-cnt">0</span></button>
   <button class="nav-item" onclick="go('comms',this)"><span class="icon">📞</span>Коммуникации</button>
-  <button class="nav-item" onclick="go('staff',this)"><span class="icon">👨‍💼</span>Персонал</button>
+  <button class="nav-item" onclick="go('staff',this)"><span class="icon">👨‍💼</span>Персонал<span class="nav-badge" id="staff-cnt" style="display:none">0</span></button>
   <button class="nav-item" onclick="go('bi',this)"><span class="icon">📊</span>BI-Аналитика</button>
   <button class="nav-item" onclick="go('docs',this)"><span class="icon">📄</span>Документы</button>
   <button class="nav-item" onclick="go('settings',this)"><span class="icon">⚙️</span>Настройки</button>
@@ -816,7 +816,18 @@ textarea{resize:vertical;min-height:70px}
 <div id="page-rfinance" class="page"><div class="page-title" style="margin-bottom:20px">🏦 R Finance</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💳</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Интеграция с R Finance: подача заявок, статусы, одобрение</div></div></div></div>
     <div id="page-tasks" class="page"><div class="page-title" style="margin-bottom:20px">📅 Задачи</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="font-size:16px;font-weight:600">Скоро</div></div></div></div>
     <div id="page-comms" class="page"><div class="page-title" style="margin-bottom:20px">📞 Коммуникации</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">💬</div><div style="font-size:16px;font-weight:600">Telegram, WhatsApp, Instagram — единый входящий</div></div></div></div>
-    <div id="page-staff" class="page"><div class="page-title" style="margin-bottom:20px">👨‍💼 Персонал</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">👥</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
+    <div id="page-staff" class="page">
+      <div class="page-header">
+        <div class="page-title">👨‍💼 Персонал</div>
+        <div class="page-sub">Сотрудники и заявки на доступ</div>
+      </div>
+      <div id="staff-pending"></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:14px 18px;font-size:14px;font-weight:700">Работают в системе</div>
+        <table class="tbl"><thead><tr><th>Сотрудник</th><th>Должность</th><th>Филиал</th><th>Права</th><th>Последний вход</th><th></th></tr></thead>
+        <tbody id="staff-tbody"></tbody></table>
+      </div>
+    </div>
     <div id="page-bi" class="page"><div class="page-title" style="margin-bottom:20px">📊 BI-Аналитика</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">📈</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
     <div id="page-docs" class="page"><div class="page-title" style="margin-bottom:20px">📄 Документы</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">📁</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
     <div id="page-settings" class="page"><div class="page-title" style="margin-bottom:20px">⚙️ Настройки</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">🔧</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
@@ -1498,6 +1509,8 @@ async function loadStaff() {
 }
 const meId = () => (window.GC_USER && GC_USER.id) || null;
 const isBoss = () => (window.GC_USER && GC_USER.role) === 'admin';
+// viewer только смотрит: кнопки «Взять себе» у него нет
+const canTake = () => ['admin','manager'].includes((window.GC_USER || {}).role);
 
 let managers = LS('gc:mgr') || [
   {id:'m1',name:'Ерлан Султанов',role:'Менеджер',avatar:'ЕС'},
@@ -1559,6 +1572,7 @@ function go(id, btn) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   if (id === 'leads') { loadLeads().then(renderLeads); return; }
+  if (id === 'staff') { renderStaff(); return; }
   const renders = {dashboard:renderDashboard,leads:renderLeads,deals:renderDeals,cars:renderCars};
   if(renders[id]) renders[id]();
 }
@@ -1749,7 +1763,9 @@ function renderLeads() {
       <td style="font-size:12px;color:#555">${l.interest || '—'}</td>
       <td>${mgrName
         ? `<div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${l.manager_avatar || mgrName[0]}</div><span style="font-size:12px">${mgrName.split(' ')[0]}</span></div>`
-        : `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();takeLead('${l.id}')">Взять себе</button>`}</td>
+        : (canTake()
+            ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();takeLead('${l.id}')">Взять себе</button>`
+            : '<span style="font-size:12px;color:#CCC">свободен</span>')}</td>
       <td style="font-size:12px;color:#AAA">${date}</td>
       <td><span class="badge ${badge}">${st}</span></td>
       <td><button class="btn btn-ghost btn-sm" onclick="openLeadModal('${l.id}')">✏</button></td>
@@ -1768,6 +1784,84 @@ function renderLeads() {
         <button class="btn btn-ghost btn-sm" ${to>=leadTotal?'disabled':''} onclick="leadPageGo(1)">Вперёд →</button>
       </div>
     </div>` : `<div style="padding:8px 14px;font-size:12px;color:#999">Всего: ${leadTotal}</div>`;
+}
+
+// ── Персонал ──────────────────────────────────────────────────────────────
+const ROLE_LABEL = {admin:'Полный доступ', manager:'Работа с лидами', viewer:'Только просмотр'};
+let pendingStaff = [];
+
+async function renderStaff() {
+  const box = document.getElementById('staff-pending');
+  const tb  = document.getElementById('staff-tbody');
+  if (!tb) return;
+
+  await loadStaff();
+
+  // Заявки видит только руководитель
+  if (isBoss()) {
+    try {
+      const r = await apiFetch('/staff?pending=1');
+      pendingStaff = r.data || [];
+    } catch(e) { pendingStaff = []; }
+  } else pendingStaff = [];
+
+  box.innerHTML = pendingStaff.length ? `
+    <div class="card" style="margin-bottom:16px;border-left:3px solid #E67E22">
+      <div class="card-header"><div class="card-title">⏳ Ждут подтверждения (${pendingStaff.length})</div></div>
+      ${pendingStaff.map(u => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F5F5F5">
+          <div class="av" style="background:${u.color || '#999'}">${u.avatar || u.name[0]}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700">${u.name}</div>
+            <div style="font-size:11px;color:#999">${u.position} · ${u.city || 'все филиалы'} · ${u.email}${u.phone ? ' · ' + u.phone : ''}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="approveStaff('${u.id}')">✓ Открыть доступ</button>
+          <button class="btn btn-ghost btn-sm" style="color:#C0392B" onclick="rejectStaff('${u.id}','${u.name}')">Отклонить</button>
+        </div>`).join('')}
+    </div>` : '';
+
+  tb.innerHTML = staff.map(u => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="av av-sm" style="background:${u.color || '#999'}">${u.avatar || u.name[0]}</div>
+        <div><div style="font-weight:600">${u.name}</div>
+        <div style="font-size:11px;color:#AAA">${u.email}</div></div></div></td>
+      <td style="font-size:12px">${u.position || '—'}</td>
+      <td style="font-size:12px">${u.city || 'Все'}</td>
+      <td>${isBoss() && u.id !== meId()
+        ? `<select onchange="changeRole('${u.id}',this.value)" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid #E8E8E8">
+             ${Object.entries(ROLE_LABEL).map(([k,v]) => `<option value="${k}"${k===u.role?' selected':''}>${v}</option>`).join('')}
+           </select>`
+        : `<span class="badge ${u.role==='admin'?'badge-r':u.role==='manager'?'badge-b':'badge-y'}">${ROLE_LABEL[u.role]}</span>`}</td>
+      <td style="font-size:12px;color:#AAA">${u.last_login ? new Date(u.last_login).toLocaleString('ru-RU') : 'ни разу'}</td>
+      <td>${isBoss() && u.id !== meId()
+        ? `<button class="btn btn-ghost btn-sm" style="color:#C0392B" onclick="rejectStaff('${u.id}','${u.name}')">Удалить</button>` : ''}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#CCC">Сотрудников пока нет</td></tr>';
+}
+
+async function approveStaff(id) {
+  try {
+    await apiFetch('/staff?id=' + id, { method: 'PATCH', body: { approve: true, by: meId() } });
+    showToast('✅ Доступ открыт');
+    renderStaff();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+async function rejectStaff(id, name) {
+  if (!confirm(`Удалить ${name}? Взятые им лиды вернутся в общую базу.`)) return;
+  try {
+    await apiFetch('/staff?id=' + id, { method: 'DELETE' });
+    showToast('Удалён: ' + name);
+    renderStaff();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+async function changeRole(id, role) {
+  try {
+    await apiFetch('/staff?id=' + id, { method: 'PATCH', body: { role } });
+    showToast('✅ Права изменены: ' + ROLE_LABEL[role]);
+    renderStaff();
+  } catch(e) { showToast('⚠️ ' + e.message); }
 }
 
 // ── Взять лид себе ────────────────────────────────────────────────────────
@@ -2472,7 +2566,7 @@ function initDate() {
     const roleEl = document.querySelector('.tb-urole');
     if (avatarEl) { avatarEl.textContent = user.avatar || user.name?.[0] || 'U'; avatarEl.style.background = `linear-gradient(135deg,${user.color||'#C0392B'},#1A1A2E)`; }
     if (nameEl) nameEl.textContent = user.name || 'Пользователь';
-    if (roleEl) roleEl.textContent = user.role || 'Менеджер';
+    if (roleEl) roleEl.textContent = user.position || user.role || 'Менеджер';
   }
 }
 
@@ -2849,6 +2943,15 @@ window.renderDashboard = async function() {
       <div class="bi-val">${b.val}</div><div class="bi-delta">${b.delta}</div></div>`).join('');
 
   document.getElementById('leads-cnt').textContent = s.leads.new;
+
+  // Заявки на доступ — значок в меню, чтобы руководитель не пропустил
+  if (isBoss()) {
+    try {
+      const p = await apiFetch('/staff?pending=1');
+      const b = document.getElementById('staff-cnt');
+      if (b) { b.textContent = p.total; b.style.display = p.total ? '' : 'none'; }
+    } catch(e) {}
+  }
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
