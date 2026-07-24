@@ -1,8 +1,11 @@
+import pg from 'pg';
+const { Pool } = pg;
+
 // GET /api/debug — самодиагностика окружения.
 // Ничего не роняет: каждая проверка в своём try/catch.
 // После починки этот файл можно удалить.
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
@@ -23,16 +26,9 @@ module.exports = async (req, res) => {
     NODE_ENV: process.env.NODE_ENV || null,
   };
 
-  // 2. Загружается ли модуль pg
-  let Pool = null;
-  try {
-    Pool = require('pg').Pool;
-    out.checks.pg = { загружен: true, версия: require('pg/package.json').version };
-  } catch (e) {
-    out.checks.pg = { загружен: false, ошибка: e.message, code: e.code };
-    out.вывод = 'Модуль pg не установлен. Проверить dependencies в package.json.';
-    return res.status(200).end(JSON.stringify(out, null, 2));
-  }
+  // 2. Модуль pg импортирован статически выше — если бы его не было,
+  //    функция не запустилась бы вовсе
+  out.checks.pg = { загружен: true };
 
   if (!url) {
     out.вывод = 'DATABASE_URL не задан в переменных окружения проекта goodcarkz на Vercel.';
@@ -88,4 +84,4 @@ module.exports = async (req, res) => {
   }
 
   return res.status(200).end(JSON.stringify(out, null, 2));
-};
+}
