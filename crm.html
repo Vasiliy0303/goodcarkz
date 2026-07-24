@@ -222,7 +222,6 @@ textarea{resize:vertical;min-height:70px}
   <button class="nav-item" onclick="go('cars',this)"><span class="icon">🚗</span>Автомобили</button>
   <div class="nav-group">Сервисы</div>
   <button class="nav-item" onclick="go('inspection',this)"><span class="icon">🔍</span>Осмотр авто</button>
-  <button class="nav-item" onclick="go('auction',this)"><span class="icon">🏁</span>Аукцион</button>
   <button class="nav-item" onclick="go('financing',this)"><span class="icon">💳</span>Финансирование</button>
   <button class="nav-item" onclick="go('rfinance',this)"><span class="icon">🏦</span>R Finance</button>
   <div class="nav-group">Управление</div>
@@ -403,9 +402,9 @@ textarea{resize:vertical;min-height:70px}
           </div>
         </div>
 
-        <!-- Active auctions -->
+        <!-- База обзвона -->
         <div class="card">
-          <div class="card-header"><div class="card-title">🏁 Активные аукционы</div><a class="card-link">Все аукционы →</a></div>
+          <div class="card-header"><div class="card-title">📞 База обзвона</div><a class="card-link">К обзвону →</a></div>
           <div id="auctions-list"></div>
         </div>
 
@@ -493,261 +492,15 @@ textarea{resize:vertical;min-height:70px}
         <button class="btn btn-ghost btn-sm" onclick="filterCars('sale')" id="cf-sale">В продаже</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('reserve')" id="cf-reserve">В резерве</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('prep')" id="cf-prep">На подготовке</button>
-        <button class="btn btn-ghost btn-sm" onclick="filterCars('auction')" id="cf-auction">На аукционе</button>
         <button class="btn btn-ghost btn-sm" onclick="filterCars('archive')" id="cf-archive">Архив 🗄</button>
       </div>
+      <div id="cars-moderation"></div>
       <div class="car-grid" id="cars-grid"></div>
     </div>
 
     <!-- OTHER PAGES (placeholders) -->
     <div id="page-inspection" class="page"><div class="page-title" style="margin-bottom:20px">🔍 Осмотр авто</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px;margin-bottom:12px">🔧</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Модуль в разработке</div><div style="font-size:13px">Скоро здесь появится система осмотра автомобилей с фото, видео и схемой повреждений</div></div></div></div>
-    <div id="page-auction" class="page">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <div class="page-title" style="margin-bottom:0">🏁 Аукцион</div>
-    <button class="btn btn-primary" onclick="openAuctionCreate()">+ Новый аукцион</button>
-  </div>
-
-  <!-- Tabs -->
-  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-    <button class="btn btn-primary" id="atab-active" onclick="auctionTab('active',this)">Активные</button>
-    <button class="btn btn-ghost" id="atab-pending" onclick="auctionTab('pending',this)">Ожидают</button>
-    <button class="btn btn-ghost" id="atab-closed" onclick="auctionTab('closed',this)">Завершённые</button>
-  </div>
-
-  <!-- Active auctions -->
-  <div id="auction-active">
-    <div class="card" style="margin-bottom:12px">
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:80px;height:60px;border-radius:8px;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🚗</div>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="font-weight:700;font-size:14px">Toyota Land Cruiser 200 · 2020</div>
-            <span class="badge badge-g">Открытый</span>
-          </div>
-          <div style="font-size:12px;color:#666;margin-bottom:6px">Мин. цена: скрыта · VIN: JTxxxxx</div>
-          <div style="display:flex;gap:16px;align-items:center">
-            <div>
-              <div style="font-size:10px;color:#999">Текущая ставка</div>
-              <div style="font-size:18px;font-weight:800;color:#C0392B">42 500 000 ₸</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#999">Ставок</div>
-              <div style="font-size:16px;font-weight:700">7</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#999">Осталось</div>
-              <div style="font-size:14px;font-weight:700;color:#C0392B;font-family:monospace" id="timer-1">23:41:15</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F5;display:flex;gap:8px">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="openAuctionDetail('a1')">Управление</button>
-        <button class="btn btn-ghost btn-sm" onclick="copyAuctionLink('a1')">🔗 Ссылка</button>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:12px">
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:80px;height:60px;border-radius:8px;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🚙</div>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="font-weight:700;font-size:14px">BMW X5 · 2019</div>
-            <span class="badge badge-b">Закрытый</span>
-          </div>
-          <div style="font-size:12px;color:#666;margin-bottom:6px">Мин. цена: скрыта · 1 ставка/участник</div>
-          <div style="display:flex;gap:16px;align-items:center">
-            <div>
-              <div style="font-size:10px;color:#999">Участников</div>
-              <div style="font-size:16px;font-weight:700">12</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#999">Взносов</div>
-              <div style="font-size:14px;font-weight:700;color:#27AE60">1 200 000 ₸</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#999">Осталось</div>
-              <div style="font-size:14px;font-weight:700;color:#C0392B;font-family:monospace" id="timer-2">11:22:08</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F5;display:flex;gap:8px">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="openAuctionDetail('a2')">Управление</button>
-        <button class="btn btn-ghost btn-sm" onclick="copyAuctionLink('a2')">🔗 Ссылка</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pending -->
-  <div id="auction-pending" style="display:none">
-    <div class="card" style="margin-bottom:12px">
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:80px;height:60px;border-radius:8px;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🚗</div>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="font-weight:700;font-size:14px">Nissan Patrol · 2018</div>
-            <span class="badge badge-y">Ожидает старта</span>
-          </div>
-          <div style="font-size:12px;color:#666;margin-bottom:4px">Старт: 20 июля 2025, 12:00</div>
-          <div style="font-size:12px;color:#666">Гарантийный взнос: 100 000 ₸ · Тип: Открытый</div>
-        </div>
-      </div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F5;display:flex;gap:8px">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="openAuctionDetail('a3')">Редактировать</button>
-        <button class="btn btn-ghost btn-sm" style="color:#C0392B" onclick="showToast('Аукцион отменён')">Отменить</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Closed -->
-  <div id="auction-closed" style="display:none">
-    <div class="card" style="margin-bottom:12px">
-      <div style="background:#F8F9FA;border-radius:8px;padding:12px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-weight:700">Lexus RX 350 · 2021</div>
-          <span class="badge badge-g">Продан</span>
-        </div>
-        <div style="display:flex;gap:16px">
-          <div><div style="font-size:10px;color:#999">Итоговая цена</div><div style="font-weight:700;color:#27AE60">32 000 000 ₸</div></div>
-          <div><div style="font-size:10px;color:#999">Победитель</div><div style="font-weight:600">Асхат М.</div></div>
-          <div><div style="font-size:10px;color:#999">Комиссия</div><div style="font-weight:600">960 000 ₸</div></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="showToast('Открываю протокол...')">📄 Протокол</button>
-        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="showToast('Открываю ставки...')">📊 Ставки</button>
-      </div>
-    </div>
-    <div class="card">
-      <div style="background:#FFF5F5;border-radius:8px;padding:12px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-weight:700">Honda CR-V · 2017</div>
-          <span class="badge badge-x">Не продан</span>
-        </div>
-        <div style="font-size:12px;color:#666">Мин. цена не достигнута · Макс. ставка: 8 900 000 ₸</div>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="showToast('Повторный аукцион...')">🔁 Повторить аукцион</button>
-    </div>
-  </div>
-</div>
-
-<!-- AUCTION DETAIL MODAL -->
-<div id="auction-detail-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);overflow-y:auto">
-  <div style="background:#fff;margin:20px auto;max-width:700px;border-radius:12px;overflow:hidden">
-    <div style="padding:20px;border-bottom:1px solid #F5F5F5;display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:18px;font-weight:700" id="adm-title">Управление аукционом</div>
-      <button onclick="document.getElementById('auction-detail-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div style="padding:20px">
-      <!-- Tabs -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid #F5F5F5;padding-bottom:12px">
-        <button class="btn btn-primary btn-sm" onclick="admTab('bids',this)">Ставки</button>
-        <button class="btn btn-ghost btn-sm" onclick="admTab('participants',this)">Участники</button>
-        <button class="btn btn-ghost btn-sm" onclick="admTab('settings',this)">Настройки</button>
-      </div>
-
-      <!-- Bids tab -->
-      <div id="adm-bids">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div style="font-size:12px;color:#666">Всего ставок: <b>7</b></div>
-          <div style="font-size:12px;color:#666">Взносов заблокировано: <b>700 000 ₸</b></div>
-        </div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead><tr style="background:#F8F9FA"><th style="padding:8px;text-align:left">Участник</th><th style="padding:8px;text-align:right">Ставка</th><th style="padding:8px;text-align:center">Время</th><th style="padding:8px;text-align:center">Статус</th></tr></thead>
-          <tbody>
-            <tr style="border-bottom:1px solid #F5F5F5"><td style="padding:8px">Асхат М. 🟢</td><td style="padding:8px;text-align:right;font-weight:700;color:#C0392B">42 500 000 ₸</td><td style="padding:8px;text-align:center;color:#999">14:23</td><td style="padding:8px;text-align:center"><span class="badge badge-g">Лидер</span></td></tr>
-            <tr style="border-bottom:1px solid #F5F5F5"><td style="padding:8px">Жандос К.</td><td style="padding:8px;text-align:right">41 000 000 ₸</td><td style="padding:8px;text-align:center;color:#999">14:18</td><td style="padding:8px;text-align:center"><span class="badge badge-b">Активен</span></td></tr>
-            <tr style="border-bottom:1px solid #F5F5F5"><td style="padding:8px">Алия С.</td><td style="padding:8px;text-align:right">40 500 000 ₸</td><td style="padding:8px;text-align:center;color:#999">14:10</td><td style="padding:8px;text-align:center"><span class="badge badge-b">Активен</span></td></tr>
-            <tr><td style="padding:8px;color:#999">+4 участника</td><td colspan="3"></td></tr>
-          </tbody>
-        </table>
-        <div style="margin-top:16px;display:flex;gap:8px">
-          <button class="btn btn-primary" style="flex:1" onclick="showToast('Аукцион завершён досрочно')">🏁 Завершить досрочно</button>
-          <button class="btn btn-ghost" onclick="showToast('Уведомления отправлены')">📢 Уведомить всех</button>
-        </div>
-      </div>
-
-      <!-- Participants tab -->
-      <div id="adm-participants" style="display:none">
-        <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:13px;color:#666">12 участников · Взносы: 1 200 000 ₸</div>
-          <button class="btn btn-ghost btn-sm" onclick="showToast('Экспорт...')">📥 Excel</button>
-        </div>
-        <div style="border:1px solid #F0F0F0;border-radius:8px;overflow:hidden">
-          <div style="padding:10px 12px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #F5F5F5">
-            <div style="width:32px;height:32px;background:#27AE60;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700">АМ</div>
-            <div style="flex:1"><div style="font-size:13px;font-weight:600">Асхат Муратов</div><div style="font-size:11px;color:#666">+7 701 *** 1234 · Взнос: ✅ 100 000 ₸</div></div>
-            <span style="font-size:10px;background:#E8F5E9;color:#27AE60;padding:2px 8px;border-radius:4px">Лидер</span>
-          </div>
-          <div style="padding:10px 12px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #F5F5F5">
-            <div style="width:32px;height:32px;background:#2980B9;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700">ЖК</div>
-            <div style="flex:1"><div style="font-size:13px;font-weight:600">Жандос Кенжебаев</div><div style="font-size:11px;color:#666">+7 777 *** 5678 · Взнос: ✅ 100 000 ₸</div></div>
-            <span style="font-size:10px;background:#E3F2FD;color:#2980B9;padding:2px 8px;border-radius:4px">Активен</span>
-          </div>
-          <div style="padding:10px 12px;text-align:center;color:#999;font-size:12px">+10 участников</div>
-        </div>
-        <div style="margin-top:12px">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('Разблокировка взносов...')">🔓 Разблокировать все взносы</button>
-        </div>
-      </div>
-
-      <!-- Settings tab -->
-      <div id="adm-settings" style="display:none">
-        <div class="form-group"><label class="form-label">Минимальная цена (резервная)</label><input type="number" class="form-control" placeholder="Не видна участникам" value="40000000"></div>
-        <div class="form-group"><label class="form-label">Тип аукциона</label><select class="form-control"><option>Открытый (все видят ставки)</option><option>Закрытый (одна ставка)</option></select></div>
-        <div class="form-group"><label class="form-label">Гарантийный взнос (₸)</label><input type="number" class="form-control" value="100000"></div>
-        <div class="form-group"><label class="form-label">Дата и время окончания</label><input type="datetime-local" class="form-control"></div>
-        <div class="form-group"><label class="form-label">Шаг ставки (₸)</label><input type="number" class="form-control" value="100000"></div>
-        <button class="btn btn-primary" onclick="showToast('Настройки сохранены')">Сохранить</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- AUCTION CREATE MODAL -->
-<div id="auction-create-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);overflow-y:auto">
-  <div style="background:#fff;margin:20px auto;max-width:600px;border-radius:12px;overflow:hidden">
-    <div style="padding:20px;border-bottom:1px solid #F5F5F5;display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:18px;font-weight:700">Создать аукцион</div>
-      <button onclick="document.getElementById('auction-create-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div style="padding:20px">
-      <div class="form-group"><label class="form-label">Автомобиль</label><select class="form-control" id="acm-car"><option value="">— Выберите автомобиль —</option></select></div>
-      <div class="form-group"><label class="form-label">Тип аукциона</label>
-        <div style="display:flex;gap:12px;margin-top:6px">
-          <label style="flex:1;border:2px solid #C0392B;border-radius:10px;padding:12px;cursor:pointer;text-align:center">
-            <input type="radio" name="atype" value="open" checked style="display:none">
-            <div style="font-size:20px;margin-bottom:4px">📢</div>
-            <div style="font-weight:700;font-size:13px">Открытый</div>
-            <div style="font-size:11px;color:#666">Все видят ставки</div>
-          </label>
-          <label style="flex:1;border:2px solid #E0E0E0;border-radius:10px;padding:12px;cursor:pointer;text-align:center">
-            <input type="radio" name="atype" value="closed" style="display:none">
-            <div style="font-size:20px;margin-bottom:4px">🔒</div>
-            <div style="font-weight:700;font-size:13px">Закрытый</div>
-            <div style="font-size:11px;color:#666">Одна финальная ставка</div>
-          </label>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">Гарантийный взнос (₸)</label><input type="number" class="form-control" value="100000" placeholder="100 000"></div>
-        <div class="form-group"><label class="form-label">Шаг ставки (₸)</label><input type="number" class="form-control" value="100000" placeholder="100 000"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Резервная цена (₸) — скрыта от участников</label><input type="number" class="form-control" placeholder="Минимальная цена продажи"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">Начало</label><input type="datetime-local" class="form-control"></div>
-        <div class="form-group"><label class="form-label">Конец</label><input type="datetime-local" class="form-control"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Комиссия GoodCar (%)</label><input type="number" class="form-control" value="3" min="1" max="10"></div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn-primary" style="flex:1" onclick="saveAuction()">🏁 Запустить аукцион</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('auction-create-modal').style.display='none'">Отмена</button>
-      </div>
-    </div>
-  </div>
-</div>
-    <div id="page-financing" class="page">
+        <div id="page-financing" class="page">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
     <div class="page-title" style="margin-bottom:0">💳 Финансирование</div>
     <div style="display:flex;gap:8px">
@@ -830,7 +583,23 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div id="page-bi" class="page"><div class="page-title" style="margin-bottom:20px">📊 BI-Аналитика</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">📈</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
     <div id="page-docs" class="page"><div class="page-title" style="margin-bottom:20px">📄 Документы</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">📁</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
-    <div id="page-settings" class="page"><div class="page-title" style="margin-bottom:20px">⚙️ Настройки</div><div class="card"><div style="text-align:center;padding:40px;color:#CCC"><div style="font-size:48px">🔧</div><div style="font-size:16px;font-weight:600;margin-top:12px">Скоро</div></div></div></div>
+    <div id="page-settings" class="page">
+      <div class="page-header">
+        <div class="page-title">⚙️ Настройки</div>
+        <div class="page-sub">Телефоны, витрина и этапы продаж</div>
+      </div>
+      <div class="grid-2" style="align-items:start">
+        <div id="settings-groups"></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎯 Воронка продаж</div></div>
+          <div style="font-size:12px;color:#999;margin-bottom:12px">
+            Снимите галочку — этап пропадёт из канбана и с дашборда.
+            Сделки на нём не потеряются. Название можно переписать.
+          </div>
+          <div id="settings-stages"></div>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -869,10 +638,11 @@ const STAGE_LIST = [
   {k:'closed',        label:'Завершена',        color:'#1E8449'},
   {k:'lost',          label:'Отказ',            color:'#95A5A6'},
 ];
-const STAGE_LABEL = Object.fromEntries(STAGE_LIST.map(s=>[s.k,s.label]));
-const STAGE_COLOR = Object.fromEntries(STAGE_LIST.map(s=>[s.k,s.color]));
-const STAGE_KEYS  = STAGE_LIST.map(s=>s.k);
-const BOARD_KEYS  = STAGE_KEYS.filter(k=>k!=='closed'&&k!=='lost'); // 11 рабочих колонок
+let STAGE_LABEL = Object.fromEntries(STAGE_LIST.map(s=>[s.k,s.label]));
+let STAGE_COLOR = Object.fromEntries(STAGE_LIST.map(s=>[s.k,s.color]));
+let STAGE_KEYS  = STAGE_LIST.map(s=>s.k);
+let BOARD_KEYS  = STAGE_KEYS.filter(k=>k!=='closed'&&k!=='lost');
+let FINAL_KEYS  = ['closed','lost'];
 
 // Старые русские названия из localStorage — чтобы демо-сделки не потерялись
 const LEGACY_STAGE = {'Новый лид':'new','Первый контакт':'consultation','Подбор авто':'showing',
@@ -880,7 +650,7 @@ const LEGACY_STAGE = {'Новый лид':'new','Первый контакт':'c
   'Финансирование':'financing','Договор':'contract','Оплата':'deposit',
   'Выдача авто':'handover','Завершена':'closed','Неудача':'lost'};
 const stageKey = s => STAGE_LABEL[s] ? s : (LEGACY_STAGE[s] || 'new');
-const CAR_STATUSES = ['Новый','В продаже','В резерве','На диагностике','На подготовке','На аукционе','Продан','Архив'];
+const CAR_STATUSES = ['Новый','В продаже','В резерве','На диагностике','На подготовке','Продан','Архив'];
 
 // ===== База марок/моделей (общая с App) =====
 var CAR_DB = {
@@ -1512,41 +1282,19 @@ const isBoss = () => (window.GC_USER && GC_USER.role) === 'admin';
 // viewer только смотрит: кнопки «Взять себе» у него нет
 const canTake = () => ['admin','manager'].includes((window.GC_USER || {}).role);
 
-let managers = LS('gc:mgr') || [
-  {id:'m1',name:'Ерлан Султанов',role:'Менеджер',avatar:'ЕС'},
-  {id:'m2',name:'Айгерим Бекова',role:'Менеджер',avatar:'АВ'},
-  {id:'m3',name:'Динара Алимова',role:'Менеджер',avatar:'ДА'},
-  {id:'m4',name:'Рослан Мухтаров',role:'Менеджер',avatar:'РМ'},
-  {id:'m5',name:'Аликан Танир',role:'Менеджер',avatar:'АТ'},
-];
-let leads = LS('gc:leads') || [
-  {id:'l1',name:'Серик Жаксыбеков',phone:'+7 701 111-22-33',channel:'telegram',interest:'Toyota Camry 2024',managerId:'m1',date:'2024-05-15',status:'new'},
-  {id:'l2',name:'Айгерим Бекова',phone:'+7 702 444-55-66',channel:'whatsapp',interest:'BMW X5 2020',managerId:'m2',date:'2024-05-15',status:'assigned'},
-  {id:'l3',name:'Руслан Абенов',phone:'+7 777 333-11-22',channel:'instagram',interest:'Mercedes GLE',managerId:'m3',date:'2024-05-14',status:'new'},
-  {id:'l4',name:'Даурен Касымов',phone:'+7 701 555-77-88',channel:'call',interest:'Kia K5 2023',managerId:'m1',date:'2024-05-14',status:'assigned'},
-  {id:'l5',name:'Мадина Абилова',phone:'+7 702 666-99-00',channel:'site',interest:'Hyundai Tucson',managerId:'m2',date:'2024-05-13',status:'new'},
-];
-let deals = LS('gc:deals') || [
-  {id:'d1',title:'Toyota Camry 2024',clientId:'l1',stage:'Осмотр',amount:14500000,managerId:'m1',created:'2024-05-01'},
-  {id:'d2',title:'BMW X5 2020',clientId:'l2',stage:'Тест-драйв',amount:28300000,managerId:'m2',created:'2024-05-03'},
-  {id:'d3',title:'Kia K5 2022',clientId:'l4',stage:'Договор',amount:10200000,managerId:'m1',created:'2024-05-05'},
-  {id:'d4',title:'Mercedes GLE 2020',clientId:'l3',stage:'Первый контакт',amount:35000000,managerId:'m4',created:'2024-05-08'},
-  {id:'d5',title:'Hyundai Tucson 2023',clientId:'l5',stage:'Завершена',amount:11800000,managerId:'m2',created:'2024-04-28'},
-];
-let cars = LS('gc:cars') || [
-  {id:'c1',make:'Toyota',model:'Camry',year:2024,price:14500000,status:'В продаже',vin:'JT2BF22K000',mileage:5000,photos:[],color:'Белый'},
-  {id:'c2',make:'BMW',model:'X5',year:2020,price:28300000,status:'В резерве',vin:'WBAKP93050S',mileage:45000,photos:[],color:'Чёрный'},
-  {id:'c3',make:'Mercedes',model:'GLE 350',year:2020,price:35000000,status:'В продаже',vin:'4JGFB4KE5LA',mileage:38000,photos:[],color:'Серебристый'},
-  {id:'c4',make:'Kia',model:'K5',year:2022,price:10200000,status:'На подготовке',vin:'KNAGN4AE6K5',mileage:28000,photos:[],color:'Синий'},
-  {id:'c5',make:'Hyundai',model:'Tucson',year:2023,price:11800000,status:'В продаже',vin:'KM8J33A22NU',mileage:12000,photos:[],color:'Красный'},
-  {id:'c6',make:'Lexus',model:'RX 350',year:2021,price:32000000,status:'На аукционе',vin:'2T2BZMCA3MC',mileage:55000,photos:[],color:'Белый перламутр'},
-];
+// Данные приходят только из базы. Локальных подстановок больше нет:
+// именно из-за них во вкладке Сделки висели выдуманные Mercedes и Camry.
+let managers = [];
+let leads    = [];
+let deals    = [];
+let cars     = [];
 
 // ── Филиал ────────────────────────────────────────────────────────────────
-// Выбор запоминается: 'all' | 'Астана' | 'Кокшетау'
+// 'all' | 'Астана' | 'Кокшетау'. Менеджеру город задаёт его учётная запись.
 let GC_CITY = localStorage.getItem('gc:city') || 'all';
 
 async function setCity(city) {
+  if (!isBoss()) { showToast('Филиал меняет только руководитель'); return; }
   GC_CITY = city;
   localStorage.setItem('gc:city', city);
   leadPage = 0;
@@ -1558,6 +1306,42 @@ async function setCity(city) {
 }
 
 const cityParam = (sep='?') => GC_CITY === 'all' ? '' : sep + 'city=' + encodeURIComponent(GC_CITY);
+
+// ── Настройки компании и воронка ──────────────────────────────────────────
+// Приходят из /api/config: дежурные телефоны, тексты витрины, этапы сделок.
+let CFG = {}, CFG_META = [], STAGES_DB = [];
+async function loadConfig() {
+  try {
+    const r = await apiFetch('/config');
+    CFG = r.settings || {}; CFG_META = r.settings_meta || []; STAGES_DB = r.stages || [];
+    if (STAGES_DB.length) {
+      // Воронка настраивается в разделе Настройки, код при этом не трогаем
+      STAGE_LABEL = Object.fromEntries(STAGES_DB.map(x => [x.code, x.title]));
+      STAGE_COLOR = Object.fromEntries(STAGES_DB.map(x => [x.code, x.color]));
+      BOARD_KEYS  = STAGES_DB.filter(x => x.is_active && !x.is_final).map(x => x.code);
+      FINAL_KEYS  = STAGES_DB.filter(x => x.is_active &&  x.is_final).map(x => x.code);
+    }
+  } catch(e) { console.warn('Настройки не загрузились:', e.message); }
+}
+
+// Дежурный номер филиала: сначала свой, потом общий
+function dutyPhone(city) {
+  const byCity = { 'Астана': CFG.phone_astana, 'Кокшетау': CFG.phone_kokshetau };
+  return (byCity[city] || '').trim() || (CFG.phone_main || '').trim();
+}
+
+// Ноль и пустое значение — это «цена по запросу», а не 0 ₸
+function priceHtml(car) {
+  const p = Number(car.price) || 0;
+  if (p > 0) return `<div class="car-price">${fmt(p)}</div>`;
+  const phone = dutyPhone(car.city);
+  const label = CFG.price_on_request || 'Цена по запросу';
+  const cta   = CFG.price_cta || 'Уточнить у менеджера';
+  return `<div class="car-price" style="color:#E67E22;font-size:14px">${label}</div>
+    ${phone
+      ? `<a href="tel:${phone}" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#C0392B;font-weight:600;text-decoration:none">📞 ${phone}</a>`
+      : `<span style="font-size:11px;color:#CCC">${cta} · дежурный номер не заполнен</span>`}`;
+}
 
 const uid = () => Math.random().toString(36).slice(2,9);
 // PostgreSQL отдаёт numeric строкой ("4000000.00"), а у строки
@@ -1572,7 +1356,8 @@ function go(id, btn) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   if (id === 'leads') { loadLeads().then(renderLeads); return; }
-  if (id === 'staff') { renderStaff(); return; }
+  if (id === 'staff')    { renderStaff(); return; }
+  if (id === 'settings') { renderSettings(); return; }
   const renders = {dashboard:renderDashboard,leads:renderLeads,deals:renderDeals,cars:renderCars};
   if(renders[id]) renders[id]();
 }
@@ -1619,22 +1404,7 @@ function renderDashboard() {
       <div class="loc-pct" style="color:${l.color}">${l.pct}%</div>
     </div>`).join('');
 
-  // Auctions
-  const aucs = [
-    {name:'BMW X5 2020',bid:'12 800 000',timer:'02:15:47'},
-    {name:'Toyota Land Cruiser 2021',bid:'21 200 000',timer:'05:42:18'},
-    {name:'Mercedes-Benz GLE 2020',bid:'18 000 000',timer:'01:23:29'},
-  ];
-  document.getElementById('auctions-list').innerHTML = aucs.map(a=>`
-    <div class="auction-item">
-      <div class="auction-img">🚗</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
-        <div style="font-size:11px;color:#AAA">Текущая ставка</div>
-        <div style="font-size:12px;font-weight:700;color:#C0392B">${a.bid} ₸</div>
-      </div>
-      <div class="auction-timer">${a.timer}</div>
-    </div>`).join('');
+  // Блок заполняется реальными сегментами базы из /api/stats
 
   // Tasks today
   const todayTasks = [
@@ -1784,6 +1554,77 @@ function renderLeads() {
         <button class="btn btn-ghost btn-sm" ${to>=leadTotal?'disabled':''} onclick="leadPageGo(1)">Вперёд →</button>
       </div>
     </div>` : `<div style="padding:8px 14px;font-size:12px;color:#999">Всего: ${leadTotal}</div>`;
+}
+
+// ── Настройки ─────────────────────────────────────────────────────────────
+async function renderSettings() {
+  await loadConfig();
+  const box = document.getElementById('settings-groups');
+  const stg = document.getElementById('settings-stages');
+  if (!box) return;
+
+  if (!isBoss()) {
+    box.innerHTML = '<div class="card"><div style="padding:30px;text-align:center;color:#CCC">Настройки меняет только руководитель</div></div>';
+    stg.innerHTML = '';
+    return;
+  }
+
+  // Поля сгруппированы так, как заданы в базе
+  const groups = {};
+  CFG_META.forEach(m => { (groups[m.grp] = groups[m.grp] || []).push(m); });
+
+  box.innerHTML = Object.entries(groups).map(([grp, items]) => `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">${grp}</div></div>
+      ${items.map(m => `
+        <div style="margin-bottom:14px">
+          <label>${m.title}</label>
+          <input id="set-${m.key}" value="${(CFG[m.key] || '').replace(/"/g,'&quot;')}"
+                 placeholder="${m.key.startsWith('phone') ? '+7 700 000 00 00' : ''}">
+          ${m.hint ? `<div style="font-size:11px;color:#AAA;margin-top:4px">${m.hint}</div>` : ''}
+        </div>`).join('')}
+    </div>`).join('') +
+    `<button class="btn btn-primary" onclick="saveSettings()">Сохранить настройки</button>`;
+
+  stg.innerHTML = STAGES_DB.map(x => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F5F5F5">
+      <input type="checkbox" ${x.is_active ? 'checked' : ''} style="width:auto"
+             onchange="toggleStage('${x.code}', this.checked)">
+      <span style="width:10px;height:24px;border-radius:3px;background:${x.color};flex-shrink:0"></span>
+      <input value="${x.title}" onchange="renameStage('${x.code}', this.value)"
+             style="flex:1;padding:5px 9px;font-size:13px">
+      ${x.is_final ? '<span class="badge badge-g" style="flex-shrink:0">финал</span>' : ''}
+    </div>`).join('');
+}
+
+async function saveSettings() {
+  const body = { settings: {} };
+  CFG_META.forEach(m => {
+    const el = document.getElementById('set-' + m.key);
+    if (el) body.settings[m.key] = el.value.trim();
+  });
+  try {
+    await apiFetch('/config', { method: 'PATCH', body });
+    showToast('✅ Настройки сохранены');
+    await loadConfig();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+async function toggleStage(code, on) {
+  try {
+    await apiFetch('/config?stage=' + code, { method: 'PATCH', body: { is_active: on } });
+    await loadConfig();
+    showToast(on ? 'Этап включён' : 'Этап скрыт из воронки');
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+async function renameStage(code, title) {
+  if (!title.trim()) return;
+  try {
+    await apiFetch('/config?stage=' + code, { method: 'PATCH', body: { title: title.trim() } });
+    await loadConfig();
+    showToast('✅ Переименовано');
+  } catch(e) { showToast('⚠️ ' + e.message); }
 }
 
 // ── Персонал ──────────────────────────────────────────────────────────────
@@ -1962,11 +1803,11 @@ function renderDeals() {
   }).join('');
 
   // Завершённые и отказы — отдельным блоком, чтобы не тянуть ленту вправо
-  const done = deals.filter(d => ['closed','lost'].includes(stageKey(d.stage)));
+  const done = deals.filter(d => FINAL_KEYS.includes(stageKey(d.stage)));
   const box  = document.getElementById('deals-archive');
   if (!box) return;
   if (!done.length) { box.innerHTML = ''; return; }
-  const won  = done.filter(d => stageKey(d.stage) === 'closed');
+  const won  = done.filter(d => stageKey(d.stage) !== 'lost');
   const lost = done.filter(d => stageKey(d.stage) === 'lost');
   const sum  = won.reduce((s, d) => s + num(d.amount), 0);
   box.innerHTML = `
@@ -1987,24 +1828,85 @@ function renderDeals() {
 let carFilter = 'all';
 function filterCars(f) {
   carFilter = f;
-  ['all','new','sale','reserve','prep','auction','archive'].forEach(x => {
+  ['all','new','sale','reserve','prep','archive'].forEach(x => {
     const el = document.getElementById('cf-'+x);
     if(el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
   });
   renderCars();
 }
+// Объявления, поданные из приложения, ждут подтверждения менеджера
+function renderModeration() {
+  const box = document.getElementById('cars-moderation');
+  if (!box) return;
+  const pend = cars.filter(c => c.status === 'Новый');
+  if (!pend.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = `
+    <div class="card" style="margin-bottom:16px;border-left:3px solid #E67E22">
+      <div class="card-header">
+        <div class="card-title">⏳ Из приложения, ждут проверки (${pend.length})</div>
+      </div>
+      ${pend.map(c => {
+        const photo = (c.photos && c.photos[0]) || '';
+        return `<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5">
+          <div style="width:72px;height:54px;border-radius:8px;overflow:hidden;background:#F0F0F0;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+            ${photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover">` : '🚗'}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700">${c.make} ${c.model} ${c.year || ''}</div>
+            <div style="font-size:11px;color:#999">
+              ${Number(c.price) > 0 ? fmt(c.price) : '⚠️ цена не указана'} ·
+              ${(c.mileage || 0).toLocaleString('ru-RU')} км ·
+              ${(c.photos || []).length} фото · ${c.city || '—'}
+            </div>
+            ${c.seller_name || c.seller_phone
+              ? `<div style="font-size:11px;color:#666;margin-top:2px">Продавец: ${c.seller_name || '—'}${c.seller_phone ? ` · <a href="tel:${c.seller_phone}" style="color:#C0392B">${c.seller_phone}</a>` : ''}</div>`
+              : ''}
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="viewCar('${c.id}')">Смотреть</button>
+          <button class="btn btn-primary btn-sm" onclick="approveCar('${c.id}')">✓ В продажу</button>
+          <button class="btn btn-ghost btn-sm" style="color:#C0392B" onclick="rejectCar('${c.id}')">Отклонить</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function approveCar(id) {
+  const car = cars.find(c => c.id === id);
+  if (car && !(Number(car.price) > 0)) {
+    if (!confirm('У этого авто не указана цена.\nВ приложении вместо неё покажется «Цена по запросу» и дежурный номер.\n\nВсё равно опубликовать?')) return;
+  }
+  try {
+    await apiFetch('/cars?id=' + id, { method: 'PATCH',
+      body: { status: 'В продаже', is_published: true } });
+    showToast('✅ Опубликовано в приложении');
+    await loadCars(); renderCars();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+async function rejectCar(id) {
+  const why = prompt('Причина отклонения (увидит менеджер в карточке):', 'Недостаточно фото');
+  if (why === null) return;
+  try {
+    await apiFetch('/cars?id=' + id, { method: 'PATCH',
+      body: { status: 'Архив', is_published: false, reject_reason: why } });
+    showToast('Объявление отклонено');
+    await loadCars(); renderCars();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
 function renderCars(search='') {
+  renderModeration();
   let fc = cars;
   if(carFilter==='new') fc = fc.filter(c=>c.status==='Новый');
   if(carFilter==='sale') fc = fc.filter(c=>c.status==='В продаже');
   if(carFilter==='reserve') fc = fc.filter(c=>c.status==='В резерве');
   if(carFilter==='prep') fc = fc.filter(c=>c.status==='На подготовке');
-  if(carFilter==='auction') fc = fc.filter(c=>c.status==='На аукционе');
   if(carFilter==='archive') fc = fc.filter(c=>c.status==='Архив');
   if(carFilter==='all') fc = fc.filter(c=>c.status!=='Архив');
   if(search) fc = fc.filter(c=>(c.make+' '+c.model+' '+c.vin).toLowerCase().includes(search.toLowerCase()));
 
-  const stColor = {'Новый':'badge-y','В продаже':'badge-g','В резерве':'badge-b','На диагностике':'badge-y','На подготовке':'badge-y','На аукционе':'badge-p','Продан':'badge-x','Архив':'badge-x'};
+  const stColor = {'Новый':'badge-y','В продаже':'badge-g','В резерве':'badge-b','На диагностике':'badge-y','На подготовке':'badge-y','Продан':'badge-x','Архив':'badge-x'};
   document.getElementById('cars-grid').innerHTML = fc.map(car=>`
     <div class="car-card">
       <div class="car-photo" id="photo-wrap-${car.id}">
@@ -2017,7 +1919,7 @@ function renderCars(search='') {
       </div>
       <div class="car-info">
         <div class="car-name">${car.make} ${car.model} ${car.year}</div>
-        <div class="car-price">${fmt(car.price)}</div>
+        ${priceHtml(car)}
         <div class="car-meta">
           <span>📍 ${car.color||'—'}</span>
           <span>🔢 ${(car.mileage||0).toLocaleString('ru-RU')} км</span>
@@ -2071,7 +1973,6 @@ function handleUpload(carId, input) {
       car.photos.push(e.target.result);
       loaded++;
       if(loaded===files.length) {
-        SS('gc:cars', cars);
         renderCars();
         showToast(`✅ Загружено ${files.length} фото для ${car.make} ${car.model}`);
       }
@@ -2137,7 +2038,6 @@ function deletePhoto(carId, idx) {
   const car = cars.find(c=>c.id===carId);
   if(!car) return;
   car.photos.splice(idx,1);
-  SS('gc:cars',cars);
   viewCar(carId);
 }
 
@@ -2385,7 +2285,6 @@ function exportCarsCsv() {
   if(carFilter==='sale') fc = fc.filter(c=>c.status==='В продаже');
   if(carFilter==='reserve') fc = fc.filter(c=>c.status==='В резерве');
   if(carFilter==='prep') fc = fc.filter(c=>c.status==='На подготовке');
-  if(carFilter==='auction') fc = fc.filter(c=>c.status==='На аукционе');
   if(carFilter==='archive') fc = fc.filter(c=>c.status==='Архив');
 
   csvDownload(
@@ -2434,7 +2333,6 @@ async function hardDeleteCar(id) {
   try {
     await apiFetch('/cars?id=' + id + '&hard=1', { method: 'DELETE' });
     cars = cars.filter(c=>c.id!==id);
-    SS('gc:cars', cars);
     renderCars();
     showToast('🗑 Удалено навсегда: ' + name);
   } catch(e) {
@@ -2450,7 +2348,6 @@ async function quickStatus(id, sel) {
   try {
     await apiFetch('/cars?id=' + id, { method: 'PATCH', body: { status: newStatus, changed_by: (window.GC_USER && GC_USER.name) || 'Platform' } });
     if (car) car.status = newStatus;
-    SS('gc:cars', cars);
     renderCars();
     showToast(`✅ ${car ? car.make + ' ' + car.model + ' — ' : ''}статус: «${newStatus}»`);
   } catch(e) {
@@ -2467,7 +2364,6 @@ async function deleteCar(id) {
     await loadCars();
   } catch(e) {
     cars = cars.filter(c=>c.id!==id);
-    SS('gc:cars',cars);
   }
   closeModal(); renderCars();
   showToast('📦 Автомобиль архивирован');
@@ -2499,8 +2395,7 @@ function saveLead(id) {
   // Переопределена через API ниже
   const name = gv('l-name'); if(!name) return;
   const obj = {id:id||uid(),name,phone:gv('l-phone'),channel:gv('l-ch'),managerId:gv('l-mgr'),interest:gv('l-int'),date:new Date().toISOString().slice(0,10),status:id?leads.find(l=>l.id===id)?.status:'new'};
-  if(id) leads = leads.map(l=>l.id===id?obj:l); else leads=[obj,...leads];
-  SS('gc:leads',leads); closeModal(); renderLeads();
+  if(id) leads = leads.map(l=>l.id===id?obj:l); else leads=[obj,...leads]; closeModal(); renderLeads();
   document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
 }
 async function deleteLead(id){
@@ -2532,10 +2427,16 @@ function openDealModal(id=null,defStage=null){
 function saveDeal(id){
   const t=gv('d-title');if(!t)return;
   const obj={id:id||uid(),title:t,clientId:gv('d-client'),stage:gv('d-stage'),amount:Number(gv('d-amount'))||0,managerId:gv('d-mgr'),created:new Date().toISOString().slice(0,10)};
-  if(id)deals=deals.map(d=>d.id===id?obj:d);else deals=[obj,...deals];
-  SS('gc:deals',deals);closeModal();renderDeals();
+  if(id)deals=deals.map(d=>d.id===id?obj:d);else deals=[obj,...deals];closeModal();renderDeals();
 }
-function deleteDeal(id){deals=deals.filter(d=>d.id!==id);SS('gc:deals',deals);closeModal();renderDeals();}
+async function deleteDeal(id){
+  if(!confirm('Удалить сделку навсегда?')) return;
+  try {
+    await apiFetch('/deals?id=' + id, { method: 'DELETE' });
+    showToast('🗑 Сделка удалена');
+  } catch(e) { showToast('⚠️ ' + e.message); return; }
+  closeModal(); await loadDeals(); renderDeals();
+}
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function showToast(msg) {
@@ -2639,8 +2540,8 @@ async function loadLeads() {
     leads = (data.data || []).map(l => ({ ...l, managerId: l.manager_id, date: (l.created_at||'').slice(0,10) }));
     leadTotal = data.total ?? leads.length;
   } catch(e) {
-    console.warn('Лиды: работаем на локальных данных —', e.message);
-    leadTotal = leads.length;
+    leads = []; leadTotal = 0;
+    console.warn('Лиды не загрузились:', e.message);
   }
 }
 
@@ -2648,15 +2549,16 @@ async function loadLeads() {
 async function loadCars() {
   try {
     const data = await apiFetch('/cars?limit=500' + cityParam('&'));
-    if (data.data && data.data.length > 0) {
-      cars = data.data.map(c => ({
+    {
+      cars = (data.data || []).map(c => ({
         ...c,
         photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
         videos: typeof c.videos === 'string' ? JSON.parse(c.videos) : (c.videos || []),
       }));
     }
   } catch(e) {
-    console.warn('Using localStorage for cars');
+    cars = [];
+    console.warn('Авто не загрузились:', e.message);
   }
 }
 
@@ -2664,15 +2566,10 @@ async function loadCars() {
 async function loadDeals() {
   try {
     const data = await apiFetch('/deals?limit=500' + cityParam('&'));
-    if (data.data && data.data.length > 0) {
-      deals = data.data.map(d => ({
-        ...d,
-        clientId: d.client_id,
-        managerId: d.manager_id,
-      }));
-    }
+    deals = (data.data || []).map(d => ({ ...d, managerId: d.manager_id }));
   } catch(e) {
-    console.warn('Using localStorage for deals');
+    deals = [];
+    console.warn('Сделки не загрузились:', e.message);
   }
 }
 
@@ -2959,8 +2856,26 @@ initDate();
 
 // Загружаем всё из API — каждый независимо
 (async () => {
+  await loadConfig();
+
+  // Филиалы переключает только руководитель. Менеджер закреплён за своим
+  // городом и чужие лиды не видит.
   const sw = document.getElementById('city-switch');
-  if (sw) sw.value = GC_CITY;
+  if (sw) {
+    if (isBoss()) {
+      sw.value = GC_CITY;
+    } else {
+      const own = (window.GC_USER && GC_USER.city) || 'Астана';
+      GC_CITY = own;
+      localStorage.setItem('gc:city', own);
+      sw.innerHTML = `<option value="${own}">📍 ${own}</option>`;
+      sw.value = own;
+      sw.disabled = true;
+      sw.title = 'Филиал закреплён за вашей учётной записью';
+      sw.style.cursor = 'default';
+      sw.style.opacity = '.75';
+    }
+  }
 
   showToast('🔄 Подключаемся к базе данных…');
   await loadStaff();
@@ -2972,72 +2887,6 @@ initDate();
   renderDashboard();
   if (typeof updateMeta === 'function') updateMeta();
 })();
-
-// ── AUCTION MODULE ────────────────────────────────────────────────────────────
-function auctionTab(tab, el) {
-  ['active','pending','closed'].forEach(t => {
-    document.getElementById('auction-' + t).style.display = t === tab ? 'block' : 'none';
-    document.getElementById('atab-' + t).className = t === tab ? 'btn btn-primary' : 'btn btn-ghost';
-  });
-}
-
-function admTab(tab, el) {
-  ['bids','participants','settings'].forEach(t => {
-    document.getElementById('adm-' + t).style.display = t === tab ? 'block' : 'none';
-  });
-  el.closest('div').querySelectorAll('button').forEach(b => b.className = 'btn btn-ghost btn-sm');
-  el.className = 'btn btn-primary btn-sm';
-}
-
-function openAuctionDetail(id) {
-  document.getElementById('auction-detail-modal').style.display = 'block';
-}
-
-function openAuctionCreate() {
-  // Populate car select
-  var sel = document.getElementById('acm-car');
-  if (sel && cars && cars.length > 0) {
-    sel.innerHTML = '<option value="">— Выберите автомобиль —</option>' +
-      cars.filter(c => c.status !== 'На аукционе' && c.status !== 'Продан').map(c =>
-        '<option value="' + c.id + '">' + c.make + ' ' + c.model + ' ' + c.year + ' · ' + Number(c.price).toLocaleString('ru-RU') + ' ₸</option>'
-      ).join('');
-  }
-  document.getElementById('auction-create-modal').style.display = 'block';
-}
-
-function copyAuctionLink(id) {
-  var link = 'https://goodcarkz.vercel.app/auction/' + id;
-  if (navigator.clipboard) navigator.clipboard.writeText(link);
-  showToast('Ссылка скопирована: ' + link);
-}
-
-function saveAuction() {
-  var car = document.getElementById('acm-car').value;
-  if (!car) { showToast('Выберите автомобиль'); return; }
-  showToast('✅ Аукцион создан! Участники могут регистрироваться');
-  document.getElementById('auction-create-modal').style.display = 'none';
-}
-
-// Auction timers
-(function startAuctionTimers() {
-  function tick() {
-    var now = Date.now();
-    var t1 = document.getElementById('timer-1');
-    var t2 = document.getElementById('timer-2');
-    if (t1) {
-      var rem1 = Math.max(0, 85275 - Math.floor((now % 86400000) / 1000));
-      t1.textContent = fmt(Math.floor(rem1/3600)) + ':' + fmt(Math.floor((rem1%3600)/60)) + ':' + fmt(rem1%60);
-    }
-    if (t2) {
-      var rem2 = Math.max(0, 40928 - Math.floor((now % 86400000) / 1000));
-      t2.textContent = fmt(Math.floor(rem2/3600)) + ':' + fmt(Math.floor((rem2%3600)/60)) + ':' + fmt(rem2%60);
-    }
-  }
-  function fmt(n) { return n.toString().padStart(2,'0'); }
-  setInterval(tick, 1000);
-  tick();
-})();
-
 
 // ── FINANCING MODULE ──────────────────────────────────────────────────────────
 var _finLeads = [];
