@@ -287,49 +287,6 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
 
 <!-- HOME -->
 
-<!-- AUCTION ONBOARDING MODAL -->
-<div id="auction-onboard" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)">
-  <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,#111118 0%,#0a0a0f 100%);border-radius:24px 24px 0 0;padding:0 0 40px 0;overflow:hidden">
-    <div style="height:4px;width:40px;background:rgba(255,255,255,0.2);border-radius:2px;margin:12px auto 0"></div>
-    <div style="text-align:right;padding:8px 16px 0">
-      <button onclick="closeOnboard()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px">✕</button>
-    </div>
-    <div style="text-align:center;padding:4px 24px 20px">
-      <div style="font-size:40px;margin-bottom:8px">🏁</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:#fff;line-height:1.1;margin-bottom:8px">АУКЦИОНЫ<br><span style="color:#C0392B">GOOD CAR KZ</span></div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5">Проверенные авто · Честные торги<br>Гарантийный взнос защищает продавца</div>
-    </div>
-    <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px">
-      <div onclick="closeOnboard();nav('auction')" style="background:linear-gradient(135deg,#1a0808,#2d1010);border:1.5px solid rgba(192,57,43,0.5);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;position:relative;overflow:hidden">
-        <div style="position:absolute;right:-15px;top:-15px;width:70px;height:70px;background:rgba(192,57,43,0.12);border-radius:50%"></div>
-        <div style="width:48px;height:48px;background:rgba(192,57,43,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🏆</div>
-        <div style="flex:1">
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Участвовать в аукционе</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.5)">Торгуйтесь и купите авто выгодно. Взнос возвращается если не выиграли.</div>
-        </div>
-        <svg viewBox="0 0 24 24" width="18" height="18" stroke="#C0392B" fill="none" stroke-width="2.5" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div onclick="closeOnboard();nav('add')" style="background:linear-gradient(135deg,#080a1a,#10122d);border:1.5px solid rgba(52,152,219,0.4);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;position:relative;overflow:hidden">
-        <div style="position:absolute;right:-15px;top:-15px;width:70px;height:70px;background:rgba(52,152,219,0.1);border-radius:50%"></div>
-        <div style="width:48px;height:48px;background:rgba(52,152,219,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🚗</div>
-        <div style="flex:1">
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Продать через аукцион</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.5)">Получите максимальную цену. Мы проверим авто и выставим на торги.</div>
-        </div>
-        <svg viewBox="0 0 24 24" width="18" height="18" stroke="#3498DB" fill="none" stroke-width="2.5" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 24px">
-      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.25)">или</div>
-      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
-    </div>
-    <div style="text-align:center">
-      <button onclick="closeOnboard()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:13px;cursor:pointer;padding:4px 16px">Смотреть каталог →</button>
-    </div>
-  </div>
-</div>
-
 <div class="screen active" id="home">
   <div class="sb"><span id="clk">9:41</span><span>●●●● 🔋</span></div>
   <div class="hdr">
@@ -358,23 +315,6 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
       <div class="stat"><div class="stn" id="st-new" style="color:var(--red)">—</div><div class="stl">Новых за неделю</div></div>
       <div class="stat"><div class="stn" id="st-inspected" style="color:#2ecc71">—</div><div class="stl">✓ Осмотрено</div></div>
     </div>
-
-    <!-- AUCTION BANNER -->
-    <div onclick="nav('auction')" style="margin:4px 16px 14px;border-radius:16px;background:linear-gradient(135deg,#1a0a0a,#2d0f0f);border:1.5px solid rgba(192,57,43,0.6);padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;position:relative;overflow:hidden">
-      <div style="position:absolute;right:-10px;top:-10px;width:80px;height:80px;background:rgba(192,57,43,0.12);border-radius:50%"></div>
-      <div style="position:absolute;right:20px;top:-20px;width:50px;height:50px;background:rgba(192,57,43,0.08);border-radius:50%"></div>
-      <div style="width:52px;height:52px;border-radius:12px;background:rgba(192,57,43,0.2);border:1px solid rgba(192,57,43,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px">🏁</div>
-      <div style="flex:1">
-        <div style="font-size:10px;color:#C0392B;font-weight:700;letter-spacing:1.5px;margin-bottom:3px">GOOD CAR АУКЦИОН</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#fff;line-height:1">ТОРГИ ОНЛАЙН</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">Проверенные авто · Гарантийный взнос</div>
-      </div>
-      <div style="background:#C0392B;border-radius:10px;padding:8px 14px;flex-shrink:0">
-        <div style="font-size:11px;font-weight:700;color:#fff;letter-spacing:.5px">УЧАСТВОВАТЬ</div>
-      </div>
-    </div>
-
-    <div id="home-hero" style="display:none"></div>
 
     <div class="sec" id="home-popular-sec" style="display:none"><div class="sec-row"><div><div class="rl"></div><div class="sec-t">ПОПУЛЯРНЫЕ</div></div><button class="sec-a" onclick="nav('catalog')">ВСЕ →</button></div></div>
     <div class="ch" id="home-popular"></div>
@@ -599,158 +539,6 @@ input[type=range]{width:100%;accent-color:var(--red);height:20px}
 </div>
 
 <!-- CREDIT -->
-<!-- AUCTION SCREEN -->
-<div class="screen" id="auction">
-  <div class="sb"><span>9:41</span></div>
-  <div class="hdr">
-    <div class="hdr-row">
-      <div class="sec-t" style="font-size:20px">🏁 АУКЦИОН</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">Проверенные авто · Онлайн торги</div>
-    </div>
-    <!-- Filters -->
-    <div class="cats" style="padding-top:8px">
-      <div class="cat on" onclick="auctionFilter(this,'all')">Все</div>
-      <div class="cat" onclick="auctionFilter(this,'open')">Открытые</div>
-      <div class="cat" onclick="auctionFilter(this,'closed')">Закрытые</div>
-      <div class="cat" onclick="auctionFilter(this,'soon')">Скоро</div>
-    </div>
-  </div>
-  <div class="scrl">
-    <!-- Active auction card 1 -->
-    <div onclick="openAuctionApp('a1')" style="margin:8px 16px 0;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);overflow:hidden;cursor:pointer">
-      <div style="position:relative;height:160px;background:#1a1a22;overflow:hidden">
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px">🚙</div>
-        <div style="position:absolute;top:10px;left:10px;background:#C0392B;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px">📢 ОТКРЫТЫЙ</div>
-        <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff;font-family:monospace" id="app-timer-1">23:41:15</div>
-        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:10px 12px">
-          <div style="font-size:15px;font-weight:700;color:#fff">Toyota Land Cruiser 200 · 2020</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.6)">180 000 км · Алматы · Проверено GoodCar ✅</div>
-        </div>
-      </div>
-      <div style="padding:12px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px">
-          <div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:2px">Текущая ставка</div>
-            <div style="font-size:22px;font-weight:800;color:#C0392B">42 500 000 ₸</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:2px">Ставок</div>
-            <div style="font-size:18px;font-weight:700;color:#fff">7</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <div style="flex:1;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:8px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.6)">
-            Взнос: <span style="color:#fff;font-weight:700">100 000 ₸</span>
-          </div>
-          <div style="flex:1;background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);border-radius:8px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.6)">
-            Шаг: <span style="color:#fff;font-weight:700">100 000 ₸</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Active auction card 2 -->
-    <div onclick="openAuctionApp('a2')" style="margin:10px 16px 0;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);overflow:hidden;cursor:pointer">
-      <div style="position:relative;height:160px;background:#1a1a22;overflow:hidden">
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px">🚗</div>
-        <div style="position:absolute;top:10px;left:10px;background:#2C3E50;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px">🔒 ЗАКРЫТЫЙ</div>
-        <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff;font-family:monospace" id="app-timer-2">11:22:08</div>
-        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:10px 12px">
-          <div style="font-size:15px;font-weight:700;color:#fff">BMW X5 · 2019</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.6)">95 000 км · Астана · Проверено GoodCar ✅</div>
-        </div>
-      </div>
-      <div style="padding:12px">
-        <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:rgba(255,255,255,0.6)">
-          🔒 Закрытый аукцион — каждый участник делает одну ставку. Победитель объявляется после окончания.
-        </div>
-        <div style="display:flex;gap:8px">
-          <div style="flex:1;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:8px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.6)">
-            Участников: <span style="color:#fff;font-weight:700">12</span>
-          </div>
-          <div style="flex:1;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:8px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.6)">
-            Взнос: <span style="color:#fff;font-weight:700">100 000 ₸</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Info block -->
-    <div style="margin:12px 16px 20px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:14px">
-      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:10px">Как участвовать?</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.8">
-        <div>1️⃣ Зарегистрируйтесь и подтвердите телефон</div>
-        <div>2️⃣ Внесите гарантийный взнос (возвращается если не выиграли)</div>
-        <div>3️⃣ Делайте ставки в реальном времени</div>
-        <div>4️⃣ При победе оплатите авто в течение 48 часов</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- AUCTION DETAIL APP SCREEN -->
-<div class="screen" id="auction-detail-app">
-  <div class="sb"><span>9:41</span></div>
-  <div style="display:flex;align-items:center;padding:12px 16px;gap:12px">
-    <div onclick="nav('auction')" style="cursor:pointer"><svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div>
-    <div style="font-size:16px;font-weight:700;color:#fff" id="ada-title">Toyota Land Cruiser 200</div>
-  </div>
-  <div class="scrl">
-    <!-- Car photo -->
-    <div style="height:200px;background:linear-gradient(135deg,#1a1a22,#2a2a35);display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:0">🚙</div>
-
-    <!-- Timer & bid -->
-    <div style="background:rgba(192,57,43,0.12);border-bottom:1px solid rgba(192,57,43,0.2);padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">Текущая ставка</div>
-        <div style="font-size:24px;font-weight:800;color:#C0392B" id="ada-price">42 500 000 ₸</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:2px">Осталось</div>
-        <div style="font-size:20px;font-weight:700;color:#fff;font-family:monospace" id="ada-timer">23:41:15</div>
-      </div>
-    </div>
-
-    <div style="padding:16px">
-      <!-- Bid history -->
-      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">История ставок</div>
-      <div style="border-radius:10px;overflow:hidden;margin-bottom:16px">
-        <div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.2);padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:13px;color:#fff">А***т М. 🏆</div>
-          <div style="font-size:15px;font-weight:700;color:#C0392B">42 500 000 ₸</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-top:none;padding:10px 12px;display:flex;justify-content:space-between">
-          <div style="font-size:13px;color:rgba(255,255,255,0.6)">Ж***с К.</div>
-          <div style="font-size:14px;color:rgba(255,255,255,0.7)">41 000 000 ₸</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-top:none;padding:10px 12px;display:flex;justify-content:space-between">
-          <div style="font-size:13px;color:rgba(255,255,255,0.6)">А***я С.</div>
-          <div style="font-size:14px;color:rgba(255,255,255,0.7)">40 500 000 ₸</div>
-        </div>
-      </div>
-
-      <!-- My bid section -->
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:16px" id="ada-bid-section">
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px">Сделать ставку</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <button onclick="adjustBid(-100000)" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;width:40px;height:40px;color:#fff;font-size:18px;cursor:pointer">−</button>
-          <input id="bid-amount" type="number" value="42600000" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0 12px;color:#fff;font-size:16px;font-weight:700;text-align:center;outline:none">
-          <button onclick="adjustBid(100000)" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;width:40px;height:40px;color:#fff;font-size:18px;cursor:pointer">+</button>
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:12px">Минимальная ставка: 42 600 000 ₸ (шаг 100 000 ₸)</div>
-        <button onclick="placeBid()" style="width:100%;background:#C0392B;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">🏁 Сделать ставку</button>
-      </div>
-
-      <!-- Guarantee deposit section -->
-      <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.2);border-radius:12px;padding:14px" id="ada-deposit-section" style="display:none">
-        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:6px">Гарантийный взнос</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:12px">Для участия необходимо внести гарантийный взнос 100 000 ₸. При проигрыше — возвращается автоматически.</div>
-        <button onclick="payDeposit()" style="width:100%;background:rgba(39,174,96,0.8);border:none;border-radius:10px;padding:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">💳 Внести взнос 100 000 ₸</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="screen" id="credit">
   <div class="sb"><span>9:41</span></div>
   <div class="hdr">
@@ -968,13 +756,12 @@ document.getElementById('logoImg').src='data:image/png;base64,/9j/4AAQSkZJRgABAQ
 let hist=[],cur='home';
 function nav(id){
   if(id==='catalog') { setTimeout(loadCatalog, 50); }
-  if(id==='auction') { /* auction loaded */ }
   if(id==='profile') { setTimeout(renderProfile, 30); }
   if(id==='add' || id==='credit') { setTimeout(gcPrefill, 30); }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   hist.push(cur);cur=id;
-  ['home','catalog','auction','auction-detail-app','credit','profile','add'].forEach(n=>{
+  ['home','catalog','credit','profile','add'].forEach(n=>{
     const el=document.getElementById('ni-'+n);
     if(el)el.classList.toggle('on',n===id);
   });
@@ -1013,7 +800,34 @@ function toggleFav(e,el){
 var _catalogCars = [];
 var _catalogFilter = 'Все';
 
+// Настройки компании: дежурные телефоны и тексты витрины.
+// Источник тот же, что у платформы, — двух разных правд быть не должно.
+var GC_CFG = {};
+async function loadConfig() {
+  try {
+    var res = await fetch('/api/config');
+    if (!(res.headers.get('content-type') || '').includes('json')) return;
+    var d = await res.json();
+    GC_CFG = d.settings || {};
+  } catch(e) { console.warn('Настройки недоступны:', e.message); }
+}
+
+// Дежурный номер филиала, иначе основной
+function gcDutyPhone(city) {
+  var m = { 'Астана': GC_CFG.phone_astana, 'Кокшетау': GC_CFG.phone_kokshetau };
+  return String(m[city] || '').trim() || String(GC_CFG.phone_main || '').trim();
+}
+
+// Цена: ноль — это не «0 ₸», а «цена по запросу»
+function gcPrice(c) {
+  var p = Number(c.price) || 0;
+  if (p > 0) return p.toLocaleString('ru-RU') + ' ₸';
+  return GC_CFG.price_on_request || 'Цена по запросу';
+}
+function gcHasPrice(c) { return (Number(c.price) || 0) > 0; }
+
 async function loadCatalog() {
+  await loadConfig();
   var grid = document.getElementById('catalogGrid');
   if (!grid) return;
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p style="font-size:13px">Загружаем...</p></div>';
@@ -1034,7 +848,7 @@ async function loadCatalog() {
     _catalogCars = all.filter(function(c) {
       // Модерация: в каталоге только объявления, одобренные менеджером
       var s = (c.status || '').toLowerCase();
-      return s === 'в продаже' || s === 'в резерве' || s === 'на аукционе';
+      return s === 'в продаже' || s === 'в резерве';
     });
     renderHome();
     renderCatalog();
@@ -1052,7 +866,7 @@ function renderHome() {
   var cars = _catalogCars || [];
   function ph(c){ try{var p=typeof c.photos==='string'?JSON.parse(c.photos):(c.photos||[]);return p[0]||'';}catch(e){return '';} }
   function hasVid(c){ try{var v=typeof c.videos==='string'?JSON.parse(c.videos):(c.videos||[]);return v.length>0;}catch(e){return false;} }
-  function money(v){ return Number(v||0).toLocaleString('ru-RU') + ' ₸'; }
+  function money(v){ return Number(v||0) > 0 ? Number(v).toLocaleString('ru-RU') + ' ₸' : (GC_CFG.price_on_request || 'Цена по запросу'); }
 
   // Живые счётчики в поиске
   var hs = document.getElementById('home-srch-txt');
@@ -1151,7 +965,8 @@ function renderCatalog() {
     return;
   }
   grid.innerHTML = cars.map(function(c) {
-    var price = Number(c.price).toLocaleString('ru-RU') + ' ₸';
+    var price = gcPrice(c);
+    var noPrice = !gcHasPrice(c);
     var km = c.mileage ? Number(c.mileage).toLocaleString('ru-RU') + ' км' : '';
     var photo = '';
     if (c.photos) {
@@ -1168,7 +983,7 @@ function renderCatalog() {
       '<div class="vb">' +
         '<div class="vn">' + (c.make || '') + ' ' + (c.model || '') + ' ' + (c.year || '') + '</div>' +
         '<div class="vs">' + km + (km && c.city ? ' · ' : '') + (c.city || 'Астана') + '</div>' +
-        '<div class="vp">' + price + '</div>' +
+        '<div class="vp"' + (noPrice ? ' style="color:#E67E22;font-size:15px"' : '') + '>' + price + '</div>' +
         '<div class="vtags">' + (tag ? '<span class="tag">' + tag + '</span>' : '') + (tag2 ? '<span class="tag">' + tag2 + '</span>' : '') + '</div>' +
       '</div></div>';
   }).join('');
@@ -1216,8 +1031,13 @@ function openCarDetail(car) {
   photoHtml +
   (videos.length > 0 ? '<div style="margin:12px 16px 0;background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.4);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;background:#27AE60;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0">✓</span><span style="color:#2ecc71;font-size:13px;font-weight:600">Осмотрен на площадке GoodCar</span></div>' : '') +
   '<div style="padding:16px">' +
-    '<div style="font-size:24px;font-weight:800;color:#fff;margin-bottom:4px">' + Number(car.price||0).toLocaleString('ru-RU') + ' ₸</div>' +
-    '<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px">' + (car.mileage ? Number(car.mileage).toLocaleString('ru-RU') + ' км · ' : '') + 'Астана</div>' +
+    (gcHasPrice(car)
+      ? '<div style="font-size:24px;font-weight:800;color:#fff;margin-bottom:4px">' + gcPrice(car) + '</div>'
+      : '<div style="font-size:20px;font-weight:800;color:#E67E22;margin-bottom:6px">' + gcPrice(car) + '</div>' +
+        (gcDutyPhone(car.city)
+          ? '<a href="tel:' + gcDutyPhone(car.city) + '" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;margin-bottom:12px">📞 ' + gcDutyPhone(car.city) + '</a>'
+          : '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px">' + (GC_CFG.price_cta || 'Уточнить у менеджера') + '</div>')) +
+    '<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px">' + (car.mileage ? Number(car.mileage).toLocaleString('ru-RU') + ' км · ' : '') + (car.city || 'Астана') + '</div>' +
     '<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;margin-bottom:12px">' +
       (car.engine ? '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07)"><span style="color:rgba(255,255,255,0.5);font-size:13px">Двигатель</span><span style="color:#fff;font-size:13px">' + car.engine + '</span></div>' : '') +
       (car.transmission ? '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07)"><span style="color:rgba(255,255,255,0.5);font-size:13px">КПП</span><span style="color:#fff;font-size:13px">' + car.transmission + '</span></div>' : '') +
@@ -1628,7 +1448,7 @@ async function adSubmit(){
     description: document.getElementById('ad-desc').value.trim(),
     photos: _adPhotos,
     videos: videos,
-    status: 'Новый',
+    status: 'Новый', source: 'app', is_published: false,
     seller_name: sellerName,
     seller_phone: phone
   };
@@ -1686,78 +1506,6 @@ async function adSubmit(){
 }
 
 
-// ── AUCTION APP ───────────────────────────────────────────────────────────────
-var _auctionFilter = 'all';
-
-function auctionFilter(el, type) {
-  el.closest('.cats').querySelectorAll('.cat').forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-  _auctionFilter = type;
-  showToast(type === 'all' ? 'Все аукционы' : type === 'open' ? 'Открытые аукционы' : type === 'closed' ? 'Закрытые аукционы' : 'Скоро стартуют');
-}
-
-function openAuctionApp(id) {
-  nav('auction-detail-app');
-}
-
-function adjustBid(delta) {
-  var inp = document.getElementById('bid-amount');
-  if (!inp) return;
-  var val = parseInt(inp.value) || 42600000;
-  inp.value = Math.max(42600000, val + delta);
-}
-
-function placeBid() {
-  var amount = parseInt(document.getElementById('bid-amount').value) || 0;
-  if (amount < 42600000) { showToast('Ставка слишком низкая'); return; }
-  showToast('✅ Ставка ' + amount.toLocaleString('ru-RU') + ' ₸ принята!');
-  document.getElementById('ada-price').textContent = amount.toLocaleString('ru-RU') + ' ₸';
-  document.getElementById('bid-amount').value = amount + 100000;
-}
-
-function payDeposit() {
-  showToast('💳 Переход к оплате взноса 100 000 ₸...');
-  setTimeout(function() {
-    document.getElementById('ada-deposit-section').style.display = 'none';
-    document.getElementById('ada-bid-section').style.display = 'block';
-    showToast('✅ Взнос внесён! Вы можете участвовать в аукционе');
-  }, 1500);
-}
-
-// Auction timers in app
-(function() {
-  var base = Date.now();
-  setInterval(function() {
-    var elapsed = Math.floor((Date.now() - base) / 1000);
-    function fmt(n) { return n.toString().padStart(2,'0'); }
-    var t1 = 85275 - elapsed;
-    var t2 = 40928 - elapsed;
-    [['app-timer-1', t1], ['ada-timer', t1], ['app-timer-2', t2]].forEach(function(pair) {
-      var el = document.getElementById(pair[0]);
-      if (!el) return;
-      var r = Math.max(0, pair[1]);
-      el.textContent = fmt(Math.floor(r/3600)) + ':' + fmt(Math.floor((r%3600)/60)) + ':' + fmt(r%60);
-    });
-  }, 1000);
-})();
-
-
-// ── AUCTION ONBOARDING ────────────────────────────────────────────────────────
-function showOnboard() {
-  if (localStorage.getItem('gc_onboard_seen')) return;
-  var el = document.getElementById('auction-onboard');
-  if (el) el.style.display = 'block';
-}
-function closeOnboard() {
-  var el = document.getElementById('auction-onboard');
-  if (el) el.style.display = 'none';
-  localStorage.setItem('gc_onboard_seen', '1');
-}
-// Show after 1.2 seconds on first visit
-setTimeout(showOnboard, 1200);
-
-
-
 // ── CREDIT PRE-APPROVAL ───────────────────────────────────────────────────────
 var _crAmt = 8000000;
 
@@ -1812,7 +1560,7 @@ async function startCreditCheck() {
         channel: 'Приложение',
         interest: 'Кредит ' + _crAmt.toLocaleString('ru-RU') + ' ₸ на ' + term + ' лет (~' + pay.toLocaleString('ru-RU') + ' ₸/мес). ИИН: ' + iin + '. Город: ' + (city||'Астана'),
         source_url: 'credit_app',
-        status: 'Новый'
+        status: 'Новый', source: 'app', is_published: false
       })
     });
   } catch(e) { /* silent fail */ }
