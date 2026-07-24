@@ -1,0 +1,16 @@
+{
+  "name": "GoodCar Platform",
+  "short_name": "GoodCar CRM",
+  "description": "Рабочее место менеджера GoodCar KZ",
+  "start_url": "/crm.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F0F2F5",
+  "theme_color": "#C0392B",
+  "lang": "ru",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
