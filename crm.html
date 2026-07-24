@@ -2473,7 +2473,11 @@ function openLeadModal(id=null) {
     `<div class="form-grid">
       <div class="form-row">
         <div><label>Имя *</label><input id="l-name" value="${lead?.name||''}"></div>
-        <div><label>Телефон</label><input id="l-phone" value="${lead?.phone||''}"></div>
+        <div><label>Телефон</label>
+          <input id="l-phone" value="${lead?.phone||''}" placeholder="+7 700 000 00 00"
+                 oninput="checkPhone(this.value)" autocomplete="off">
+          <div id="phone-check" style="font-size:11px;margin-top:5px"></div>
+        </div>
       </div>
       <div class="form-row">
         <div><label>Канал</label><select id="l-ch">${chOpts}</select></div>
@@ -2485,6 +2489,44 @@ function openLeadModal(id=null) {
     <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
     <button class="btn btn-primary" onclick="saveLead('${id||''}')">Сохранить</button>`
   );
+}
+
+// Основной поток — ручной ввод из WhatsApp. В базе 8000 номеров,
+// поэтому при вводе телефона сразу показываем, знаком ли нам этот человек.
+let _phoneTimer = null;
+function checkPhone(v) {
+  const box = document.getElementById('phone-check');
+  if (!box) return;
+  const digits = String(v).replace(/\D/g, '');
+  if (digits.length < 10) { box.innerHTML = ''; return; }
+
+  clearTimeout(_phoneTimer);
+  box.innerHTML = '<span style="color:#CCC">проверяем по базе…</span>';
+  _phoneTimer = setTimeout(async () => {
+    try {
+      const norm = '+7' + digits.slice(-10);
+      const r = await apiFetch('/leads?limit=5&q=' + encodeURIComponent(digits.slice(-10)));
+      const hit = (r.data || []).find(x =>
+        String(x.phone || '').replace(/\D/g, '').slice(-10) === digits.slice(-10));
+
+      if (!hit) {
+        box.innerHTML = '<span style="color:#27AE60">✓ Новый контакт, в базе не найден</span>';
+        return;
+      }
+
+      const who = hit.manager_name ? `у менеджера ${hit.manager_name}` : 'никем не взят';
+      const when = (hit.last_contact || hit.created_at || '').toString().slice(0, 10);
+      box.innerHTML = `
+        <div style="background:#FEF9E7;border:1px solid #F5E0A0;border-radius:8px;padding:9px 11px;color:#8A6D1F">
+          <div style="font-weight:700;margin-bottom:3px">⚠️ Этот номер уже есть в базе</div>
+          <div>${hit.name || 'Без имени'} · ${hit.status}${when ? ' · последний контакт ' + when : ''}</div>
+          <div style="margin-top:2px">${hit.interest || 'потребность не указана'} · ${who}</div>
+          <div style="margin-top:6px">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal();openCallCard('${hit.id}')">Открыть карточку</button>
+          </div>
+        </div>`;
+    } catch(e) { box.innerHTML = ''; }
+  }, 500);
 }
 
 function saveLead(id) {
