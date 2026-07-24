@@ -43,6 +43,11 @@ body{font-family:'Inter',sans-serif;background:#F0F2F5;color:#1A1A2E;min-height:
 .tb-search{display:flex;align-items:center;gap:8px;background:#F5F5F5;border-radius:8px;padding:7px 14px;font-size:13px;color:#999;cursor:pointer;border:none;font-family:inherit}
 .tb-icon{width:34px;height:34px;border-radius:8px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;position:relative}
 .tb-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:#C0392B;border-radius:50%;border:2px solid #fff}
+.bell-box{position:fixed;top:58px;right:16px;width:330px;max-width:calc(100vw - 24px);background:#fff;
+  border:1px solid #EEE;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);z-index:300;overflow:hidden}
+.bell-item{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid #F5F5F5;cursor:pointer}
+.bell-item:hover{background:#FEF9F9}
+.bell-ic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .tb-user{display:flex;align-items:center;gap:8px;cursor:pointer}
 .tb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#8E44AD);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
 .tb-uname{font-size:13px;font-weight:600}
@@ -339,8 +344,10 @@ textarea{resize:vertical;min-height:70px}
         <option value="Кокшетау">📍 Кокшетау</option>
       </select>
       <button class="tb-search">🔍 Поиск по системе...</button>
-      <div class="tb-icon">🔔<div class="tb-dot"></div></div>
-      <div class="tb-icon">💬<div class="tb-dot"></div></div>
+      <div class="tb-icon" onclick="toggleBell()" title="Уведомления">🔔
+        <div class="tb-dot" id="bell-dot" style="display:none"></div>
+      </div>
+      <div id="bell-panel"></div>
       <div class="tb-user" onclick="logout()" title="Выйти">
         <div class="tb-avatar">ЖБ</div>
         <div><div class="tb-uname">Жанибек</div><div class="tb-urole">Руководитель</div></div>
@@ -1388,6 +1395,92 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const fmt = n => (Number(n) || 0).toLocaleString('ru-RU') + ' ₸';
 const num = n => Number(n) || 0;
 
+document.addEventListener('click', e => {
+  const panel = document.getElementById('bell-panel');
+  if (!panel || !panel.innerHTML) return;
+  if (!panel.contains(e.target) && !e.target.closest('.tb-icon')) panel.innerHTML = '';
+});
+
+// ── Уведомления ───────────────────────────────────────────────────────────
+// Собираем то, что реально требует внимания: заявки на доступ,
+// объявления на проверке, свободные горячие номера в базе.
+let NOTIF = [];
+
+async function checkNotifications() {
+  const list = [];
+  try {
+    if (isBoss()) {
+      const p = await apiFetch('/staff?pending=1');
+      (p.data || []).forEach(u => list.push({
+        icon: '👤', bg: '#FDE8E8',
+        title: 'Заявка на доступ',
+        text: `${u.name} · ${u.position}${u.city ? ' · ' + u.city : ''}`,
+        go: () => go('staff', document.querySelector("[onclick*=\"go('staff'\"]")),
+      }));
+    }
+
+    const mod = (cars || []).filter(c => c.status === 'Новый');
+    if (mod.length) list.push({
+      icon: '🚗', bg: '#FEF9E7',
+      title: 'Объявления на проверке',
+      text: `${mod.length} из приложения ждут подтверждения`,
+      go: () => go('cars', document.querySelector("[onclick*=\"go('cars'\"]")),
+    });
+
+    if (canTake()) {
+      const p = new URLSearchParams({ status: 'База', free: '1', segment: 'A', limit: '1' });
+      if (GC_CITY !== 'all') p.set('city', GC_CITY);
+      const hot = await apiFetch('/leads?' + p.toString());
+      if (hot.total) list.push({
+        icon: '🔥', bg: '#FFF0E6',
+        title: 'Горячие номера свободны',
+        text: `${hot.total} с запросом, никто не взял`,
+        go: () => { go('leads', document.querySelector("[onclick*=\"go('leads'\"]")); filterLeads('base'); },
+      });
+    }
+  } catch(e) { console.warn('Уведомления:', e.message); }
+
+  NOTIF = list;
+  const dot = document.getElementById('bell-dot');
+  if (dot) dot.style.display = list.length ? '' : 'none';
+
+  const sc = document.getElementById('staff-cnt');
+  if (sc) {
+    const n = list.filter(x => x.title === 'Заявка на доступ').length;
+    sc.textContent = n; sc.style.display = n ? '' : 'none';
+  }
+}
+
+function toggleBell() {
+  const panel = document.getElementById('bell-panel');
+  if (panel.innerHTML) { panel.innerHTML = ''; return; }
+
+  panel.innerHTML = `<div class="bell-box">
+    <div style="padding:12px 14px;border-bottom:1px solid #F0F0F0;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:700">Уведомления</span>
+      <span style="font-size:11px;color:#AAA;cursor:pointer" onclick="document.getElementById('bell-panel').innerHTML=''">закрыть</span>
+    </div>
+    ${NOTIF.length ? NOTIF.map((n, i) => `
+      <div class="bell-item" onclick="openNotif(${i})">
+        <div class="bell-ic" style="background:${n.bg}">${n.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${n.title}</div>
+          <div style="font-size:11px;color:#999;margin-top:2px">${n.text}</div>
+        </div>
+        <span style="color:#CCC;font-size:14px">›</span>
+      </div>`).join('')
+      : '<div style="padding:26px 14px;text-align:center;color:#CCC;font-size:12px">Всё разобрано</div>'}
+  </div>`;
+}
+
+function openNotif(i) {
+  document.getElementById('bell-panel').innerHTML = '';
+  NOTIF[i]?.go?.();
+}
+
+// Проверяем раз в минуту, чтобы заявку не пропустить
+setInterval(() => { if (window.GC_USER) checkNotifications(); }, 60000);
+
 // ── Установка на телефон ──────────────────────────────────────────────────
 // Ставится с иконки на весь экран, без адресной строки браузера.
 let _installEvt = null;
@@ -1687,7 +1780,7 @@ async function approveStaff(id) {
   try {
     await apiFetch('/staff?id=' + id, { method: 'PATCH', body: { approve: true, by: meId() } });
     showToast('✅ Доступ открыт');
-    renderStaff();
+    renderStaff(); checkNotifications();
   } catch(e) { showToast('⚠️ ' + e.message); }
 }
 
@@ -1696,7 +1789,7 @@ async function rejectStaff(id, name) {
   try {
     await apiFetch('/staff?id=' + id, { method: 'DELETE' });
     showToast('Удалён: ' + name);
-    renderStaff();
+    renderStaff(); checkNotifications();
   } catch(e) { showToast('⚠️ ' + e.message); }
 }
 
@@ -2934,15 +3027,7 @@ window.renderDashboard = async function() {
   }
 
   document.getElementById('leads-cnt').textContent = s.leads.new;
-
-  // Заявки на доступ — значок в меню, чтобы руководитель не пропустил
-  if (isBoss()) {
-    try {
-      const p = await apiFetch('/staff?pending=1');
-      const b = document.getElementById('staff-cnt');
-      if (b) { b.textContent = p.total; b.style.display = p.total ? '' : 'none'; }
-    } catch(e) {}
-  }
+  checkNotifications();
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -2979,6 +3064,7 @@ initDate();
   else if (ok > 0) showToast('⚠️ Частичная загрузка (' + ok + '/3)');
   else showToast('⚠️ Используем локальные данные');
   renderDashboard();
+  checkNotifications();
   if (typeof updateMeta === 'function') updateMeta();
 })();
 
