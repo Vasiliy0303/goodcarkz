@@ -1,14 +1,22 @@
 // /api/deals — GET | POST | PATCH (?id=X) | DELETE (?id=X)
 // stage — enum deal_stage (латиница), amount — numeric, closed_at — метка закрытия.
-const { Pool } = require('pg');
+import pg from 'pg';
+const { Pool } = pg;
 
 let pool;
 function db() {
-  if (!pool) pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: 3,
-  });
+  if (!pool) {
+    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL не задан в настройках проекта Vercel');
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 3,
+      connectionTimeoutMillis: 8000,
+    });
+    // Без этого обработчика ошибка простаивающего клиента роняет весь процесс
+    // и Vercel отдаёт FUNCTION_INVOCATION_FAILED вместо читаемого ответа.
+    pool.on('error', e => console.error('pg pool error:', e.message));
+  }
   return pool;
 }
 
@@ -21,7 +29,7 @@ const FINAL = ['closed','lost'];
 const FIELDS = ['title','client_id','lead_id','car_id','manager_id','amount',
                 'deadline','notes','city','client_name','client_phone'];
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -128,4 +136,4 @@ module.exports = async (req, res) => {
     console.error('deals error:', e);
     return res.status(500).json({ error: e.message });
   }
-};
+}
