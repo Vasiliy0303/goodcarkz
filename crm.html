@@ -243,6 +243,12 @@ textarea{resize:vertical;min-height:70px}
       <div class="tb-date" id="tb-date"></div>
     </div>
     <div class="tb-right">
+      <select id="city-switch" onchange="setCity(this.value)" title="Филиал"
+        style="font-size:13px;font-weight:700;color:#C0392B;background:#FFF0F0;border:1px solid #F5C6C6;border-radius:8px;padding:7px 10px;cursor:pointer;font-family:inherit">
+        <option value="all">🏢 Все филиалы</option>
+        <option value="Астана">📍 Астана</option>
+        <option value="Кокшетау">📍 Кокшетау</option>
+      </select>
       <button class="tb-search">🔍 Поиск по системе...</button>
       <div class="tb-icon">🔔<div class="tb-dot"></div></div>
       <div class="tb-icon">💬<div class="tb-dot"></div></div>
@@ -444,17 +450,21 @@ textarea{resize:vertical;min-height:70px}
         <button class="btn btn-primary" onclick="openLeadModal()">+ Новый лид</button>
       </div>
       <div class="sb2" style="gap:8px;flex-wrap:wrap">
-        <input class="search-inp" placeholder="Поиск по имени, телефону…" oninput="renderLeads(this.value)">
+        <input class="search-inp" placeholder="Поиск по имени, телефону…" oninput="searchLeads(this.value)">
         <button class="btn btn-ghost btn-sm" onclick="filterLeads('all')" id="lf-all" style="background:#C0392B;color:#fff">Все</button>
         <button class="btn btn-ghost btn-sm" onclick="filterLeads('new')" id="lf-new">Новые</button>
         <button class="btn btn-ghost btn-sm" onclick="filterLeads('assigned')" id="lf-assigned">Назначены</button>
-        <button class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:5px"><span>📱</span>Telegram</button>
-        <button class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:5px"><span>💚</span>WhatsApp</button>
-        <button class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:5px"><span>📸</span>Instagram</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterLeads('base')" id="lf-base">📞 База обзвона</button>
+        <span style="width:1px;height:24px;background:#E8E8E8"></span>
+        <button class="btn btn-ghost btn-sm" id="lch-Telegram" onclick="filterLeadChannel('Telegram')" style="display:flex;align-items:center;gap:5px"><span>✈</span>Telegram</button>
+        <button class="btn btn-ghost btn-sm" id="lch-WhatsApp" onclick="filterLeadChannel('WhatsApp')" style="display:flex;align-items:center;gap:5px"><span>💚</span>WhatsApp</button>
+        <button class="btn btn-ghost btn-sm" id="lch-Instagram" onclick="filterLeadChannel('Instagram')" style="display:flex;align-items:center;gap:5px"><span>📸</span>Instagram</button>
+        <button class="btn btn-ghost btn-sm" id="lch-Приложение" onclick="filterLeadChannel('Приложение')" style="display:flex;align-items:center;gap:5px"><span>📱</span>Приложение</button>
       </div>
       <div class="card" style="padding:0;overflow:hidden">
         <table class="tbl"><thead><tr><th>Клиент</th><th>Источник</th><th>Интерес</th><th>Менеджер</th><th>Дата</th><th>Статус</th><th></th></tr></thead>
         <tbody id="leads-tbody"></tbody></table>
+        <div id="leads-pager"></div>
       </div>
     </div>
 
@@ -465,6 +475,7 @@ textarea{resize:vertical;min-height:70px}
         <button class="btn btn-primary" onclick="openDealModal()">+ Новая сделка</button>
       </div>
       <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:12px" id="deals-kanban"></div>
+      <div id="deals-archive"></div>
     </div>
 
     <!-- CARS PAGE -->
@@ -830,8 +841,33 @@ textarea{resize:vertical;min-height:70px}
 const LS = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-const DEAL_STAGES = ['Новый лид','Первый контакт','Подбор авто','Осмотр','Проверка истории','Тест-драйв','Финансирование','Договор','Оплата','Выдача авто','Завершена','Неудача'];
-const STAGE_COLORS = {'Новый лид':'#C0392B','Первый контакт':'#E74C3C','Подбор авто':'#E67E22','Осмотр':'#F39C12','Проверка истории':'#8E44AD','Тест-драйв':'#2980B9','Финансирование':'#1ABC9C','Договор':'#16A085','Оплата':'#27AE60','Выдача авто':'#2ECC71','Завершена':'#27AE60','Неудача':'#95A5A6'};
+// Этапы = enum deal_stage в БД (латиница). Русский только для показа.
+const STAGE_LIST = [
+  {k:'new',           label:'Новый лид',        color:'#C0392B'},
+  {k:'consultation',  label:'Первый контакт',   color:'#E74C3C'},
+  {k:'showing',       label:'Подбор авто',      color:'#E67E22'},
+  {k:'inspection',    label:'Осмотр',           color:'#F39C12'},
+  {k:'history_check', label:'Проверка истории', color:'#8E44AD'},
+  {k:'test_drive',    label:'Тест-драйв',       color:'#2980B9'},
+  {k:'proposal',      label:'Предложение',      color:'#1ABC9C'},
+  {k:'financing',     label:'Финансирование',   color:'#16A085'},
+  {k:'deposit',       label:'Задаток',          color:'#27AE60'},
+  {k:'contract',      label:'Договор',          color:'#229954'},
+  {k:'handover',      label:'Передача авто',    color:'#2ECC71'},
+  {k:'closed',        label:'Завершена',        color:'#1E8449'},
+  {k:'lost',          label:'Отказ',            color:'#95A5A6'},
+];
+const STAGE_LABEL = Object.fromEntries(STAGE_LIST.map(s=>[s.k,s.label]));
+const STAGE_COLOR = Object.fromEntries(STAGE_LIST.map(s=>[s.k,s.color]));
+const STAGE_KEYS  = STAGE_LIST.map(s=>s.k);
+const BOARD_KEYS  = STAGE_KEYS.filter(k=>k!=='closed'&&k!=='lost'); // 11 рабочих колонок
+
+// Старые русские названия из localStorage — чтобы демо-сделки не потерялись
+const LEGACY_STAGE = {'Новый лид':'new','Первый контакт':'consultation','Подбор авто':'showing',
+  'Осмотр':'inspection','Проверка истории':'history_check','Тест-драйв':'test_drive',
+  'Финансирование':'financing','Договор':'contract','Оплата':'deposit',
+  'Выдача авто':'handover','Завершена':'closed','Неудача':'lost'};
+const stageKey = s => STAGE_LABEL[s] ? s : (LEGACY_STAGE[s] || 'new');
 const CAR_STATUSES = ['Новый','В продаже','В резерве','На диагностике','На подготовке','На аукционе','Продан','Архив'];
 
 // ===== База марок/моделей (общая с App) =====
@@ -1422,7 +1458,27 @@ function crmModelChange(sel) {
   if (db.body) document.getElementById('c-body').value = db.body;
 }
 
-const CHANNELS = {telegram:{icon:'✈',color:'#229ED9',bg:'#E8F4FC',label:'Telegram'},whatsapp:{icon:'●',color:'#25D366',bg:'#E8FAF0',label:'WhatsApp'},instagram:{icon:'◆',color:'#E1306C',bg:'#FDE8F0',label:'Instagram'},tiktok:{icon:'♪',color:'#000',bg:'#F0F0F0',label:'TikTok'},call:{icon:'📞',color:'#8E44AD',bg:'#F5EEF8',label:'Звонок'},site:{icon:'🌐',color:'#2980B9',bg:'#EBF5FB',label:'Сайт'}};
+const CHANNELS = {telegram:{icon:'✈',color:'#229ED9',bg:'#E8F4FC',label:'Telegram'},whatsapp:{icon:'●',color:'#25D366',bg:'#E8FAF0',label:'WhatsApp'},instagram:{icon:'◆',color:'#E1306C',bg:'#FDE8F0',label:'Instagram'},tiktok:{icon:'♪',color:'#000',bg:'#F0F0F0',label:'TikTok'},call:{icon:'📞',color:'#8E44AD',bg:'#F5EEF8',label:'Звонок'},site:{icon:'🌐',color:'#2980B9',bg:'#EBF5FB',label:'Сайт'},app:{icon:'📱',color:'#C0392B',bg:'#FDE8E8',label:'Приложение'},manual:{icon:'✍',color:'#7F8C8D',bg:'#F0F0F0',label:'Вручную'}};
+
+// В базе канал лежит человеческим текстом («WhatsApp», «Звонок», «Приложение»),
+// в интерфейсе — латинские ключи. Приводим одно к другому.
+const CHANNEL_ALIAS = {
+  'telegram':'telegram','телеграм':'telegram',
+  'whatsapp':'whatsapp','ватсап':'whatsapp','вотсап':'whatsapp',
+  'instagram':'instagram','инстаграм':'instagram',
+  'tiktok':'tiktok','тикток':'tiktok',
+  'звонок':'call','call':'call','телефон':'call',
+  'сайт':'site','site':'site','web':'site',
+  'приложение':'app','app':'app',
+  'manual':'manual','вручную':'manual',
+};
+const chanKey = c => CHANNEL_ALIAS[String(c||'').trim().toLowerCase()] || 'site';
+
+// Статусы лида: база хранит «Новый», «База», «Назначен»; старое демо — 'new'
+const STATUS_ALIAS = {'new':'Новый','assigned':'Назначен','base':'База'};
+const statusLabel = s => STATUS_ALIAS[s] || s || 'Новый';
+const STATUS_BADGE = {'Новый':'badge-r','Назначен':'badge-b','В работе':'badge-y',
+  'База':'badge-p','Отказ':'badge-x','Успешно':'badge-g'};
 
 let managers = LS('gc:mgr') || [
   {id:'m1',name:'Ерлан Султанов',role:'Менеджер',avatar:'ЕС'},
@@ -1454,8 +1510,28 @@ let cars = LS('gc:cars') || [
   {id:'c6',make:'Lexus',model:'RX 350',year:2021,price:32000000,status:'На аукционе',vin:'2T2BZMCA3MC',mileage:55000,photos:[],color:'Белый перламутр'},
 ];
 
+// ── Филиал ────────────────────────────────────────────────────────────────
+// Выбор запоминается: 'all' | 'Астана' | 'Кокшетау'
+let GC_CITY = localStorage.getItem('gc:city') || 'all';
+
+async function setCity(city) {
+  GC_CITY = city;
+  localStorage.setItem('gc:city', city);
+  leadPage = 0;
+  showToast(city === 'all' ? '🏢 Показываю все филиалы' : '📍 Филиал: ' + city);
+  await Promise.allSettled([loadLeads(), loadCars(), loadDeals()]);
+  const active = document.querySelector('.page.active')?.id || 'page-dashboard';
+  ({'page-dashboard':renderDashboard,'page-leads':renderLeads,
+    'page-deals':renderDeals,'page-cars':renderCars}[active] || renderDashboard)();
+}
+
+const cityParam = (sep='?') => GC_CITY === 'all' ? '' : sep + 'city=' + encodeURIComponent(GC_CITY);
+
 const uid = () => Math.random().toString(36).slice(2,9);
-const fmt = n => (n||0).toLocaleString('ru-RU') + ' ₸';
+// PostgreSQL отдаёт numeric строкой ("4000000.00"), а у строки
+// toLocaleString игнорирует локаль — отсюда цены без разделителей.
+const fmt = n => (Number(n) || 0).toLocaleString('ru-RU') + ' ₸';
+const num = n => Number(n) || 0;
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 function go(id, btn) {
@@ -1463,6 +1539,7 @@ function go(id, btn) {
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  if (id === 'leads') { loadLeads().then(renderLeads); return; }
   const renders = {dashboard:renderDashboard,leads:renderLeads,deals:renderDeals,cars:renderCars};
   if(renders[id]) renders[id]();
 }
@@ -1591,57 +1668,138 @@ function renderDashboard() {
 }
 
 // ── Leads ─────────────────────────────────────────────────────────────────────
+// В базе тысячи записей, поэтому фильтрация и постраничность — на сервере.
 let leadFilter = 'all';
-function filterLeads(f) {
-  leadFilter = f;
-  ['all','new','assigned'].forEach(x => {
-    const el = document.getElementById('lf-'+x);
-    if(el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
-  });
-  renderLeads();
+let leadChannel = '';
+let leadSearch  = '';
+let leadPage    = 0;
+let leadTotal   = 0;
+const LEAD_PAGE_SIZE = 50;
+
+let _leadSearchTimer = null;
+function searchLeads(v) {
+  leadSearch = v;
+  clearTimeout(_leadSearchTimer);
+  _leadSearchTimer = setTimeout(() => { leadPage = 0; loadLeads().then(renderLeads); }, 350);
 }
-function renderLeads(search='') {
-  let fl = leads;
-  if(leadFilter==='new') fl = fl.filter(l=>l.status==='new');
-  if(leadFilter==='assigned') fl = fl.filter(l=>l.status==='assigned');
-  if(search) fl = fl.filter(l=>l.name.toLowerCase().includes(search.toLowerCase())||l.phone.includes(search));
-  const ch = CHANNELS;
-  document.getElementById('leads-tbody').innerHTML = fl.map(l=>{
-    const mgr = managers.find(m=>m.id===l.managerId);
-    const c = ch[l.channel]||ch.site;
+
+function filterLeads(f) {
+  leadFilter = f; leadPage = 0;
+  ['all','new','assigned','base'].forEach(x => {
+    const el = document.getElementById('lf-'+x);
+    if (el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
+  });
+  loadLeads().then(renderLeads);
+}
+
+function filterLeadChannel(c) {
+  leadChannel = (leadChannel === c) ? '' : c;
+  leadPage = 0;
+  ['Telegram','WhatsApp','Instagram','Приложение'].forEach(x => {
+    const el = document.getElementById('lch-'+x);
+    if (el) el.style.cssText = x===leadChannel ? 'background:#C0392B;color:#fff' : '';
+  });
+  loadLeads().then(renderLeads);
+}
+
+function leadPageGo(delta) {
+  const max = Math.max(0, Math.ceil(leadTotal / LEAD_PAGE_SIZE) - 1);
+  leadPage = Math.min(max, Math.max(0, leadPage + delta));
+  loadLeads().then(renderLeads);
+}
+
+const SEG_HINT = {A:'🔥 Горячий',B:'🎯 Целевой',C:'Активный 2026',D:'2025 год',E:'Архив'};
+
+function renderLeads() {
+  const tb = document.getElementById('leads-tbody');
+  if (!tb) return;
+
+  tb.innerHTML = leads.map(l => {
+    const mgr = managers.find(m => m.id === (l.manager_id || l.managerId));
+    const c   = CHANNELS[chanKey(l.channel)];
+    const st  = statusLabel(l.status);
+    const badge = STATUS_BADGE[st] || 'badge-b';
+    const date  = (l.created_at || l.date || '').toString().slice(0,10);
+    const seg   = l.segment ? `<span style="font-size:10px;color:#AAA;margin-left:6px">${SEG_HINT[l.segment]||l.segment}</span>` : '';
+    const phone = l.phone || '';
     return `<tr>
-      <td><div style="font-weight:600">${l.name}</div><div style="font-size:11px;color:#AAA">${l.phone}</div></td>
-      <td><div class="ch-icon" style="background:${c.bg};color:${c.color};display:inline-flex">${c.icon}</div> <span style="font-size:12px;color:${c.color};font-weight:600">${c.label}</span></td>
-      <td style="font-size:12px;color:#555">${l.interest||'—'}</td>
-      <td><div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${mgr?.avatar||mgr?.name?.[0]||'?'}</div><span style="font-size:12px">${mgr?.name?.split(' ')[0]||'—'}</span></div></td>
-      <td style="font-size:12px;color:#AAA">${l.date}</td>
-      <td>${l.status==='new'?'<span class="badge badge-r">Новый</span>':'<span class="badge badge-b">Назначен</span>'}</td>
+      <td><div style="font-weight:600">${l.name || 'Без имени'}${seg}</div>
+          <a href="tel:${phone}" style="font-size:11px;color:#C0392B;text-decoration:none">${phone}</a></td>
+      <td><div class="ch-icon" style="background:${c.bg};color:${c.color};display:inline-flex">${c.icon}</div>
+          <span style="font-size:12px;color:${c.color};font-weight:600">${c.label}</span></td>
+      <td style="font-size:12px;color:#555">${l.interest || '—'}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${mgr?.avatar || mgr?.name?.[0] || '?'}</div><span style="font-size:12px">${mgr?.name?.split(' ')[0] || '—'}</span></div></td>
+      <td style="font-size:12px;color:#AAA">${date}</td>
+      <td><span class="badge ${badge}">${st}</span></td>
       <td><button class="btn btn-ghost btn-sm" onclick="openLeadModal('${l.id}')">✏</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:#CCC">Лидов не найдено</td></tr>';
+
+  // Панель постраничности
+  const from = leadTotal ? leadPage * LEAD_PAGE_SIZE + 1 : 0;
+  const to   = Math.min(leadTotal, (leadPage + 1) * LEAD_PAGE_SIZE);
+  const pg   = document.getElementById('leads-pager');
+  if (pg) pg.innerHTML = leadTotal > LEAD_PAGE_SIZE ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid #F0F0F0">
+      <div style="font-size:12px;color:#999">${from}–${to} из ${leadTotal.toLocaleString('ru-RU')}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" ${leadPage===0?'disabled':''} onclick="leadPageGo(-1)">← Назад</button>
+        <button class="btn btn-ghost btn-sm" ${to>=leadTotal?'disabled':''} onclick="leadPageGo(1)">Вперёд →</button>
+      </div>
+    </div>` : `<div style="padding:8px 14px;font-size:12px;color:#999">Всего: ${leadTotal}</div>`;
 }
 
 // ── Deals Kanban ──────────────────────────────────────────────────────────────
+function dealClientName(d) {
+  if (d.client_display) return d.client_display;
+  if (d.client_name)    return d.client_name;
+  const cl = leads.find(l => l.id === (d.lead_id || d.client_id || d.clientId));
+  return cl?.name || '—';
+}
+
 function renderDeals() {
-  const stages = DEAL_STAGES.slice(0,11);
-  document.getElementById('deals-kanban').innerHTML = stages.map(stage=>{
-    const sd = deals.filter(d=>d.stage===stage);
-    const col = STAGE_COLORS[stage]||'#CCC';
-    const cards = sd.map(d=>{
-      const cl = leads.find(l=>l.id===d.clientId);
-      return `<div class="deal-card" style="border-left-color:${col}" onclick="openDealModal('${d.id}')">
-        <div style="font-size:13px;font-weight:700;margin-bottom:3px">${d.title}</div>
-        <div style="font-size:11px;color:#AAA;margin-bottom:6px">${cl?.name||'—'}</div>
-        <div style="font-size:13px;font-weight:800;color:#C0392B">${fmt(d.amount)}</div>
-      </div>`;
-    }).join('');
+  const wrap = document.getElementById('deals-kanban');
+  const cardHtml = (d, col) => `
+    <div class="deal-card" style="border-left-color:${col}" onclick="openDealModal('${d.id}')">
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px">${d.car_display || d.title || '—'}</div>
+      <div style="font-size:11px;color:#AAA;margin-bottom:6px">${dealClientName(d)}</div>
+      <div style="font-size:13px;font-weight:800;color:#C0392B">${fmt(d.amount)}</div>
+    </div>`;
+
+  wrap.innerHTML = BOARD_KEYS.map(k => {
+    const sd  = deals.filter(d => stageKey(d.stage) === k);
+    const col = STAGE_COLOR[k];
     return `<div class="deal-stage-col" style="border-top:3px solid ${col}">
-      <div class="deal-stage-head"><span class="deal-stage-name" style="color:${col}">${stage}</span><span class="deal-stage-cnt">${sd.length}</span></div>
-      <div class="deal-cards">${cards}
-        <button onclick="openDealModal(null,'${stage}')" style="border:1px dashed #E0E0E0;background:transparent;border-radius:6px;padding:6px;color:#CCC;font-size:11px;cursor:pointer;width:100%">+ добавить</button>
+      <div class="deal-stage-head">
+        <span class="deal-stage-name" style="color:${col}">${STAGE_LABEL[k]}</span>
+        <span class="deal-stage-cnt">${sd.length}</span>
+      </div>
+      <div class="deal-cards">${sd.map(d => cardHtml(d, col)).join('')}
+        <button onclick="openDealModal(null,'${k}')" style="border:1px dashed #E0E0E0;background:transparent;border-radius:6px;padding:6px;color:#CCC;font-size:11px;cursor:pointer;width:100%">+ добавить</button>
       </div>
     </div>`;
   }).join('');
+
+  // Завершённые и отказы — отдельным блоком, чтобы не тянуть ленту вправо
+  const done = deals.filter(d => ['closed','lost'].includes(stageKey(d.stage)));
+  const box  = document.getElementById('deals-archive');
+  if (!box) return;
+  if (!done.length) { box.innerHTML = ''; return; }
+  const won  = done.filter(d => stageKey(d.stage) === 'closed');
+  const lost = done.filter(d => stageKey(d.stage) === 'lost');
+  const sum  = won.reduce((s, d) => s + num(d.amount), 0);
+  box.innerHTML = `
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card" style="border-top:3px solid #1E8449">
+        <div class="card-header"><div class="card-title">✅ Завершены (${won.length})</div>
+          <span style="font-size:13px;font-weight:800;color:#1E8449">${fmt(sum)}</span></div>
+        ${won.map(d => cardHtml(d, '#1E8449')).join('') || '<div style="color:#CCC;font-size:12px">Пока пусто</div>'}
+      </div>
+      <div class="card" style="border-top:3px solid #95A5A6">
+        <div class="card-header"><div class="card-title">✕ Отказы (${lost.length})</div></div>
+        ${lost.map(d => cardHtml(d, '#95A5A6')).join('') || '<div style="color:#CCC;font-size:12px">Пока пусто</div>'}
+      </div>
+    </div>`;
 }
 
 // ── Cars ──────────────────────────────────────────────────────────────────────
@@ -2002,6 +2160,7 @@ async function saveCar(id) {
     drive_type: gv('c-drive'),
     body_type: gv('c-body'),
     description: gv('c-desc'),
+    city: GC_CITY === 'all' ? 'Астана' : GC_CITY,
     photos: [..._editPhotos],
     videos: yt ? [yt] : [],
     changed_by: (window.GC_USER && GC_USER.name) || 'Platform'
@@ -2167,7 +2326,8 @@ function deleteLead(id){leads=leads.filter(l=>l.id!==id);SS('gc:leads',leads);cl
 
 function openDealModal(id=null,defStage=null){
   const deal = id?deals.find(d=>d.id===id):null;
-  const stOpts = DEAL_STAGES.map(s=>`<option value="${s}"${s===(deal?.stage||defStage||DEAL_STAGES[0])?' selected':''}>${s}</option>`).join('');
+  const curStage = stageKey(deal?.stage || defStage || 'new');
+  const stOpts = STAGE_LIST.map(s=>`<option value="${s.k}"${s.k===curStage?' selected':''}>${s.label}</option>`).join('');
   const clOpts = [['','—'],...leads.map(l=>[l.id,l.name])].map(([v,l])=>`<option value="${v}"${v===(deal?.clientId||'')?' selected':''}>${l}</option>`).join('');
   const mgrOpts = [['','—'],...managers.map(m=>[m.id,m.name])].map(([v,l])=>`<option value="${v}"${v===(deal?.managerId||'')?' selected':''}>${l}</option>`).join('');
   showModal(deal?'Редактировать сделку':'Новая сделка',
@@ -2275,23 +2435,29 @@ async function apiFetch(path, options={}) {
 // Загрузить лиды из API
 async function loadLeads() {
   try {
-    const data = await apiFetch('/leads');
-    leads = (data.data || []).map(l => ({
-      ...l,
-      managerId: l.manager_id,
-      date: l.created_at?.slice(0,10),
-    }));
-    document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
+    const p = new URLSearchParams();
+    p.set('limit', LEAD_PAGE_SIZE);
+    p.set('offset', leadPage * LEAD_PAGE_SIZE);
+    if (GC_CITY !== 'all') p.set('city', GC_CITY);
+    if (leadFilter === 'new')      p.set('status', 'Новый');
+    if (leadFilter === 'assigned') p.set('status', 'Назначен');
+    if (leadFilter === 'base')     p.set('status', 'База');
+    if (leadChannel) p.set('channel', leadChannel);
+    if (leadSearch)  p.set('q', leadSearch);
+
+    const data = await apiFetch('/leads?' + p.toString());
+    leads = (data.data || []).map(l => ({ ...l, managerId: l.manager_id, date: (l.created_at||'').slice(0,10) }));
+    leadTotal = data.total ?? leads.length;
   } catch(e) {
-    // fallback to localStorage
-    console.warn('Using localStorage for leads');
+    console.warn('Лиды: работаем на локальных данных —', e.message);
+    leadTotal = leads.length;
   }
 }
 
 // Загрузить авто из API
 async function loadCars() {
   try {
-    const data = await apiFetch('/cars');
+    const data = await apiFetch('/cars?limit=500' + cityParam('&'));
     if (data.data && data.data.length > 0) {
       cars = data.data.map(c => ({
         ...c,
@@ -2307,7 +2473,7 @@ async function loadCars() {
 // Загрузить сделки из API
 async function loadDeals() {
   try {
-    const data = await apiFetch('/deals');
+    const data = await apiFetch('/deals?limit=500' + cityParam('&'));
     if (data.data && data.data.length > 0) {
       deals = data.data.map(d => ({
         ...d,
@@ -2323,7 +2489,7 @@ async function loadDeals() {
 // Загрузить статистику из API
 async function loadStats() {
   try {
-    apiStats = await apiFetch('/stats');
+    apiStats = await apiFetch('/stats' + (cityParam() || '?city=all'));
     return apiStats;
   } catch(e) {
     console.warn('Stats API unavailable');
@@ -2379,8 +2545,10 @@ window.saveLead = async function(id) {
   const name = gv('l-name'); if(!name) return;
   const body = {
     name, phone: gv('l-phone'), email: '',
-    channel: gv('l-ch'), manager_id: gv('l-mgr'),
+    channel: CHANNELS[gv('l-ch')]?.label || gv('l-ch'),
+    manager_id: gv('l-mgr') || null,
     interest: gv('l-int'),
+    city: GC_CITY === 'all' ? 'Астана' : GC_CITY,
   };
   showToast('💾 Сохраняем…');
   const result = await saveLeadApi(id || null, body);
@@ -2398,8 +2566,11 @@ const _origSaveDeal = window.saveDeal;
 window.saveDeal = async function(id) {
   const title = gv('d-title'); if(!title) return;
   const body = {
-    title, client_id: gv('d-client'), stage: gv('d-stage'),
-    amount: Number(gv('d-amount'))||0, manager_id: gv('d-mgr'),
+    title, stage: gv('d-stage'),
+    lead_id: gv('d-client') || null,
+    amount: Number(gv('d-amount'))||0,
+    manager_id: gv('d-mgr') || null,
+    city: GC_CITY === 'all' ? 'Астана' : GC_CITY,
   };
   showToast('💾 Сохраняем сделку…');
   const result = await saveDealApi(id || null, body);
@@ -2411,32 +2582,177 @@ window.saveDeal = async function(id) {
   }
 };
 
-// Обновлённый renderDashboard с реальными данными
+// ── Дашборд на реальных данных ────────────────────────────────────────────
+// Читает ответ /api/stats: kpi, funnel, cars.by_status, leads.by_channel,
+// managers, recent_deals. Если API недоступен — оставляет скелет и говорит об этом.
 const _origRenderDashboard = renderDashboard;
+
+const setKpi = (i, val, delta) => {
+  const cards = document.querySelectorAll('.kpi');
+  if (!cards[i]) return;
+  const v = cards[i].querySelector('.kpi-val');
+  const d = cards[i].querySelector('.kpi-delta');
+  if (v) v.textContent = val;
+  if (d && delta !== undefined) { d.textContent = delta; d.className = 'kpi-delta neu'; }
+};
+
+const PIE = ['#27AE60','#3498DB','#F39C12','#9B59B6','#E74C3C','#1ABC9C','#95A5A6','#E67E22'];
+
+function donut(items, total, centerLabel) {
+  const R = 30, C = 2 * Math.PI * R;
+  let off = 0;
+  const arcs = items.map((it, i) => {
+    const frac = total ? it.cnt / total : 0;
+    const len  = frac * C;
+    const a = `<circle cx="40" cy="40" r="${R}" fill="none" stroke="${PIE[i % PIE.length]}"
+      stroke-width="11" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}"
+      stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 40 40)"/>`;
+    off += len; return a;
+  }).join('');
+  return `<svg viewBox="0 0 80 80" style="width:80px;height:80px;flex-shrink:0">
+      <circle cx="40" cy="40" r="${R}" fill="none" stroke="#F0F0F0" stroke-width="11"/>
+      ${arcs}
+      <text x="40" y="37" text-anchor="middle" font-size="9" fill="#999">${centerLabel}</text>
+      <text x="40" y="50" text-anchor="middle" font-size="13" font-weight="800" fill="#1A1A2E">${total}</text>
+    </svg>`;
+}
+
+function legend(items, total) {
+  return `<div style="display:flex;flex-direction:column;gap:5px;font-size:11px">` +
+    items.map((it, i) => `<div class="legend-item">
+      <div class="legend-dot" style="background:${PIE[i % PIE.length]}"></div>
+      ${it.label} ${it.cnt}${total ? ' (' + Math.round(it.cnt / total * 100) + '%)' : ''}
+    </div>`).join('') + `</div>`;
+}
+
 window.renderDashboard = async function() {
-  _origRenderDashboard();  // показываем заглушки сразу
-  const stats = await loadStats();
-  if (!stats) return;
+  _origRenderDashboard();                       // скелет и мини-графики
+  const s = await loadStats();
 
-  // Обновляем KPI реальными данными
-  document.getElementById('d-rev') && (document.getElementById('d-rev').textContent = fmt(stats.revenue.this_month));
-  const growth = stats.revenue.growth_pct;
-  document.getElementById('d-rev-delta') && (document.getElementById('d-rev-delta').textContent =
-    (growth >= 0 ? '+' : '') + growth + '% к прошлому месяцу');
+  const sub = document.querySelector('#page-dashboard .page-sub');
+  if (!s) {
+    if (sub) sub.innerHTML = '<span style="color:#C0392B">⚠️ Нет связи с /api/stats — показаны демо-данные</span>';
+    return;
+  }
+  const cityName = s.city === 'all' ? 'все филиалы' : s.city;
+  if (sub) sub.textContent = 'Данные из базы · ' + cityName +
+    ' · обновлено ' + new Date(s.generated_at).toLocaleTimeString('ru-RU').slice(0,5);
 
-  // KPI карточки
-  const kpiEls = document.querySelectorAll('.kpi-val');
-  if (kpiEls.length >= 6) {
-    kpiEls[0].textContent = fmt(stats.revenue.this_month);
-    kpiEls[1].textContent = stats.deals.closed;
-    kpiEls[2].textContent = stats.leads.total;
-    kpiEls[3].textContent = stats.deals.in_progress;
-    kpiEls[4].textContent = stats.deals.closed;
-    kpiEls[5].textContent = fmt(stats.deals.avg_check);
+  // ── KPI ──
+  const k = s.kpi;
+  setKpi(0, fmt(k.revenue_month),  'закрыто в этом месяце');
+  setKpi(1, k.sales_month,          k.pipeline ? 'в работе на ' + fmt(k.pipeline) : 'сделок закрыто');
+  setKpi(2, k.new_leads_month,      '+' + k.new_leads_today + ' сегодня');
+  setKpi(3, k.in_progress,          'активных сделок');
+  setKpi(4, k.closed_deals,         'за всё время');
+  setKpi(5, fmt(k.avg_check),       'по закрытым сделкам');
+
+  // ── Воронка ──
+  const fMap = Object.fromEntries((s.funnel || []).map(r => [r.stage, r.cnt]));
+  const fRows = BOARD_KEYS.concat('closed').map(kk => ({label: STAGE_LABEL[kk], val: fMap[kk] || 0}));
+  const fMax = Math.max(...fRows.map(r => r.val), 1);
+  document.getElementById('funnel-chart').innerHTML = fRows.map(r => {
+    const pct = r.val / fMax * 100;
+    return `<div class="funnel-row">
+      <div class="funnel-label" style="font-size:11px">${r.label}</div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%;background:${pct>50?'#C0392B':pct>25?'#E67E22':'#27AE60'}"></div></div>
+      <div class="funnel-val">${r.val}</div>
+    </div>`;
+  }).join('');
+
+  // ── Склад ──
+  const carItems = (s.cars.by_status || []).map(r => ({label: r.status, cnt: r.cnt}));
+  const carCard = document.querySelectorAll('.grid-4 .card')[1];
+  if (carCard) {
+    const body = carCard.querySelector('div[style*="display:flex"]');
+    if (body) body.innerHTML = donut(carItems, s.cars.total, 'Всего') + legend(carItems, s.cars.total);
+    const hdr = carCard.querySelector('.card-title');
+    if (hdr) hdr.textContent = '🚗 Склад · ' + fmt(s.cars.stock_value);
   }
 
-  // Значки в меню
-  document.getElementById('leads-cnt').textContent = stats.leads.new;
+  // ── Каналы лидов вместо точек осмотра в Алматы ──
+  const locCard = document.querySelectorAll('.grid-4 .card')[0];
+  if (locCard) {
+    const t = locCard.querySelector('.card-title');
+    if (t) t.textContent = '📊 Лиды по каналам';
+    const link = locCard.querySelector('.card-link');
+    if (link) { link.textContent = 'Все лиды →'; link.onclick = () => go('leads', document.querySelectorAll('.nav-item')[1]); }
+    const chTotal = (s.leads.by_channel || []).reduce((a, r) => a + r.cnt, 0);
+    document.getElementById('locations-list').innerHTML =
+      (s.leads.by_channel || []).slice(0, 6).map(r => {
+        const c = CHANNELS[chanKey(r.channel)];
+        const pct = chTotal ? Math.round(r.cnt / chTotal * 100) : 0;
+        return `<div class="loc-item">
+          <div class="loc-icon" style="background:${c.bg};color:${c.color}">${c.icon}</div>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600">${c.label}</div>
+            <div class="prog-wrap" style="width:110px;margin-top:3px"><div class="prog" style="width:${pct}%;background:${c.color}"></div></div></div>
+          <div class="loc-pct" style="color:${c.color}">${r.cnt}</div>
+        </div>`;
+      }).join('') || '<div style="color:#CCC;font-size:12px;padding:10px 0">Лидов пока нет</div>';
+  }
+
+  // ── База обзвона вместо демо-аукционов ──
+  const aucCard = document.querySelectorAll('.grid-4 .card')[2];
+  if (aucCard) {
+    const t = aucCard.querySelector('.card-title');
+    if (t) t.textContent = '📞 База обзвона';
+    const link = aucCard.querySelector('.card-link');
+    if (link) { link.textContent = 'К обзвону →'; link.onclick = () => { go('leads', document.querySelectorAll('.nav-item')[1]); filterLeads('base'); }; }
+    const segs = s.leads.by_segment || [];
+    document.getElementById('auctions-list').innerHTML = segs.length ? segs.map(r => `
+      <div class="auction-item">
+        <div class="auction-img" style="font-size:13px;font-weight:800;color:#C0392B">${r.segment}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700">${SEG_HINT[r.segment] || r.segment}</div>
+          <div style="font-size:11px;color:#AAA">не обработано</div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:#1A1A2E">${r.cnt.toLocaleString('ru-RU')}</div>
+      </div>`).join('')
+      : '<div style="color:#CCC;font-size:12px;padding:10px 0">База не загружена</div>';
+  }
+
+  // ── Последние сделки ──
+  document.getElementById('recent-deals').innerHTML =
+    (s.recent_deals || []).map(d => {
+      const kk = stageKey(d.stage);
+      const cls = kk === 'closed' ? 'badge-g' : kk === 'lost' ? 'badge-r' : 'badge-b';
+      return `<tr>
+        <td><div style="font-weight:600;font-size:12px">${d.title || '—'}</div></td>
+        <td style="font-size:11px;color:#888">${d.client_name || '—'}</td>
+        <td style="font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap">${fmt(d.amount)}</td>
+        <td><span class="badge ${cls}">${STAGE_LABEL[kk]}</span></td></tr>`;
+    }).join('') || '<tr><td colspan="4" style="color:#CCC;padding:14px">Сделок пока нет</td></tr>';
+
+  // ── Менеджеры ──
+  // Таблица app_users пока пуста, поэтому имена берём из локального справочника
+  const mg = (s.managers || []).filter(m => m.deals > 0);
+  const maxRev = Math.max(...mg.map(m => num(m.revenue)), 1);
+  document.getElementById('top-managers').innerHTML = mg.length ? mg.map((m, i) => {
+    const known = managers.find(x => x.id === m.manager_id);
+    const nm = known?.name || (m.manager_id ? 'ID ' + String(m.manager_id).slice(0, 8) : 'Не назначен');
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F5F5F5">
+      <div class="av av-sm ${i<3?'rank-'+(i+1):''}">${i<3?['🥇','🥈','🥉'][i]:nm[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700">${nm}</div>
+        <div class="prog-wrap"><div class="prog" style="width:${num(m.revenue)/maxRev*100}%;background:${i===0?'#F1C40F':'#C0392B'}"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;font-weight:700;color:#C0392B">${fmt(m.revenue)}</div>
+        <div style="font-size:10px;color:#AAA">${m.deals} сделок · ${m.closed} закрыто</div>
+      </div></div>`;
+  }).join('') : '<div style="color:#CCC;font-size:12px;padding:10px 0">Сделки пока не распределены по менеджерам</div>';
+
+  // ── BI ──
+  const conv = s.leads.total ? (k.closed_deals / s.leads.total * 100).toFixed(1) + '%' : '—';
+  document.getElementById('bi-cards').innerHTML = [
+    {label:'Сумма в работе',    val: fmt(k.pipeline),                       delta: k.in_progress + ' активных сделок'},
+    {label:'Конверсия в сделку', val: conv,                                  delta: 'от ' + s.leads.total.toLocaleString('ru-RU') + ' лидов'},
+    {label:'Склад',              val: s.cars.total + ' авто',                delta: 'на ' + fmt(s.cars.stock_value)},
+    {label:'База обзвона',       val: s.leads.base.toLocaleString('ru-RU'),  delta: 'номеров не обработано'},
+  ].map(b => `<div class="bi-card"><div class="bi-label">${b.label}</div>
+      <div class="bi-val">${b.val}</div><div class="bi-delta">${b.delta}</div></div>`).join('');
+
+  document.getElementById('leads-cnt').textContent = s.leads.new;
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -2444,6 +2760,9 @@ initDate();
 
 // Загружаем всё из API — каждый независимо
 (async () => {
+  const sw = document.getElementById('city-switch');
+  if (sw) sw.value = GC_CITY;
+
   showToast('🔄 Подключаемся к базе данных…');
   const results = await Promise.allSettled([loadLeads(), loadCars(), loadDeals()]);
   const ok = results.filter(r => r.status === 'fulfilled').length;
@@ -2477,9 +2796,9 @@ function openAuctionDetail(id) {
 function openAuctionCreate() {
   // Populate car select
   var sel = document.getElementById('acm-car');
-  if (sel && carsData && carsData.length > 0) {
+  if (sel && cars && cars.length > 0) {
     sel.innerHTML = '<option value="">— Выберите автомобиль —</option>' +
-      carsData.filter(c => c.status !== 'На аукционе' && c.status !== 'Продан').map(c =>
+      cars.filter(c => c.status !== 'На аукционе' && c.status !== 'Продан').map(c =>
         '<option value="' + c.id + '">' + c.make + ' ' + c.model + ' ' + c.year + ' · ' + Number(c.price).toLocaleString('ru-RU') + ' ₸</option>'
       ).join('');
   }
@@ -2487,7 +2806,7 @@ function openAuctionCreate() {
 }
 
 function copyAuctionLink(id) {
-  var link = 'https://goodcarkz-yack.vercel.app/auction/' + id;
+  var link = 'https://goodcarkz.vercel.app/auction/' + id;
   if (navigator.clipboard) navigator.clipboard.writeText(link);
   showToast('Ссылка скопирована: ' + link);
 }
