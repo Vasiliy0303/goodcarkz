@@ -1,121 +1,110 @@
-// api/leads.js
-// POST /api/leads — создать лид
-// GET  /api/leads — получить все лиды
+// /api/leads — GET (список с пагинацией) | POST (новый лид) | PATCH (?id=X)
+// При 8000+ записей в базе выдача ОБЯЗАТЕЛЬНО постраничная.
+const { Pool } = require('pg');
 
-import { Pool } from 'pg';
+let pool;
+function db() {
+  if (!pool) pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 3,
+  });
+  return pool;
+}
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 5,
-});
+const norm = p => p ? '+7' + String(p).replace(/\D/g, '').slice(-10) : null;
 
-export default async function handler(req, res) {
-  // CORS
+module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  const c = db();
+
   try {
+    // ── GET ────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
-      const { status, channel, manager_id, limit = 50, offset = 0 } = req.query;
+      const { city, status, segment, channel, q, manager_id } = req.query;
+      const limit  = Math.min(parseInt(req.query.limit, 10) || 50, 500);
+      const offset = parseInt(req.query.offset, 10) || 0;
 
-      let where = [];
-      let params = [];
-      let p = 1;
+      const where = [], params = [];
+      const add = (sql, val) => { params.push(val); where.push(sql.replace('?', '$' + params.length)); };
 
-      if (status)     { where.push(`l.status = $${p++}`);     params.push(status); }
-      if (channel)    { where.push(`l.channel = $${p++}`);    params.push(channel); }
-      if (manager_id) { where.push(`l.manager_id = $${p++}`); params.push(manager_id); }
+      if (city && city !== 'all')       add('city = ?', city);
+      if (status && status !== 'all')   add('status = ?', status);
+      if (segment)                      add('segment = ?', segment);
+      if (channel)                      add('channel = ?', channel);
+      if (manager_id)                   add('manager_id = ?', manager_id);
+      if (q) {
+        params.push('%' + q + '%');
+        where.push(`(name ILIKE $${params.length} OR phone ILIKE $${params.length}
+                     OR interest ILIKE $${params.length})`);
+      }
+      const W = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      const whereStr = where.length ? 'WHERE ' + where.join(' AND ') : '';
+      const [{ count }] = (await c.query(`SELECT COUNT(*)::int AS count FROM leads ${W}`, params)).rows;
 
-      const { rows } = await pool.query(`
-        SELECT
-          l.*,
-          u.name AS manager_name
-        FROM leads l
-        LEFT JOIN users u ON u.id = l.manager_id
-        ${whereStr}
-        ORDER BY l.created_at DESC
-        LIMIT $${p} OFFSET $${p+1}
-      `, [...params, parseInt(limit), parseInt(offset)]);
+      // База обзвона сортируется по «горячести»: сегмент, затем свежесть контакта
+      const order = status === 'База'
+        ? 'ORDER BY segment ASC NULLS LAST, last_contact DESC NULLS LAST'
+        : 'ORDER BY created_at DESC';
 
-      const { rows: countRows } = await pool.query(
-        `SELECT COUNT(*) FROM leads l ${whereStr}`, params
-      );
+      const rows = (await c.query(
+        `SELECT * FROM leads ${W} ${order} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        [...params, limit, offset]
+      )).rows;
 
-      return res.status(200).json({
-        data: rows,
-        total: parseInt(countRows[0].count),
-      });
+      return res.status(200).json({ data: rows, total: count, limit, offset });
     }
 
+    // ── POST ───────────────────────────────────────────────────────────
     if (req.method === 'POST') {
-      const { name, phone, email, channel = 'manual', interest, source_url, manager_id } = req.body;
+      const b = req.body || {};
+      if (!b.phone) return res.status(400).json({ error: 'phone обязателен' });
 
-      if (!name) return res.status(400).json({ error: 'name is required' });
-
-      const { rows } = await pool.query(`
-        INSERT INTO leads (name, phone, email, channel, interest, source_url, manager_id, status)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, 'new')
-        RETURNING *
-      `, [name, phone || null, email || null, channel, interest || null, source_url || null, manager_id || null]);
-
-      // Создаём уведомление для менеджеров
-      if (manager_id) {
-        await pool.query(`
-          INSERT INTO notifications (user_id, type, title, body, link)
-          VALUES ($1, 'new_lead', $2, $3, $4)
-        `, [
-          manager_id,
-          `Новый лид: ${name}`,
-          `Канал: ${channel}${interest ? '. Интерес: ' + interest : ''}`,
-          `/crm.html#leads`
-        ]);
-      }
-
-      // Пишем событие аналитики
-      await pool.query(`
-        INSERT INTO analytics_events (event_type, entity_type, entity_id, meta)
-        VALUES ('lead_created', 'lead', $1, $2)
-      `, [rows[0].id, JSON.stringify({ channel, name })]);
-
-      return res.status(201).json(rows[0]);
+      const r = await c.query(
+        `INSERT INTO leads (name, phone, phone_norm, channel, city, interest, source_url, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,COALESCE($8,'Новый'))
+         ON CONFLICT (phone_norm) WHERE phone_norm IS NOT NULL
+         DO UPDATE SET interest   = EXCLUDED.interest,
+                       status     = CASE WHEN leads.status = 'База'
+                                         THEN 'Новый' ELSE leads.status END,
+                       updated_at = now()
+         RETURNING *`,
+        [b.name || 'Без имени', b.phone, norm(b.phone), b.channel || 'manual',
+         b.city || 'Астана', b.interest || null, b.source_url || null, b.status || null]
+      );
+      return res.status(201).json({ data: r.rows[0] });
     }
 
+    // ── PATCH ──────────────────────────────────────────────────────────
     if (req.method === 'PATCH') {
-      const { id } = req.query;
-      if (!id) return res.status(400).json({ error: 'id is required' });
+      const id = req.query.id;
+      if (!id) return res.status(400).json({ error: 'id обязателен' });
 
-      const allowed = ['status', 'manager_id', 'interest', 'phone', 'email'];
-      const updates = [];
-      const params = [id];
-      let p = 2;
-
-      for (const key of allowed) {
-        if (req.body[key] !== undefined) {
-          updates.push(`${key} = $${p++}`);
-          params.push(req.body[key]);
-        }
+      const allowed = ['name','phone','channel','city','interest','status',
+                       'manager_id','segment','call_result','called_at'];
+      const b = req.body || {};
+      const sets = [], params = [];
+      for (const k of allowed) {
+        if (b[k] !== undefined) { params.push(b[k]); sets.push(`${k} = $${params.length}`); }
       }
+      if (!sets.length) return res.status(400).json({ error: 'нет полей для обновления' });
+      if (b.phone) { params.push(norm(b.phone)); sets.push(`phone_norm = $${params.length}`); }
+      sets.push('updated_at = now()');
 
-      if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
-
-      const { rows } = await pool.query(`
-        UPDATE leads SET ${updates.join(', ')}, updated_at = NOW()
-        WHERE id = $1 RETURNING *
-      `, params);
-
-      if (!rows.length) return res.status(404).json({ error: 'Lead not found' });
-      return res.status(200).json(rows[0]);
+      params.push(id);
+      const r = await c.query(
+        `UPDATE leads SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`, params);
+      if (!r.rowCount) return res.status(404).json({ error: 'Лид не найден' });
+      return res.status(200).json({ data: r.rows[0] });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
-
-  } catch (err) {
-    console.error('leads API error:', err);
-    return res.status(500).json({ error: err.message });
+  } catch (e) {
+    console.error('leads error:', e);
+    return res.status(500).json({ error: e.message });
   }
-}
+};
