@@ -455,6 +455,7 @@ textarea{resize:vertical;min-height:70px}
         <button class="btn btn-ghost btn-sm" onclick="filterLeads('new')" id="lf-new">Новые</button>
         <button class="btn btn-ghost btn-sm" onclick="filterLeads('assigned')" id="lf-assigned">Назначены</button>
         <button class="btn btn-ghost btn-sm" onclick="filterLeads('base')" id="lf-base">📞 База обзвона</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterLeads('mine')" id="lf-mine">👤 Мои лиды</button>
         <span style="width:1px;height:24px;background:#E8E8E8"></span>
         <button class="btn btn-ghost btn-sm" id="lch-Telegram" onclick="filterLeadChannel('Telegram')" style="display:flex;align-items:center;gap:5px"><span>✈</span>Telegram</button>
         <button class="btn btn-ghost btn-sm" id="lch-WhatsApp" onclick="filterLeadChannel('WhatsApp')" style="display:flex;align-items:center;gap:5px"><span>💚</span>WhatsApp</button>
@@ -1478,7 +1479,25 @@ const chanKey = c => CHANNEL_ALIAS[String(c||'').trim().toLowerCase()] || 'site'
 const STATUS_ALIAS = {'new':'Новый','assigned':'Назначен','base':'База'};
 const statusLabel = s => STATUS_ALIAS[s] || s || 'Новый';
 const STATUS_BADGE = {'Новый':'badge-r','Назначен':'badge-b','В работе':'badge-y',
-  'База':'badge-p','Отказ':'badge-x','Успешно':'badge-g'};
+  'База':'badge-p','Отказ':'badge-x','Успешно':'badge-g',
+  'Дозвонился':'badge-b','Не дозвонился':'badge-y','Перезвонить':'badge-y',
+  'Договорились':'badge-g','Недозвон 3 раза':'badge-x'};
+
+// Что менеджер выставляет по итогам звонка
+const CALL_STATUSES = ['В работе','Дозвонился','Перезвонить','Не дозвонился',
+                       'Договорились','Отказ','Недозвон 3 раза'];
+
+// Сотрудники подгружаются из /api/staff при старте
+let staff = [];
+async function loadStaff() {
+  try {
+    const r = await apiFetch('/staff');
+    staff = r.data || [];
+    managers = staff.map(u => ({ id: u.id, name: u.name, role: u.role, avatar: u.avatar }));
+  } catch(e) { console.warn('Сотрудники: используем локальный список —', e.message); }
+}
+const meId = () => (window.GC_USER && GC_USER.id) || null;
+const isBoss = () => (window.GC_USER && GC_USER.role) === 'admin';
 
 let managers = LS('gc:mgr') || [
   {id:'m1',name:'Ерлан Султанов',role:'Менеджер',avatar:'ЕС'},
@@ -1685,7 +1704,7 @@ function searchLeads(v) {
 
 function filterLeads(f) {
   leadFilter = f; leadPage = 0;
-  ['all','new','assigned','base'].forEach(x => {
+  ['all','new','assigned','base','mine'].forEach(x => {
     const el = document.getElementById('lf-'+x);
     if (el) el.style.cssText = x===f ? 'background:#C0392B;color:#fff' : '';
   });
@@ -1715,20 +1734,22 @@ function renderLeads() {
   if (!tb) return;
 
   tb.innerHTML = leads.map(l => {
-    const mgr = managers.find(m => m.id === (l.manager_id || l.managerId));
+    const mgrName = l.manager_name || managers.find(m => m.id === l.manager_id)?.name || '';
     const c   = CHANNELS[chanKey(l.channel)];
     const st  = statusLabel(l.status);
     const badge = STATUS_BADGE[st] || 'badge-b';
     const date  = (l.created_at || l.date || '').toString().slice(0,10);
     const seg   = l.segment ? `<span style="font-size:10px;color:#AAA;margin-left:6px">${SEG_HINT[l.segment]||l.segment}</span>` : '';
     const phone = l.phone || '';
-    return `<tr>
+    return `<tr style="cursor:pointer" onclick="openCallCard('${l.id}')">
       <td><div style="font-weight:600">${l.name || 'Без имени'}${seg}</div>
           <a href="tel:${phone}" style="font-size:11px;color:#C0392B;text-decoration:none">${phone}</a></td>
       <td><div class="ch-icon" style="background:${c.bg};color:${c.color};display:inline-flex">${c.icon}</div>
           <span style="font-size:12px;color:${c.color};font-weight:600">${c.label}</span></td>
       <td style="font-size:12px;color:#555">${l.interest || '—'}</td>
-      <td><div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${mgr?.avatar || mgr?.name?.[0] || '?'}</div><span style="font-size:12px">${mgr?.name?.split(' ')[0] || '—'}</span></div></td>
+      <td>${mgrName
+        ? `<div style="display:flex;align-items:center;gap:6px"><div class="av av-sm">${l.manager_avatar || mgrName[0]}</div><span style="font-size:12px">${mgrName.split(' ')[0]}</span></div>`
+        : `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();takeLead('${l.id}')">Взять себе</button>`}</td>
       <td style="font-size:12px;color:#AAA">${date}</td>
       <td><span class="badge ${badge}">${st}</span></td>
       <td><button class="btn btn-ghost btn-sm" onclick="openLeadModal('${l.id}')">✏</button></td>
@@ -1747,6 +1768,72 @@ function renderLeads() {
         <button class="btn btn-ghost btn-sm" ${to>=leadTotal?'disabled':''} onclick="leadPageGo(1)">Вперёд →</button>
       </div>
     </div>` : `<div style="padding:8px 14px;font-size:12px;color:#999">Всего: ${leadTotal}</div>`;
+}
+
+// ── Взять лид себе ────────────────────────────────────────────────────────
+async function takeLead(id) {
+  if (!meId()) { showToast('⚠️ Не удалось определить сотрудника — перезайдите'); return; }
+  try {
+    await apiFetch('/leads?id=' + id, { method: 'PATCH', body: { manager_id: meId() } });
+    showToast('✅ Лид ваш. Смотрите вкладку «Мои лиды»');
+    await loadLeads(); renderLeads();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+async function releaseLead(id) {
+  if (!confirm('Вернуть лид в общую базу? Его сможет взять другой менеджер.')) return;
+  try {
+    await apiFetch('/leads?id=' + id, { method: 'PATCH', body: { manager_id: null, status: 'База' } });
+    showToast('↩ Лид возвращён в общую базу');
+    closeModal(); await loadLeads(); renderLeads();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+// ── Карточка обзвона ──────────────────────────────────────────────────────
+function openCallCard(id) {
+  const l = leads.find(x => x.id === id);
+  if (!l) return;
+  const stOpts = CALL_STATUSES.map(x =>
+    `<option value="${x}"${x === l.status ? ' selected' : ''}>${x}</option>`).join('');
+  const mine = l.manager_id === meId();
+
+  showModal('📞 ' + (l.name || 'Клиент'),
+    `<div class="form-grid">
+      <div style="background:#FFF5F5;border-radius:10px;padding:14px;text-align:center">
+        <a href="tel:${l.phone}" style="font-size:22px;font-weight:800;color:#C0392B;text-decoration:none">${l.phone}</a>
+        <div style="font-size:11px;color:#999;margin-top:4px">нажмите, чтобы позвонить</div>
+      </div>
+      <div class="form-row">
+        <div><label>Последний контакт</label><div style="font-size:13px;font-weight:600">${(l.last_contact||'—').toString().slice(0,10)}</div></div>
+        <div><label>Сообщений в переписке</label><div style="font-size:13px;font-weight:600">${l.msg_count || 0}</div></div>
+      </div>
+      <div><label>Запрос из WhatsApp</label><div style="font-size:13px">${l.interest || '—'}</div></div>
+      <div><label>Имя клиента</label><input id="cc-name" value="${l.name === 'Клиент WhatsApp' ? '' : (l.name || '')}" placeholder="Впишите после разговора"></div>
+      <div><label>Итог звонка</label><select id="cc-status">${stOpts}</select></div>
+      <div><label>Перезвонить</label><input id="cc-next" type="datetime-local"></div>
+      <div><label>Заметки</label><textarea id="cc-notes" rows="3">${l.notes || ''}</textarea></div>
+    </div>`,
+    `${mine ? `<button class="btn btn-ghost btn-sm" onclick="releaseLead('${id}')">↩ В общую базу</button>` : ''}
+     <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
+     <button class="btn btn-primary" onclick="saveCall('${id}')">Сохранить</button>`);
+}
+
+async function saveCall(id) {
+  const body = {
+    status: gv('cc-status'),
+    notes:  gv('cc-notes'),
+    called_at: new Date().toISOString(),
+  };
+  const nm = gv('cc-name').trim();
+  if (nm) body.name = nm;
+  const nx = gv('cc-next');
+  if (nx) body.next_call_at = new Date(nx).toISOString();
+
+  try {
+    await apiFetch('/leads?id=' + id, { method: 'PATCH', body });
+    showToast('✅ Сохранено: ' + body.status);
+    closeModal(); await loadLeads(); renderLeads();
+  } catch(e) { showToast('⚠️ ' + e.message); }
 }
 
 // ── Deals Kanban ──────────────────────────────────────────────────────────────
@@ -2322,7 +2409,14 @@ function saveLead(id) {
   SS('gc:leads',leads); closeModal(); renderLeads();
   document.getElementById('leads-cnt').textContent = leads.filter(l=>l.status==='new').length;
 }
-function deleteLead(id){leads=leads.filter(l=>l.id!==id);SS('gc:leads',leads);closeModal();renderLeads();}
+async function deleteLead(id){
+  if(!confirm('Удалить лид навсегда? Действие необратимо.')) return;
+  try {
+    await apiFetch('/leads?id=' + id, { method: 'DELETE' });
+    showToast('🗑 Лид удалён из базы');
+  } catch(e) { showToast('⚠️ ' + e.message); return; }
+  closeModal(); await loadLeads(); renderLeads();
+}
 
 function openDealModal(id=null,defStage=null){
   const deal = id?deals.find(d=>d.id===id):null;
@@ -2441,7 +2535,9 @@ async function loadLeads() {
     if (GC_CITY !== 'all') p.set('city', GC_CITY);
     if (leadFilter === 'new')      p.set('status', 'Новый');
     if (leadFilter === 'assigned') p.set('status', 'Назначен');
-    if (leadFilter === 'base')     p.set('status', 'База');
+    // База обзвона — только свободные номера, взятые уходят к менеджеру
+    if (leadFilter === 'base')   { p.set('status', 'База'); p.set('free', '1'); }
+    if (leadFilter === 'mine')   { if (meId()) p.set('manager_id', meId()); }
     if (leadChannel) p.set('channel', leadChannel);
     if (leadSearch)  p.set('q', leadSearch);
 
@@ -2764,6 +2860,7 @@ initDate();
   if (sw) sw.value = GC_CITY;
 
   showToast('🔄 Подключаемся к базе данных…');
+  await loadStaff();
   const results = await Promise.allSettled([loadLeads(), loadCars(), loadDeals()]);
   const ok = results.filter(r => r.status === 'fulfilled').length;
   if (ok === 3) showToast('✅ Данные загружены из базы!');
