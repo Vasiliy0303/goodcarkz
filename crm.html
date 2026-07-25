@@ -1953,7 +1953,7 @@ function renderModeration() {
             <div style="font-size:11px;color:#999">
               ${Number(c.price) > 0 ? fmt(c.price) : '⚠️ цена не указана'} ·
               ${(c.mileage || 0).toLocaleString('ru-RU')} км ·
-              ${(c.photos || []).length} фото · ${c.city || '—'}
+              ${c.photo_count ?? (c.photos||[]).length} фото · ${c.city || '—'}
             </div>
             ${c.seller_name || c.seller_phone
               ? `<div style="font-size:11px;color:#666;margin-top:2px">Продавец: ${c.seller_name || '—'}${c.seller_phone ? ` · <a href="tel:${c.seller_phone}" style="color:#C0392B">${c.seller_phone}</a>` : ''}</div>`
@@ -2077,9 +2077,19 @@ function handleUpload(carId, input) {
   });
 }
 
-function viewCar(id) {
-  const car = cars.find(c=>c.id===id);
+async function viewCar(id) {
+  let car = cars.find(c=>c.id===id);
   if(!car) return;
+  // В списке у машины только первое фото. Открываем карточку —
+  // подтягиваем полный набор отдельным лёгким запросом.
+  if (!car._full && (car.photo_count || 0) > 1) {
+    try {
+      const r = await apiFetch('/cars?id=' + id);
+      if (r.data) { car = { ...car, ...r.data, _full: true };
+        const idx = cars.findIndex(c => c.id === id);
+        if (idx >= 0) cars[idx] = car; }
+    } catch(e) { /* покажем то, что есть */ }
+  }
   const photos = car.photos||[];
   const vds = car.videos||[];
   let videoBlock = '';
