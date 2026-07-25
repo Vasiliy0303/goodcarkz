@@ -36,6 +36,13 @@ export default async function handler(req, res) {
   const c = db();
 
   try {
+    // ── GET одной машины со всеми фото ─────────────────────────────────
+    if (req.method === 'GET' && req.query.id) {
+      const r = await c.query(`SELECT * FROM cars WHERE id = $1`, [req.query.id]);
+      if (!r.rowCount) return res.status(404).json({ error: 'Авто не найдено' });
+      return res.status(200).json({ data: r.rows[0] });
+    }
+
     // ── GET ────────────────────────────────────────────────────────────
     if (req.method === 'GET') {
       const { city, status, q } = req.query;
@@ -53,8 +60,22 @@ export default async function handler(req, res) {
       const W = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
       const [{ count }] = (await c.query(`SELECT COUNT(*)::int AS count FROM cars ${W}`, params)).rows;
+
+      // full=1 или запрос конкретной машины — отдаём всё, включая фото.
+      // Иначе список: только первое фото и число остальных, чтобы
+      // не гонять мегабайты base64 при каждом открытии каталога.
+      const full = req.query.full === '1' || req.query.id;
+
+      const cols = full ? '*' : `
+        id, make, model, year, price, mileage, color, status, city,
+        is_published, vin, created_at,
+        CASE WHEN jsonb_typeof(photos) = 'array' AND jsonb_array_length(photos) > 0
+             THEN jsonb_build_array(photos->0) ELSE '[]'::jsonb END AS photos,
+        CASE WHEN jsonb_typeof(photos) = 'array'
+             THEN jsonb_array_length(photos) ELSE 0 END AS photo_count`;
+
       const rows = (await c.query(
-        `SELECT * FROM cars ${W} ORDER BY created_at DESC
+        `SELECT ${cols} FROM cars ${W} ORDER BY created_at DESC
          LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
         [...params, limit, offset]
       )).rows;
