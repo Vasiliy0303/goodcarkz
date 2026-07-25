@@ -802,12 +802,41 @@ var _catalogFilter = 'Все';
 
 // Настройки компании: дежурные телефоны и тексты витрины.
 // Источник тот же, что у платформы, — двух разных правд быть не должно.
+// Neon на бесплатном тарифе засыпает при простое: первый запрос после паузы
+// может не дождаться пробуждения. Поэтому тихо повторяем до трёх раз.
+async function gcFetch(url, attempt) {
+  attempt = attempt || 1;
+  var MAX = 3;
+  try {
+    var res = await fetch(url);
+    var ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) {
+      if (res.status >= 500 && attempt < MAX) {
+        await new Promise(function(r){ setTimeout(r, attempt * 900); });
+        return gcFetch(url, attempt + 1);
+      }
+      var txt = await res.text();
+      throw new Error('HTTP ' + res.status + ': сервер вернул не JSON. ' + txt.substring(0,80));
+    }
+    var data = await res.json();
+    if (!res.ok && res.status >= 500 && attempt < MAX) {
+      await new Promise(function(r){ setTimeout(r, attempt * 900); });
+      return gcFetch(url, attempt + 1);
+    }
+    return data;
+  } catch(e) {
+    if (e instanceof TypeError && attempt < MAX) {
+      await new Promise(function(r){ setTimeout(r, attempt * 900); });
+      return gcFetch(url, attempt + 1);
+    }
+    throw e;
+  }
+}
+
 var GC_CFG = {};
 async function loadConfig() {
   try {
-    var res = await fetch('/api/config');
-    if (!(res.headers.get('content-type') || '').includes('json')) return;
-    var d = await res.json();
+    var d = await gcFetch('/api/config');
     GC_CFG = d.settings || {};
   } catch(e) { console.warn('Настройки недоступны:', e.message); }
 }
@@ -832,14 +861,8 @@ async function loadCatalog() {
   if (!grid) return;
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p style="font-size:13px">Загружаем...</p></div>';
   try {
-    var res = await fetch('/api/cars?limit=200');
-    var ct = res.headers.get('content-type') || '';
-    var statusCode = res.status;
-    if (!ct.includes('json')) {
-      var txt = await res.text();
-      throw new Error('HTTP ' + statusCode + ': сервер вернул не JSON. ' + txt.substring(0,100));
-    }
-    var data = await res.json();
+    var data = await gcFetch('/api/cars?limit=200');
+    var statusCode = 200;
     var all = Array.isArray(data) ? data : (data.data || data.cars || []);
     if (all.length === 0) {
       grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)"><p>База пуста</p><p style="font-size:11px;margin-top:4px;color:rgba(255,255,255,0.2)">API: ' + statusCode + ' · total: ' + (data.total||0) + '</p></div>';
@@ -860,6 +883,12 @@ async function loadCatalog() {
 
 function openHomeCar(i) {
   if (_catalogCars[i]) openCarDetail(_catalogCars[i]);
+}
+
+// Открытие по id — в onclick больше не вшивается объект с base64-фото
+function openCatalogCar(id) {
+  var c = _catalogCars.find(function(x){ return String(x.id) === String(id); });
+  if (c) openCarDetail(c);
 }
 
 function renderHome() {
@@ -978,7 +1007,7 @@ function renderCatalog() {
     var vds = [];
     try { vds = typeof c.videos === 'string' ? JSON.parse(c.videos) : (c.videos || []); } catch(e){}
     var inspBadge = vds.length > 0 ? '<div style="position:absolute;top:8px;left:8px;background:rgba(39,174,96,0.95);color:#fff;font-size:10px;font-weight:700;padding:4px 9px;border-radius:20px;z-index:1;letter-spacing:0.3px">✓ ОСМОТРЕН GOODCAR</div>' : '';
-    return '<div class="cardv" onclick="openCarDetail(' + JSON.stringify(c).replace(/"/g, '&quot;') + ')">' +
+    return '<div class="cardv" onclick="openCatalogCar(&quot;' + c.id + '&quot;)">' +
       '<div class="vi" style="position:relative">' + inspBadge + (photo ? '<img src="' + photo + '" alt="' + c.make + '" loading="lazy" style="width:100%;height:100%;object-fit:cover">' : '<div style="width:100%;height:100%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.2)">Нет фото</div>') + '</div>' +
       '<div class="vb">' +
         '<div class="vn">' + (c.make || '') + ' ' + (c.model || '') + ' ' + (c.year || '') + '</div>' +
@@ -989,8 +1018,15 @@ function renderCatalog() {
   }).join('');
 }
 
-function openCarDetail(car) {
-  // Show car detail modal
+async function openCarDetail(car) {
+  // В каталоге у машины только первое фото. При открытии карточки
+  // догружаем все фото отдельным запросом — иначе список висит.
+  if (car.id && (car.photo_count || 0) > 1) {
+    try {
+      var full = await gcFetch('/api/cars?id=' + car.id);
+      if (full && full.data) car = full.data;
+    } catch(e) {}
+  }
   var videos = [];
   try { videos = typeof car.videos === 'string' ? JSON.parse(car.videos) : (car.videos || []); } catch(e){}
   var photos = [];
@@ -1019,7 +1055,26 @@ function openCarDetail(car) {
 
   var photoHtml = '';
   if (photos && photos.length > 0) {
-    photoHtml = '<div style="height:260px;overflow:hidden;position:relative"><img src="' + photos[0] + '" style="width:100%;height:100%;object-fit:cover"></div>';
+    if (photos.length === 1) {
+      photoHtml = '<div style="height:260px;overflow:hidden"><img src="' + photos[0] + '" style="width:100%;height:100%;object-fit:cover"></div>';
+    } else {
+      // Листаемая галерея: свайп по горизонтали + точки-индикаторы.
+      // scroll-snap делает пролистывание по одному фото.
+      var slides = photos.map(function(p, i) {
+        return '<div style="flex:0 0 100%;height:260px;scroll-snap-align:center">' +
+          '<img src="' + p + '" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>';
+      }).join('');
+      var dots = photos.map(function(_, i) {
+        return '<span class="gc-dot" data-i="' + i + '" style="width:7px;height:7px;border-radius:50%;background:' +
+          (i === 0 ? '#fff' : 'rgba(255,255,255,0.4)') + ';transition:background .2s"></span>';
+      }).join('');
+      photoHtml =
+        '<div style="position:relative">' +
+          '<div id="gc-gallery" style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;height:260px;-webkit-overflow-scrolling:touch;scrollbar-width:none">' + slides + '</div>' +
+          '<div style="position:absolute;top:12px;right:14px;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;padding:3px 9px;border-radius:12px" id="gc-counter">1 / ' + photos.length + '</div>' +
+          '<div style="position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px" id="gc-dots">' + dots + '</div>' +
+        '</div>';
+    }
   } else {
     photoHtml = '<div style="height:200px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3)">Нет фото</div>';
   }
@@ -1052,6 +1107,26 @@ function openCarDetail(car) {
     '<button onclick="this.closest(\'[style*=fixed]\').remove()" style="width:100%;background:rgba(255,255,255,0.07);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;cursor:pointer">Назад</button>' +
   '</div>';
   document.body.appendChild(modal);
+
+  // Галерея: счётчик и точки следуют за пролистыванием
+  var gal = modal.querySelector('#gc-gallery');
+  if (gal && photos.length > 1) {
+    gal.addEventListener('scroll', function() {
+      var i = Math.round(gal.scrollLeft / gal.clientWidth);
+      var cnt = modal.querySelector('#gc-counter');
+      if (cnt) cnt.textContent = (i + 1) + ' / ' + photos.length;
+      modal.querySelectorAll('.gc-dot').forEach(function(d, k) {
+        d.style.background = k === i ? '#fff' : 'rgba(255,255,255,0.4)';
+      });
+    }, { passive: true });
+    // Клик по точке — переход к фото
+    modal.querySelectorAll('.gc-dot').forEach(function(d) {
+      d.style.cursor = 'pointer';
+      d.addEventListener('click', function() {
+        gal.scrollTo({ left: gal.clientWidth * Number(d.dataset.i), behavior: 'smooth' });
+      });
+    });
+  }
 }
 
 function filterCat(el){
